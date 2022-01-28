@@ -17,51 +17,52 @@
 #define BLINK2_PRIORITY 5
 #define BLINK2_DELAY_TICKS 200
 
-xTaskHandle* xTask1Handle, xTask2Handle;
+xTaskHandle *xTask1Handle, *xTask2Handle;
 
-void main(void) {
+void main(void)
+{
     gioInit();
     BaseType_t retval1, retval2;
 
-    retval1 = xTaskCreate( blinkGIOB1, BLINK1_NAME, configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTask1Handle );
-    retval2 = xTaskCreate( blinkGIOB2, BLINK2_NAME, configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTask2Handle );
+    retval1 = xTaskCreate(blinkGIOB1, BLINK1_NAME, configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTask1Handle);
+    retval2 = xTaskCreate(blinkGIOB2, BLINK2_NAME, configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTask2Handle);
 
-    if(retval1 && retval2){
+    if (retval1 && retval2)
+    {
         vTaskStartScheduler();
     }
-
 }
 
-void blinkGIOB1( void * arg )
+void blinkGIOB1(void *arg)
 {
     //(void) arg;
-    for(;;)
+    for (;;)
     {
         // Toggle on and off at a set speed
         gioToggleBit(gioPORTB, 1);
-        vTaskDelay( BLINK1_DELAY_TICKS );
+        vTaskDelay(BLINK1_DELAY_TICKS);
     }
 }
 
-void blinkGIOB2( void * arg )
+void blinkGIOB2(void *arg)
 {
     // First blink on and off, two cycles per one cycle on the other LED
     // Then blink on and off quickly -- four cycles per one cycle on the other LED
-    for(;;)
+    for (;;)
     {
         for (int i = 0; i < 2; i++)
         {
             gioSetBit(gioPORTB, 2, TRUE);
-            vTaskDelay( BLINK2_DELAY_TICKS);
+            vTaskDelay(BLINK2_DELAY_TICKS * 2);
             gioSetBit(gioPORTB, 2, FALSE);
-            vTaskDelay( BLINK2_DELAY_TICKS);
+            vTaskDelay(BLINK2_DELAY_TICKS * 2);
         }
         for (int i = 0; i < 4; i++)
         {
             gioSetBit(gioPORTB, 2, TRUE);
-            vTaskDelay( BLINK2_DELAY_TICKS * 2);
+            vTaskDelay(BLINK2_DELAY_TICKS);
             gioSetBit(gioPORTB, 2, FALSE);
-            vTaskDelay( BLINK2_DELAY_TICKS * 2);
+            vTaskDelay(BLINK2_DELAY_TICKS);
         }
     }
 }
