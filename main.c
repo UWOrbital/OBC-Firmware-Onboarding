@@ -1,5 +1,5 @@
 /* Include Files */
-#include sys_common.h
+#include "sys_common.h"
 #include "gio.h"
 
 /* FreeRTOS Kernel includes. */
@@ -18,12 +18,14 @@
 #define BLINK2_DELAY_TICKS 200
 
 xTaskHandle xTask1Handle;
+xTaskHandle xTask2Handle;
 
 void main(void) {
     gioInit();
-    BaseType_t retval1, retval2
+    BaseType_t retval1, retval2;
 
     retval1 = xTaskCreate( blinkGIOB1, BLINK1_NAME, configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTask1Handle );
+    retval2 = xTaskCreate( blinkGIOB2, BLINK2_NAME, configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTask2Handle );
 
     if(retval1 && retval2){
         vTaskStartScheduler();
@@ -37,7 +39,7 @@ void blinkGIOB1( void * arg )
     for(;;)
     {
         // Toggle on and off at a set speed
-        gioToggleBit(gioPORTB, 1);
+        gioToggleBit(gioPORTA, 1);
         vTaskDelay( BLINK1_DELAY_TICKS );
     }
 }
