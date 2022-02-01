@@ -39,7 +39,7 @@ void blinkGIOB1( void * arg )
     for(;;)
     {
         // Toggle on and off at a set speed
-        gioToggleBit(gioPORTA, 1);
+        gioToggleBit(gioPORTB, 1);
         vTaskDelay( BLINK1_DELAY_TICKS );
     }
 }
