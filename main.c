@@ -15,17 +15,19 @@
 
 #define BLINK2_NAME "Blink2"
 #define BLINK2_PRIORITY 5
-#define BLINK2_DELAY_TICKS 200
+#define BLINK2_DELAY_TICKS 400
 
 xTaskHandle xTask1Handle;
+xTaskHandle xTask2Handle;
 
 void main(void) {
     gioInit();
-    BaseType_t retval1, retval2
+    BaseType_t retval1, retval2;
 
-    retval1 = xTaskCreate( blinkGIOB1, BLINK1_NAME, configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTask1Handle );
+    retval1 = xTaskCreate( blinkGIOB1, BLINK1_NAME, configMINIMAL_STACK_SIZE, NULL, BLINK1_PRIORITY, &xTask1Handle );
+    retval2 = xTaskCreate( blinkGIOB2, BLINK2_NAME, configMINIMAL_STACK_SIZE, NULL, BLINK2_PRIORITY, &xTask2Handle );
 
-    if(retval1 && retval2){
+    if(retval1 == pdPASS && retval2 == pdPASS){
         vTaskStartScheduler();
     }
 
