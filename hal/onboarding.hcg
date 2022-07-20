@@ -3,7 +3,7 @@
   <DEVICE>
     <family>RM46x</family>
     <device>RM46L852PGE_FREERTOS</device>
-    <dilfile>rm46_gcc_test.dil</dilfile>
+    <dilfile>onboarding.dil</dilfile>
     <tools>gcc</tools>
   </DEVICE>
   <VERSION>
@@ -83,10 +83,10 @@
         <NAME>system.h</NAME>
         <PATH>include\system.h</PATH>
       </HDRSYSTEM>
-      <HDRVIM>
+      <HDRVIM_GCC>
         <NAME>sys_vim.h</NAME>
         <PATH>include\sys_vim.h</PATH>
-      </HDRVIM>
+      </HDRVIM_GCC>
       <HDRCORE>
         <NAME>sys_core.h</NAME>
         <PATH>include\sys_core.h</PATH>
@@ -115,26 +115,26 @@
         <NAME>sys_selftest.h</NAME>
         <PATH>include\sys_selftest.h</PATH>
       </HDRSLF>
-      <SRCCORE>
-        <NAME>sys_core.asm</NAME>
-        <PATH>source\sys_core.asm</PATH>
-      </SRCCORE>
-      <SRCINTVECS>
-        <NAME>sys_intvecs.asm</NAME>
-        <PATH>source\sys_intvecs.asm</PATH>
-      </SRCINTVECS>
-      <SRCMPU>
-        <NAME>sys_mpu.asm</NAME>
-        <PATH>source\sys_mpu.asm</PATH>
-      </SRCMPU>
-      <SRCPMU>
-        <NAME>sys_pmu.asm</NAME>
-        <PATH>source\sys_pmu.asm</PATH>
-      </SRCPMU>
-      <SRCDABORT>
-        <NAME>dabort.asm</NAME>
-        <PATH>source\dabort.asm</PATH>
-      </SRCDABORT>
+      <SRCCORE_GCC>
+        <NAME>sys_core.s</NAME>
+        <PATH>source\sys_core.s</PATH>
+      </SRCCORE_GCC>
+      <SRCINTVECS_GCC>
+        <NAME>sys_intvecs.s</NAME>
+        <PATH>source\sys_intvecs.s</PATH>
+      </SRCINTVECS_GCC>
+      <SRCMPU_GCC>
+        <NAME>sys_mpu.s</NAME>
+        <PATH>source\sys_mpu.s</PATH>
+      </SRCMPU_GCC>
+      <SRCPMU_GCC>
+        <NAME>sys_pmu.s</NAME>
+        <PATH>source\sys_pmu.s</PATH>
+      </SRCPMU_GCC>
+      <SRCDABORT_GCC>
+        <NAME>dabort.s</NAME>
+        <PATH>source\dabort.s</PATH>
+      </SRCDABORT_GCC>
       <SRCPCR>
         <NAME>sys_pcr.c</NAME>
         <PATH>source\sys_pcr.c</PATH>
@@ -175,10 +175,10 @@
         <NAME>notification.c</NAME>
         <PATH>source\notification.c</PATH>
       </SRCNOTIFY>
-      <SRCCMD>
-        <NAME>sys_link.cmd</NAME>
-        <PATH>source\sys_link.cmd</PATH>
-      </SRCCMD>
+      <SRCCMD_GCC>
+        <NAME>sys_link.ld</NAME>
+        <PATH>source\sys_link.ld</PATH>
+      </SRCCMD_GCC>
       <HDRTEST>
         <NAME>HL_Test.h</NAME>
       </HDRTEST>
@@ -236,9 +236,9 @@
       <SRCPORT>
         <NAME>os_port.c</NAME>
       </SRCPORT>
-      <SRCASMPORT>
-        <NAME>os_portasm.asm</NAME>
-      </SRCASMPORT>
+      <SRCASMPORT_GCC>
+        <NAME>os_portasm.s</NAME>
+      </SRCASMPORT_GCC>
       <SRCTASK>
         <NAME>os_tasks.c</NAME>
       </SRCTASK>
@@ -288,16 +288,16 @@
       <HDRGIO>
         <NAME>gio.h</NAME>
       </HDRGIO>
-      <SRCGIO>
-        <NAME>gio.c</NAME>
-      </SRCGIO>
+      <SRCGIO/>
       <HDRSCI_R>
         <NAME>reg_sci.h</NAME>
       </HDRSCI_R>
       <HDRSCI>
         <NAME>sci.h</NAME>
       </HDRSCI>
-      <SRCSCI/>
+      <SRCSCI>
+        <NAME>sci.c</NAME>
+      </SRCSCI>
       <HDRLIN_R>
         <NAME>reg_lin.h</NAME>
       </HDRLIN_R>
@@ -519,37 +519,6 @@
       <SRC14FEE/>
       <SRC15FEE/>
       <SRC16FEE/>
-      <HDRVIM_GCC>
-        <NAME>sys_vim.h</NAME>
-        <PATH>include\sys_vim.h</PATH>
-      </HDRVIM_GCC>
-      <SRCCORE_GCC>
-        <NAME>sys_core.s</NAME>
-        <PATH>source\sys_core.s</PATH>
-      </SRCCORE_GCC>
-      <SRCINTVECS_GCC>
-        <NAME>sys_intvecs.s</NAME>
-        <PATH>source\sys_intvecs.s</PATH>
-      </SRCINTVECS_GCC>
-      <SRCMPU_GCC>
-        <NAME>sys_mpu.s</NAME>
-        <PATH>source\sys_mpu.s</PATH>
-      </SRCMPU_GCC>
-      <SRCPMU_GCC>
-        <NAME>sys_pmu.s</NAME>
-        <PATH>source\sys_pmu.s</PATH>
-      </SRCPMU_GCC>
-      <SRCDABORT_GCC>
-        <NAME>dabort.s</NAME>
-        <PATH>source\dabort.s</PATH>
-      </SRCDABORT_GCC>
-      <SRCCMD_GCC>
-        <NAME>sys_link.ld</NAME>
-        <PATH>source\sys_link.ld</PATH>
-      </SRCCMD_GCC>
-      <SRCASMPORT_GCC>
-        <NAME>os_portasm.s</NAME>
-      </SRCASMPORT_GCC>
     </FILENAMES>
   </SYSTEM>
   <OS>
@@ -596,9 +565,9 @@
       <SRCPORT>
         <PATH>source\os_port.c</PATH>
       </SRCPORT>
-      <SRCASMPORT>
-        <PATH>source\os_portasm.asm</PATH>
-      </SRCASMPORT>
+      <SRCASMPORT_GCC>
+        <PATH>source\os_portasm.s</PATH>
+      </SRCASMPORT_GCC>
       <SRCTASK>
         <PATH>source\os_tasks.c</PATH>
       </SRCTASK>
@@ -626,9 +595,6 @@
       <HDREVNTGRP>
         <PATH>include\os_event_groups.h</PATH>
       </HDREVNTGRP>
-      <SRCASMPORT_GCC>
-        <PATH>source\os_portasm.s</PATH>
-      </SRCASMPORT_GCC>
     </FILENAMES>
   </OS>
   <PINMUX>
@@ -666,7 +632,7 @@
         <PATH>include\gio.h</PATH>
       </HDRGIO>
       <SRCGIO>
-        <PATH>source\gio.c</PATH>
+        <PATH/>
       </SRCGIO>
     </FILENAMES>
   </GIO>
@@ -679,7 +645,7 @@
         <PATH>include\sci.h</PATH>
       </HDRSCI>
       <SRCSCI>
-        <PATH/>
+        <PATH>source\sci.c</PATH>
       </SRCSCI>
     </FILENAMES>
   </SCI>
