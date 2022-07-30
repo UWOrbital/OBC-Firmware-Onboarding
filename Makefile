@@ -9,7 +9,7 @@ DEPS := $(patsubst %.o,%.d,$(OBJS))
 OBJ_DIRS := $(sort $(foreach obj,$(OBJS),$(dir $(obj))))
 -include $(DEPS)
 
-OBJS += build/main.o
+OBJS += $(BUILD_DIR)/main.o
 
 $(foreach dir,$(OBJ_DIRS), $(shell mkdir -p $(dir)))
 
