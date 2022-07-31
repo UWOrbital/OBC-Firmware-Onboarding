@@ -2,22 +2,19 @@
 #define ONBOARDING_INCLUDE_SERIAL_IO_H_
 
 #include <stdint.h>
-#include "sci.h"
+#include <sci.h>
 
 /**
- * @brief Initialize the mutex that prevents concurrent access to the SCI interface.
+ * @brief Initialize mutexes protecting SCI and SCI2.
  */
 void sciMutexInit(void);
 
 /**
- * @brief Print text via the SCI port.
- * 
- * @param sci The sci register. Use scilinREG for usb-uart communication on LaunchPad.
- * @param text The text to print
- * @param length The length of the text
- * 
- * @note  The receiving device must have the correct serial port settings.
- * @return 1 if the text was printed, 0 if not.
+ * @brief Send a string of text via SCI or SCI2.
+ * @param sci The SCI register to use (sciREG or scilinREG).
+ * @param text The text to send.
+ * @param length The length of the text to send.
+ * @return 1 if the text was sent, 0 otherwise.
  */
 uint8_t sciPrintText(sciBASE_t *sci, unsigned char *text, uint32_t length);
 
