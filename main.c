@@ -5,6 +5,7 @@
 #include <os_task.h>
 
 #include <adc.h>
+#include <gio.h>
 #include <sci.h>
 #include <sys_common.h>
 
@@ -13,14 +14,18 @@
 
 int main(void)
 {
-    /* initialize hardware modules */
+    /* Initialize hardware modules */
+    gioInit();
     sciInit();
     adcInit();                 
     
+    /* Initialize mutex that protects sci module */
     sciMutexInit();
     
+    /* Create controller task and related timers */
     initController();
     
+    /* Start FreeRTOS scheduler */
     vTaskStartScheduler();
 }
 
