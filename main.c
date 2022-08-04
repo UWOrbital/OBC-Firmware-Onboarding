@@ -9,9 +9,6 @@
 #include <sci.h>
 #include <sys_common.h>
 
-#include <stdio.h>
-#include <string.h>
-
 int main(void)
 {
     /* Initialize hardware modules */

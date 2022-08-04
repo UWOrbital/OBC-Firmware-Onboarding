@@ -12,17 +12,31 @@
 
 #include <string.h>
 
+/* Declare handlers for tasks and timers */
 static TaskHandle_t controllerTaskHandle = NULL;
 static TimerHandle_t lightTimerHandle = NULL;
 static TimerHandle_t ledTimerHandle = NULL;
 
+/**
+ * @brief Task that starts the led and light timers.
+ * @param pvParameters Task parameters
+ */
 static void controllerTask(void * pvParameters);
+
+/**
+ * @brief The light timer callback function that sends a MEASURE_LIGHT event to the light service queue.
+ */
 static void lightTimerCallback(TimerHandle_t xTimer);
+
+/**
+ * @brief The led timer callback function that toggles the LED.
+ */
 static void ledTimerCallback(TimerHandle_t xTimer);
 
 uint8_t initController(void) {
     BaseType_t xReturned = pdFAIL;
     if (controllerTaskHandle == NULL) {
+        // Create controller task
         xReturned = xTaskCreate(controllerTask,             /* Function that implements the task. */
                                 CONTROLLER_NAME,            /* Text name for the task. */
                                 CONTROLLER_STACK_SIZE,      /* Stack size in words, not bytes. */
@@ -31,15 +45,8 @@ uint8_t initController(void) {
                                 &controllerTaskHandle);     /* Used to pass out the created task's handle. */
     }
 
-    if (lightTimerHandle == NULL) {
-        lightTimerHandle = xTimerCreate(LIGHT_TIMER_NAME,        /* Just a text name, not used by the RTOS kernel. */
-                                    LIGHT_TIMER_PERIOD,      /* The timer period in ticks, must be greater than 0. */
-                                    LIGHT_TIMER_AUTORELOAD,  /* The timers will auto-reload themselves when they expire. */
-                                    (void *) 0,              /* The ID is used to store a count of the number of times the timer has expired, which is initialised to 0. */
-                                    lightTimerCallback);     /* Each timer calls the same callback when it expires. */    
-    }
-
     if (ledTimerHandle == NULL) {
+        // Create led timer
         ledTimerHandle = xTimerCreate(LED_TIMER_NAME,
                                     LED_TIMER_PERIOD,
                                     LED_TIMER_AUTORELOAD,
@@ -47,43 +54,35 @@ uint8_t initController(void) {
                                     ledTimerCallback);
     }
 
-    if ( (xReturned == pdPASS) && (lightTimerHandle != NULL) && (ledTimerHandle != NULL) ) {
-        return 1;
-    }
+    /* USER CODE BEGIN */
+    // Create light timer and check if task/timers were created successfully
 
-    return 0;
+    /* USER CODE END */
+
+    return 1;
 }
 
 static void controllerTask(void * pvParameters) {
     ASSERT(controllerTaskHandle != NULL);
-    ASSERT(lightTimerHandle != NULL);
     ASSERT(ledTimerHandle != NULL);
 
-    if (initLightService() == 0) {
-        /* Failed to initialize light service */
-        sciPrintText(scilinREG, (unsigned char *)"Failed to initialize light service\r\n", strlen("Failed to initialize light service\r\n"));
-    } else {        
-        if (xTimerStart(lightTimerHandle, 0) != pdPASS) {
-            /* Timer could not be started */
-            sciPrintText(scilinREG, (unsigned char *)"Failed to start light service timer\r\n", strlen("Failed to start light service timer\r\n"));
-        }
-        if (xTimerStart(ledTimerHandle, 0) != pdPASS) {
-            /* Timer could not be started */
-            sciPrintText(scilinREG, (unsigned char *)"Failed to start led timer\r\n", strlen("Failed to start led timer\r\n"));
-        }
+    uint8_t lightServiceStatus = initLightService();
+    if (lightServiceStatus == 0) {
+        /* USER CODE BEGIN */
+        // Deal with error when initializing light service task and/or queue
+
+        /* USER CODE END */
+    } else { 
+        /* Light service task and queue created successfully */
+        BaseType_t xReturned = xTimerStart(ledTimerHandle, 0);
+        
+        /* USER CODE BEGIN */
+        // Start light timer
+
+        /* USER CODE END */
     }
 
     while (1);
-}
-
-static void lightTimerCallback(TimerHandle_t xTimer) {
-    ASSERT(xTimer != NULL);
-
-    light_event_t event = MEASURE_LIGHT;
-    if (sendToLightServiceQueue(&event) == 0) {
-        /* Failed to send event to light service */
-        sciPrintText(scilinREG, (unsigned char *)"Failed to send event to light service\r\n", strlen("Failed to send event to light service\r\n"));
-    }
 }
 
 static void ledTimerCallback(TimerHandle_t xTimer) {
@@ -91,3 +90,11 @@ static void ledTimerCallback(TimerHandle_t xTimer) {
 
     gioToggleBit(gioPORTB, 1);
 }
+
+static void lightTimerCallback(TimerHandle_t xTimer) {
+    /* USER CODE BEGIN */
+    // Send light event to light service queue
+
+    /* USER CODE END */
+}
+

@@ -6,8 +6,8 @@
 
 #include <sci.h>
 
-static SemaphoreHandle_t sciMutex = NULL;
-static SemaphoreHandle_t sciLinMutex = NULL;
+static SemaphoreHandle_t sciMutex = NULL; // Protects SCI
+static SemaphoreHandle_t sciLinMutex = NULL; // Protects SCI2
 
 /**
  * @brief Iterate through an array of bytes and transmit them via SCI or SCI2.
@@ -22,24 +22,17 @@ void sciMutexInit(void) {
     if (sciMutex == NULL) {
         sciMutex = xSemaphoreCreateMutex();
     }
-    if (sciLinMutex == NULL) {
-        sciLinMutex = xSemaphoreCreateMutex();
-    }
+    /* USER CODE BEGIN */
+    // Create mutex to protect SCI2/SCILin module here.
+    
+    /* USER CODE END */
 }
 
 uint8_t sciPrintText(sciBASE_t *sci, unsigned char *text, uint32_t length) {
     /* initSciMutex must be called before printing is allowed */
-    ASSERT(sciMutex != NULL && sciLinMutex != NULL);
+    ASSERT(sciMutex != NULL);
 
-    if (sci == scilinREG) {
-        if (sciLinMutex != NULL) {
-            if (xSemaphoreTake(sciLinMutex, portMAX_DELAY) == pdTRUE) {
-                sciSendBytes(sci, text, length);
-                xSemaphoreGive(sciLinMutex);
-                return 1;
-            }
-        }
-    } else if (sci == sciREG) {
+    if (sci == sciREG) {
         if (sciMutex != NULL) {
             if (xSemaphoreTake(sciMutex, portMAX_DELAY) == pdTRUE) {
                 sciSendBytes(sci, text, length);
@@ -48,6 +41,11 @@ uint8_t sciPrintText(sciBASE_t *sci, unsigned char *text, uint32_t length) {
             }
         }
     }
+    /* USER CODE BEGIN */
+    // Print text to the SCILin serial port here.
+    
+    /* USER CODE END */
+    
     return 0;
 }
 
