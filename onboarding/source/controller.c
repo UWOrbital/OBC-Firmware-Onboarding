@@ -56,7 +56,17 @@ uint8_t initController(void) {
 
     /* USER CODE BEGIN */
     // Create light timer and check if task/timers were created successfully
-
+    if (lightTimerHandle == NULL) {
+        lightTimerHandle = xTimerCreate(LIGHT_TIMER_NAME,        /* Just a text name, not used by the RTOS kernel. */
+                                    LIGHT_TIMER_PERIOD,      /* The timer period in ticks, must be greater than 0. */
+                                    LIGHT_TIMER_AUTORELOAD,  /* The timers will auto-reload themselves when they expire. */
+                                    (void *) 0,              /* The ID is used to store a count of the number of times the timer has expired, which is initialised to 0. */
+                                    lightTimerCallback);     /* Each timer calls the same callback when it expires. */    
+    }
+    
+    if ( (xReturned != pdPASS) || (lightTimerHandle == NULL) || (ledTimerHandle == NULL) ) {
+        return 0;
+    }
     /* USER CODE END */
 
     return 1;
@@ -70,7 +80,7 @@ static void controllerTask(void * pvParameters) {
     if (lightServiceStatus == 0) {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
-
+        sciPrintText(scilinREG, (unsigned char *)"Failed to initialize light service\r\n", strlen("Failed to initialize light service\r\n"));
         /* USER CODE END */
     } else { 
         /* Light service task and queue created successfully */
@@ -78,7 +88,13 @@ static void controllerTask(void * pvParameters) {
         
         /* USER CODE BEGIN */
         // Start light timer
+        BaseType_t xReturnedLightTimer = xTimerStart(lightTimerHandle, 0);
 
+        // Check if timers were started successfully
+        if ( (xReturned != pdPASS) || (xReturnedLightTimer != pdPASS) ) {
+            // Deal with error when starting timers
+            sciPrintText(scilinREG, (unsigned char *)"Failed to start at least 1 of the timers\r\n", strlen("Failed to start at least one of the timers\r\n"));
+        }
         /* USER CODE END */
     }
 
@@ -94,7 +110,13 @@ static void ledTimerCallback(TimerHandle_t xTimer) {
 static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
+    ASSERT(xTimer != NULL);
 
+    light_event_t event = MEASURE_LIGHT;
+    if (sendToLightServiceQueue(&event) == 0) {
+        /* Failed to send event to light service */
+        sciPrintText(scilinREG, (unsigned char *)"Failed to send event to light service\r\n", strlen("Failed to send event to light service\r\n"));
+    }
     /* USER CODE END */
 }
 
