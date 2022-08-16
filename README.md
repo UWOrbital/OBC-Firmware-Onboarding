@@ -2,7 +2,7 @@
 
 There are 5 errors in main.c which will prevent it from running. Can you find them all?
 
-The intended behaviour of the code is to control to LEDs on the devboard - the blink pattern should be:
+The intended behaviour of the code is to control two LEDs on the devboard - the blink pattern should be:
 <pre>
 LED A: ||: o       |x       |o       |x       :||     
 LED B: ||: o   x   |o   x   |o x o x |o x o x :||
