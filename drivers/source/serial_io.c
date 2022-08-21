@@ -24,12 +24,15 @@ void sciMutexInit(void) {
     }
     /* USER CODE BEGIN */
     // Create mutex to protect SCI2/SCILin module here.
+    if(sciLinMutex == NULL) {
+        sciLinMutex = xSemaphoreCreateBinary();
+    }
     
     /* USER CODE END */
 }
 
 uint8_t sciPrintText(sciBASE_t *sci, unsigned char *text, uint32_t length) {
-    /* initSciMutex must be called before printing is allowed */
+    /* sciMutexInit must be called before printing is allowed */
     ASSERT(sciMutex != NULL);
 
     if (sci == sciREG) {
@@ -43,6 +46,17 @@ uint8_t sciPrintText(sciBASE_t *sci, unsigned char *text, uint32_t length) {
     }
     /* USER CODE BEGIN */
     // Print text to the SCILin serial port here.
+    ASSERT(sciLinMutex != NULL);
+
+    if (sci == scilinREG) {
+        if (sciLinMutex != NULL) {
+            if (xSemaphoreTake(sciLinMutex, portMAX_DELAY) == pdTRUE) {
+                sciSendBytes(sci, text, length);
+                xSemaphoreGive(sciLinMutex);
+                return 1;
+            }
+        }
+    }
     
     /* USER CODE END */
     
@@ -55,4 +69,4 @@ static void sciSendBytes(sciBASE_t *sci, unsigned char *bytes, uint32_t length) 
         // sciSendByte waits for the transmit buffer to be empty before sending
         sciSendByte(sci, bytes[i]);
     }
-} 
+}

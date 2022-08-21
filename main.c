@@ -25,4 +25,3 @@ int main(void)
     /* Start FreeRTOS scheduler */
     vTaskStartScheduler();
 }
-
