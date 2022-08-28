@@ -3,11 +3,10 @@
 #include <FreeRTOS.h>
 #include <os_portmacro.h>
 #include <os_semphr.h>
-
 #include <sci.h>
 
 static SemaphoreHandle_t sciMutex = NULL; // Protects SCI
-static SemaphoreHandle_t sciLinMutex = NULL; // Protects SCI2
+static SemaphoreHandle_t sci2Mutex = NULL; // Protects SCI2
 
 /**
  * @brief Iterate through an array of bytes and transmit them via SCI or SCI2.
@@ -24,8 +23,8 @@ void sciMutexInit(void) {
     }
     /* USER CODE BEGIN */
     // Create mutex to protect SCI2/SCILin module here.
-    if(sciLinMutex == NULL) {
-        sciLinMutex = xSemaphoreCreateBinary();
+    if(sci2Mutex == NULL) {
+        sci2Mutex = xSemaphoreCreateBinary();
     }
     
     /* USER CODE END */
@@ -40,27 +39,27 @@ uint8_t sciPrintText(sciBASE_t *sci, unsigned char *text, uint32_t length) {
             if (xSemaphoreTake(sciMutex, portMAX_DELAY) == pdTRUE) {
                 sciSendBytes(sci, text, length);
                 xSemaphoreGive(sciMutex);
-                return 1;
+                return 0;
             }
         }
     }
     /* USER CODE BEGIN */
     // Print text to the SCILin serial port here.
-    ASSERT(sciLinMutex != NULL);
+    ASSERT(sci2Mutex != NULL);
 
     if (sci == scilinREG) {
-        if (sciLinMutex != NULL) {
-            if (xSemaphoreTake(sciLinMutex, portMAX_DELAY) == pdTRUE) {
+        if (sci2Mutex != NULL) {
+            if (xSemaphoreTake(sci2Mutex, portMAX_DELAY) == pdTRUE) {
                 sciSendBytes(sci, text, length);
-                xSemaphoreGive(sciLinMutex);
-                return 1;
+                xSemaphoreGive(sci2Mutex);
+                return 0;
             }
         }
     }
     
     /* USER CODE END */
     
-    return 0;
+    return -1;
 }
 
 static void sciSendBytes(sciBASE_t *sci, unsigned char *bytes, uint32_t length) {
