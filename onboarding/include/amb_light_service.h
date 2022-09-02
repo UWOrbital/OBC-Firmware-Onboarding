@@ -15,6 +15,11 @@ typedef enum {
 
 /* USER CODE BEGIN */
 // Define light service queue config here
+#define LIGHT_SERVICE_QUEUE_LENGTH (10)
+#define LIGHT_SERVICE_QUEUE_ITEM_SIZE (sizeof(light_event_t))
+#define LIGHT_SERVICE_QUEUE_WAIT_PERIOD (10/portTICK_PERIOD_MS)
+
+unsigned char *errorTaskCreationMessage = "amb_light_service.c: Error while creating task";
 
 /* USER CODE END */
 

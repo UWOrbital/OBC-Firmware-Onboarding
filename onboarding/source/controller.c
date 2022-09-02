@@ -21,7 +21,7 @@ static TimerHandle_t ledTimerHandle = NULL;
  * @brief Task that starts the led and light timers.
  * @param pvParameters Task parameters
  */
-static void controllerTask(void * pvParameters);
+static void controllerTask(void *pvParameters);
 
 /**
  * @brief The light timer callback function that sends a MEASURE_LIGHT event to the light service queue.
@@ -34,7 +34,8 @@ static void lightTimerCallback(TimerHandle_t xTimer);
 static void ledTimerCallback(TimerHandle_t xTimer);
 
 uint8_t initController(void) {
-    BaseType_t xReturned = pdFAIL;
+    BaseType_t xReturned;
+
     if (controllerTaskHandle == NULL) {
         // Create controller task
         xReturned = xTaskCreate(controllerTask,             /* Function that implements the task. */
@@ -48,37 +49,68 @@ uint8_t initController(void) {
     if (ledTimerHandle == NULL) {
         // Create led timer
         ledTimerHandle = xTimerCreate(LED_TIMER_NAME,
-                                    LED_TIMER_PERIOD,
-                                    LED_TIMER_AUTORELOAD,
-                                    (void *) 0,
-                                    ledTimerCallback);
+                                      LED_TIMER_PERIOD,
+                                      LED_TIMER_AUTORELOAD,
+                                      NULL,
+                                      ledTimerCallback);
     }
 
     /* USER CODE BEGIN */
-    // Create light timer and check if task/timers were created successfully
+    if (lightTimerHandle == NULL) {
+        // Create light timer
+        lightTimerHandle = xTimerCreate(LIGHT_TIMER_NAME,
+                                        LIGHT_TIMER_PERIOD,
+                                        LIGHT_TIMER_AUTORELOAD,
+                                        NULL,
+                                        lightTimerCallback);
+    }
+
+    /* Check if task/timers were created successfully
+     * Note: serial printing an error message is sufficient
+     * for this challenge. However, for the actual satellite,
+     * we’ll need proper error handling
+     */
+    if (xReturned == pdFAIL ||
+        ledTimerHandle == NULL ||
+        lightTimerHandle == NULL) {
+        sciPrintText(sciREG, errorTaskCreationMessage, sizeof(errorTaskCreationMessage));
+    }
 
     /* USER CODE END */
 
-    return 1;
+    return 0;
 }
 
 static void controllerTask(void * pvParameters) {
     ASSERT(controllerTaskHandle != NULL);
     ASSERT(ledTimerHandle != NULL);
+    ASSERT(lightTimerCallback != NULL);
 
-    uint8_t lightServiceStatus = initLightService();
+    uint8_t lightServiceStatus;
+
+    lightServiceStatus = initLightService();
     if (lightServiceStatus == 0) {
-        /* USER CODE BEGIN */
-        // Deal with error when initializing light service task and/or queue
-
-        /* USER CODE END */
-    } else { 
         /* Light service task and queue created successfully */
-        BaseType_t xReturned = xTimerStart(ledTimerHandle, 0);
-        
+        BaseType_t xReturned;
+
+        xReturned = xTimerStart(ledTimerHandle, 0);
+        if(xReturned == pdFAIL) {
+            sciPrintText(sciREG, errorTimerStart, sizeof(errorTimerStart));
+        }
+
         /* USER CODE BEGIN */
         // Start light timer
+        xReturned = xTimerStart(lightTimerHandle, 0);
+        if(xReturned == pdFAIL) {
+            sciPrintText(sciREG, errorTimerStart, sizeof(errorTimerStart));
+        }
 
+        /* USER CODE END */
+    }
+    else {
+        /* USER CODE BEGIN */
+        // Deal with error when initializing light service task and/or queue
+        sciPrintText(sciREG, errorLightInitMessage, sizeof(errorLightInitMessage));
         /* USER CODE END */
     }
 
@@ -94,7 +126,12 @@ static void ledTimerCallback(TimerHandle_t xTimer) {
 static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
+    ASSERT(xTimer != NULL);
+
+    light_event_t newMsg;
+
+    newMsg = MEASURE_LIGHT;
+    sendToLightServiceQueue(&newMsg);
 
     /* USER CODE END */
 }
-
