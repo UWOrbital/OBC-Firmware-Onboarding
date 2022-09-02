@@ -34,7 +34,7 @@ static void lightTimerCallback(TimerHandle_t xTimer);
 static void ledTimerCallback(TimerHandle_t xTimer);
 
 uint8_t initController(void) {
-    BaseType_t xReturned = pdFAIL;
+    BaseType_t xReturned;
 
     if (controllerTaskHandle == NULL) {
         // Create controller task
@@ -51,7 +51,7 @@ uint8_t initController(void) {
         ledTimerHandle = xTimerCreate(LED_TIMER_NAME,
                                       LED_TIMER_PERIOD,
                                       LED_TIMER_AUTORELOAD,
-                                      (void *) 0,
+                                      NULL,
                                       ledTimerCallback);
     }
 
@@ -61,7 +61,7 @@ uint8_t initController(void) {
         lightTimerHandle = xTimerCreate(LIGHT_TIMER_NAME,
                                         LIGHT_TIMER_PERIOD,
                                         LIGHT_TIMER_AUTORELOAD,
-                                        (void *)0,
+                                        NULL,
                                         lightTimerCallback);
     }
 
@@ -128,7 +128,10 @@ static void lightTimerCallback(TimerHandle_t xTimer) {
     // Send light event to light service queue
     ASSERT(xTimer != NULL);
 
-    sendToLightServiceQueue(MEASURE_LIGHT);
+    light_event_t newMsg;
+
+    newMsg = MEASURE_LIGHT;
+    sendToLightServiceQueue(&newMsg);
 
     /* USER CODE END */
 }
