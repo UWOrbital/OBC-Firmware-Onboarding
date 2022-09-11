@@ -4,6 +4,8 @@
 #include <adc.h>
 #include <sci.h>
 
+#include <string.h>
+
 
 /* USER CODE BEGIN */
 // Include any additional headers and global variables here
@@ -16,7 +18,7 @@ static QueueHandle_t xQueue1 = NULL;
 #define Light_Sensor  6U
 
 // Helper functions for ADC conversion
-uint16_t getAmbientLightData(void);
+uint8_t getAmbientLightData(void);
 void adcGetSingleData(adcBASE_t *adc, unsigned group, adcData_t *data);
 void adcStartConversion_selChn(adcBASE_t *adc, unsigned channel, unsigned fifo_size, unsigned group);
 /* USER CODE END */
@@ -44,6 +46,8 @@ uint8_t initLightService(void) {
     }
 
     if ((xReturned == pdFAIL) || (xQueue1 == NULL)) {
+        unsigned char errorText[] = "ERROR in initLightService(void)";
+        sciPrintText(scilinREG, errorText, strlen((const char*) errorText));
         return 0;
     }
 
@@ -60,8 +64,8 @@ static void lightServiceTask(void * pvParameters) {
     while(1) {
         if (xQueueReceive(xQueue1, &event, (TickType_t) 0) == pdPASS) {
             if(event == MEASURE_LIGHT) {
-                uint16_t data = getAmbientLightData();
-                uint8_t printStatus = sciPrintText(scilinREG, &data, sizeof(uint8_t));
+                uint8_t data = getAmbientLightData();
+                sciPrintText(scilinREG, &data, sizeof(uint8_t));
             }
         }
     }
@@ -80,7 +84,7 @@ uint8_t sendToLightServiceQueue(light_event_t *event) {
 }
 
 // Function that does ADC conversion and returns ambient light value
-uint16_t getAmbientLightData(void) {
+uint8_t getAmbientLightData(void) {
     adcData_t adc_data;
     adcData_t *adc_data_ptr = &adc_data;
 

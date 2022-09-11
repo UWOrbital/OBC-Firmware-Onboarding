@@ -65,6 +65,8 @@ uint8_t initController(void) {
     }
 
     if ((xReturned == pdFAIL) || (ledTimerHandle == NULL) || (lightTimerHandle == NULL)) {
+        unsigned char errorText[] = "ERROR in initController(void)";
+        sciPrintText(scilinREG, errorText, strlen((const char*) errorText));
         return 0;
     }
     /* USER CODE END */
