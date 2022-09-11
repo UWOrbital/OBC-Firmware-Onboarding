@@ -14,6 +14,11 @@
 static TaskHandle_t lightServiceTaskHandle = NULL;
 static QueueHandle_t xQueue1 = NULL; 
 #define Light_Sensor  6U
+
+// Helper functions for ADC conversion
+uint16_t getAmbientLightData(void);
+void adcGetSingleData(adcBASE_t *adc, unsigned group, adcData_t *data);
+void adcStartConversion_selChn(adcBASE_t *adc, unsigned channel, unsigned fifo_size, unsigned group);
 /* USER CODE END */
 
 /**
@@ -26,17 +31,22 @@ uint8_t initLightService(void) {
     /* USER CODE BEGIN */
     // Create the task and queue here.
     BaseType_t xReturned = pdFAIL;
-    if (lightServiceTaskHandle = NULL) {
+    if (lightServiceTaskHandle == NULL) {
         xReturned = xTaskCreate(lightServiceTask,
                                 LIGHT_SERVICE_NAME,
                                 LIGHT_SERVICE_STACK_SIZE,
                                 (void *) 0,
                                 LIGHT_SERVICE_PRIORITY,
                                 &lightServiceTaskHandle);
-    if (xQueue1 = NULL) {
+    if (xQueue1 == NULL) {
         xQueue1 = xQueueCreate(QUEUE_LENGTH, QUEUE_ITEM_SIZE);
     }
     }
+
+    if ((xReturned == pdFAIL) || (xQueue1 == NULL)) {
+        return 0;
+    }
+
     /* USER CODE END */
     return 1;
 }
@@ -50,8 +60,8 @@ static void lightServiceTask(void * pvParameters) {
     while(1) {
         if (xQueueReceive(xQueue1, &event, (TickType_t) 0) == pdPASS) {
             if(event == MEASURE_LIGHT) {
-                uint8_t *data = getAmbientLightData();
-                uint8_t printStatus = sciPrintText(scilinREG, data, sizeof(uint8_t));
+                uint16_t data = getAmbientLightData();
+                uint8_t printStatus = sciPrintText(scilinREG, &data, sizeof(uint8_t));
             }
         }
     }
@@ -70,7 +80,7 @@ uint8_t sendToLightServiceQueue(light_event_t *event) {
 }
 
 // Function that does ADC conversion and returns ambient light value
-uint8_t getAmbientLightData(void) {
+uint16_t getAmbientLightData(void) {
     adcData_t adc_data;
     adcData_t *adc_data_ptr = &adc_data;
 
