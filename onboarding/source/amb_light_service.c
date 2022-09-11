@@ -11,8 +11,7 @@
 // Include any additional headers and global variables here
 static TaskHandle_t lightServiceTaskHandle = NULL;
 static QueueHandle_t xQueue1 = NULL; 
-
-
+#define Light_Sensor  6U
 /* USER CODE END */
 
 /**
@@ -48,7 +47,8 @@ static void lightServiceTask(void * pvParameters) {
     light_event_t *event;
     while(1) {
         if (xQueueReceive(xQueue1, (void *) event, (TickType_t) 0) == pdPASS) {
-            
+            uint8_t *data = getAmbientLightData();
+            uint8_t printStatus = sciPrintText(scilinREG, data, sizeof(uint8_t));
         }
     }
 
@@ -66,4 +66,31 @@ uint8_t sendToLightServiceQueue(light_event_t *event) {
 }
 
 // Function that does ADC conversion and returns ambient light value
-uint32_t getAmbientLightData(void);
+uint8_t getAmbientLightData(void) {
+    adcData_t adc_data;
+    adcData_t *adc_data_ptr = &adc_data;
+
+    adcStartConversion_selChn(adcREG1, Light_Sensor, 6, adcGROUP1);
+
+    while(!adcIsConversionComplete(adcREG1, adcGROUP1));
+
+    adcGetSingleData(adcREG1, adcGROUP1, adc_data_ptr);
+
+    return(adc_data_ptr->value);
+}
+
+void adcGetSingleData(adcBASE_t *adc, unsigned group, adcData_t *data) {
+    unsigned buf;
+    adcData_t *ptr = data;
+
+    buf = adc->GxBUF[group].BUF0;
+    ptr->value = (unsigned short)(buf & 0xFFFU);
+    ptr->id = (unsigned short)((buf >> 16U) & 0x1FU);
+
+    adc->GxINTFLG[group] =9U;
+}
+void adcStartConversion_selChn(adcBASE_t *adc, unsigned channel, unsigned fifo_size, unsigned group) {
+    adc->GxINTCR[group] = fifo_size;
+
+    adc->GxSEL[group] = 1 << channel;
+}
