@@ -3,12 +3,14 @@
 
 #include <adc.h>
 #include <sci.h>
+
+
+/* USER CODE BEGIN */
+// Include any additional headers and global variables here
 #include <FreeRTOS.h>
 #include <os_task.h>
 #include <os_queue.h>
 
-/* USER CODE BEGIN */
-// Include any additional headers and global variables here
 static TaskHandle_t lightServiceTaskHandle = NULL;
 static QueueHandle_t xQueue1 = NULL; 
 #define Light_Sensor  6U
@@ -44,11 +46,13 @@ static void lightServiceTask(void * pvParameters) {
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
     ASSERT(lightServiceTaskHandle != NULL);
 
-    light_event_t *event;
+    light_event_t event;
     while(1) {
-        if (xQueueReceive(xQueue1, (void *) event, (TickType_t) 0) == pdPASS) {
-            uint8_t *data = getAmbientLightData();
-            uint8_t printStatus = sciPrintText(scilinREG, data, sizeof(uint8_t));
+        if (xQueueReceive(xQueue1, &event, (TickType_t) 0) == pdPASS) {
+            if(event == MEASURE_LIGHT) {
+                uint8_t *data = getAmbientLightData();
+                uint8_t printStatus = sciPrintText(scilinREG, data, sizeof(uint8_t));
+            }
         }
     }
 
@@ -58,7 +62,7 @@ static void lightServiceTask(void * pvParameters) {
 uint8_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue.
-    if (xQueueSend(xQueue1, (void *) event, (TickType_t) 0) == pdPASS) {
+    if (xQueueSend(xQueue1, (void *) &event, (TickType_t) 0) == pdPASS) {
         return 1;
     }
     /* USER CODE END */
