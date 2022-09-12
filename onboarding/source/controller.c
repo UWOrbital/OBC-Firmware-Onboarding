@@ -65,6 +65,7 @@ uint8_t initController(void) {
     }
 
     if ((xReturned == pdFAIL) || (ledTimerHandle == NULL) || (lightTimerHandle == NULL)) {
+        // Send an error message if controller task, led timer, and light timer are failed to be created
         unsigned char errorText[] = "ERROR in initController(void)";
         sciPrintText(scilinREG, errorText, strlen((const char*) errorText));
         return 0;
@@ -90,6 +91,7 @@ static void controllerTask(void * pvParameters) {
         BaseType_t xReturned = xTimerStart(ledTimerHandle, 0);
 
         if(xReturned == pdFAIL) {
+            // send an error message if led timer fails to start
             unsigned char errorText[] = "ERROR STARTING LED TIMER";
             sciPrintText(scilinREG, errorText, strlen((const char*) errorText));
         }
@@ -99,6 +101,7 @@ static void controllerTask(void * pvParameters) {
         xReturned = xTimerStart(lightTimerHandle, 0);
 
         if(xReturned == pdFAIL) {
+            // send an error message if light timer fails to start
             unsigned char errorText[] = "ERROR STARTING LED TIMER";
             sciPrintText(scilinREG, errorText, strlen((const char*) errorText));
         }

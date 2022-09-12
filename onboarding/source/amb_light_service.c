@@ -46,6 +46,7 @@ uint8_t initLightService(void) {
     }
 
     if ((xReturned == pdFAIL) || (xQueue1 == NULL)) {
+        // send error message if light service task or queue fails to be created
         unsigned char errorText[] = "ERROR in initLightService(void)";
         sciPrintText(scilinREG, errorText, strlen((const char*) errorText));
         return 0;
@@ -64,6 +65,7 @@ static void lightServiceTask(void * pvParameters) {
     while(1) {
         if (xQueueReceive(xQueue1, &event, (TickType_t) 0) == pdPASS) {
             if(event == MEASURE_LIGHT) {
+                // if event recieved is MEASURE_LIGHT, get value from adc and send over serial
                 uint8_t data = getAmbientLightData();
                 sciPrintText(scilinREG, &data, sizeof(uint8_t));
             }
