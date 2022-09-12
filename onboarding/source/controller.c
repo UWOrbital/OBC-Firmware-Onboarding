@@ -56,7 +56,20 @@ uint8_t initController(void) {
 
     /* USER CODE BEGIN */
     // Create light timer and check if task/timers were created successfully
+    if (lightTimerHandle == NULL) {
+        lightTimerHandle = xTimerCreate(LIGHT_TIMER_NAME,
+                                        LIGHT_TIMER_PERIOD,
+                                        LIGHT_TIMER_AUTORELOAD,
+                                        (void *) 0,
+                                        lightTimerCallback);
+    }
 
+    if ((xReturned == pdFAIL) || (ledTimerHandle == NULL) || (lightTimerHandle == NULL)) {
+        // Send an error message if controller task, led timer, and light timer are failed to be created
+        unsigned char errorText[] = "ERROR in initController(void)";
+        sciPrintText(scilinREG, errorText, strlen((const char*) errorText));
+        return 0;
+    }
     /* USER CODE END */
 
     return 1;
@@ -70,15 +83,28 @@ static void controllerTask(void * pvParameters) {
     if (lightServiceStatus == 0) {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
-
+        unsigned char errorText[] = "ERRROR INITIALIZING TASK";
+        sciPrintText(scilinREG, errorText, strlen((const char*) errorText));
         /* USER CODE END */
     } else { 
         /* Light service task and queue created successfully */
         BaseType_t xReturned = xTimerStart(ledTimerHandle, 0);
+
+        if(xReturned == pdFAIL) {
+            // send an error message if led timer fails to start
+            unsigned char errorText[] = "ERROR STARTING LED TIMER";
+            sciPrintText(scilinREG, errorText, strlen((const char*) errorText));
+        }
         
         /* USER CODE BEGIN */
         // Start light timer
+        xReturned = xTimerStart(lightTimerHandle, 0);
 
+        if(xReturned == pdFAIL) {
+            // send an error message if light timer fails to start
+            unsigned char errorText[] = "ERROR STARTING LED TIMER";
+            sciPrintText(scilinREG, errorText, strlen((const char*) errorText));
+        }
         /* USER CODE END */
     }
 
@@ -94,6 +120,9 @@ static void ledTimerCallback(TimerHandle_t xTimer) {
 static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
+    ASSERT(xTimer != NULL);
+
+    sendToLightServiceQueue(MEASURE_LIGHT);
 
     /* USER CODE END */
 }
