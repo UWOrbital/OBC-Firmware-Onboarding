@@ -14,7 +14,7 @@
 #include <os_queue.h>
 
 static TaskHandle_t lightServiceTaskHandle = NULL;
-static QueueHandle_t xQueue1 = NULL; 
+static QueueHandle_t eventQueue = NULL; 
 #define LIGHT_SENSOR  6U
 
 // Helper functions for ADC conversion
@@ -40,12 +40,12 @@ uint8_t initLightService(void) {
                                 (void *) 0,
                                 LIGHT_SERVICE_PRIORITY,
                                 &lightServiceTaskHandle);
-    if (xQueue1 == NULL) {
-        xQueue1 = xQueueCreate(LIGHT_SERVICE_QUEUE_LENGTH, LIGHT_SERVICE_QUEUE_ITEM_SIZE);
+    if (eventQueue == NULL) {
+        eventQueue = xQueueCreate(LIGHT_SERVICE_QUEUE_LENGTH, LIGHT_SERVICE_QUEUE_ITEM_SIZE);
     }
     }
 
-    if ((xReturned == pdFAIL) || (xQueue1 == NULL)) {
+    if ((xReturned == pdFAIL) || (eventQueue == NULL)) {
         // send error message if light service task or queue fails to be created
         unsigned char errorText[] = "ERROR in initLightService(void)";
         sciPrintText(scilinREG, errorText, strlen((const char*) errorText));
@@ -63,7 +63,7 @@ static void lightServiceTask(void * pvParameters) {
 
     light_event_t event;
     while(1) {
-        if (xQueueReceive(xQueue1, &event, (TickType_t) 0) == pdPASS) {
+        if (xQueueReceive(eventQueue, &event, (TickType_t) 0) == pdPASS) {
             if(event == MEASURE_LIGHT) {
                 // if event recieved is MEASURE_LIGHT, get value from adc and send over serial
                 uint8_t data = getAmbientLightData();
@@ -79,7 +79,7 @@ static void lightServiceTask(void * pvParameters) {
 uint8_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue.
-    if (xQueueSend(xQueue1, (void *) event, (TickType_t) 0) == pdPASS) {
+    if (xQueueSend(eventQueue, (void *) event, (TickType_t) 0) == pdPASS) {
         return 1;
     }
     /* USER CODE END */
