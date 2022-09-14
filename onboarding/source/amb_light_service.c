@@ -15,7 +15,7 @@
 
 static TaskHandle_t lightServiceTaskHandle = NULL;
 static QueueHandle_t xQueue1 = NULL; 
-#define Light_Sensor  6U
+#define LIGHT_SENSOR  6U
 
 // Helper functions for ADC conversion
 uint8_t getAmbientLightData(void);
@@ -41,7 +41,7 @@ uint8_t initLightService(void) {
                                 LIGHT_SERVICE_PRIORITY,
                                 &lightServiceTaskHandle);
     if (xQueue1 == NULL) {
-        xQueue1 = xQueueCreate(QUEUE_LENGTH, QUEUE_ITEM_SIZE);
+        xQueue1 = xQueueCreate(LIGHT_SERVICE_QUEUE_LENGTH, LIGHT_SERVICE_QUEUE_ITEM_SIZE);
     }
     }
 
@@ -67,7 +67,8 @@ static void lightServiceTask(void * pvParameters) {
             if(event == MEASURE_LIGHT) {
                 // if event recieved is MEASURE_LIGHT, get value from adc and send over serial
                 uint8_t data = getAmbientLightData();
-                sciPrintText(scilinREG, &data, sizeof(uint8_t));
+                unsigned char adc_value= data + '0';
+                sciPrintText(scilinREG, &adc_value, sizeof(uint8_t));
             }
         }
     }
@@ -78,7 +79,7 @@ static void lightServiceTask(void * pvParameters) {
 uint8_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue.
-    if (xQueueSend(xQueue1, (void *) &event, (TickType_t) 0) == pdPASS) {
+    if (xQueueSend(xQueue1, (void *) event, (TickType_t) 0) == pdPASS) {
         return 1;
     }
     /* USER CODE END */
@@ -90,7 +91,7 @@ uint8_t getAmbientLightData(void) {
     adcData_t adc_data;
     adcData_t *adc_data_ptr = &adc_data;
 
-    adcStartConversion_selChn(adcREG1, Light_Sensor, 6, adcGROUP1);
+    adcStartConversion_selChn(adcREG1, LIGHT_SENSOR, 6, adcGROUP1);
 
     while(!adcIsConversionComplete(adcREG1, adcGROUP1));
 
