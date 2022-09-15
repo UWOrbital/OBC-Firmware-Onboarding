@@ -14,11 +14,11 @@
 #include <os_queue.h>
 
 static TaskHandle_t lightServiceTaskHandle = NULL;
-static QueueHandle_t xQueue1 = NULL; 
-#define Light_Sensor  6U
+static QueueHandle_t eventQueue = NULL; // CHANGE: more descriptive name for variable
+#define LIGHT_SENSOR  6U // CHANGE: capital
 
 // Helper functions for ADC conversion
-uint8_t getAmbientLightData(void);
+uint16_t getAmbientLightData(void);
 void adcGetSingleData(adcBASE_t *adc, unsigned group, adcData_t *data);
 void adcStartConversion_selChn(adcBASE_t *adc, unsigned channel, unsigned fifo_size, unsigned group);
 /* USER CODE END */
@@ -40,12 +40,12 @@ uint8_t initLightService(void) {
                                 (void *) 0,
                                 LIGHT_SERVICE_PRIORITY,
                                 &lightServiceTaskHandle);
-    if (xQueue1 == NULL) {
-        xQueue1 = xQueueCreate(QUEUE_LENGTH, QUEUE_ITEM_SIZE);
+    if (eventQueue == NULL) {
+        eventQueue = xQueueCreate(LIGHT_SERVICE_QUEUE_LENGTH, LIGHT_SERVICE_QUEUE_ITEM_SIZE);
     }
     }
 
-    if ((xReturned == pdFAIL) || (xQueue1 == NULL)) {
+    if ((xReturned == pdFAIL) || (eventQueue == NULL)) {
         // send error message if light service task or queue fails to be created
         unsigned char errorText[] = "ERROR in initLightService(void)";
         sciPrintText(scilinREG, errorText, strlen((const char*) errorText));
@@ -63,11 +63,13 @@ static void lightServiceTask(void * pvParameters) {
 
     light_event_t event;
     while(1) {
-        if (xQueueReceive(xQueue1, &event, (TickType_t) 0) == pdPASS) {
+        if (xQueueReceive(eventQueue, &event, (TickType_t) 0) == pdPASS) {
             if(event == MEASURE_LIGHT) {
                 // if event recieved is MEASURE_LIGHT, get value from adc and send over serial
-                uint8_t data = getAmbientLightData();
-                sciPrintText(scilinREG, &data, sizeof(uint8_t));
+                uint16_t data = getAmbientLightData(); // CHANGE: data now uint16_t since ADC is 12-bit
+                unsigned char adc_value[10]; 
+                sprintf(adc_value, "%d", data); // CHANGE: convert ADC integer value to char
+                sciPrintText(scilinREG, adc_value, sizeof(uint8_t));
             }
         }
     }
@@ -78,7 +80,7 @@ static void lightServiceTask(void * pvParameters) {
 uint8_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue.
-    if (xQueueSend(xQueue1, (void *) &event, (TickType_t) 0) == pdPASS) {
+    if (xQueueSend(eventQueue, (void *) event, (TickType_t) 0) == pdPASS) { // CHANGE: just pass (void *) event into function
         return 1;
     }
     /* USER CODE END */
@@ -86,11 +88,11 @@ uint8_t sendToLightServiceQueue(light_event_t *event) {
 }
 
 // Function that does ADC conversion and returns ambient light value
-uint8_t getAmbientLightData(void) {
+uint16_t getAmbientLightData(void) {
     adcData_t adc_data;
     adcData_t *adc_data_ptr = &adc_data;
 
-    adcStartConversion_selChn(adcREG1, Light_Sensor, 6, adcGROUP1);
+    adcStartConversion_selChn(adcREG1, LIGHT_SENSOR, 6, adcGROUP1);
 
     while(!adcIsConversionComplete(adcREG1, adcGROUP1));
 
