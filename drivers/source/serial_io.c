@@ -24,7 +24,9 @@ void sciMutexInit(void) {
     }
     /* USER CODE BEGIN */
     // Create mutex to protect SCI2/SCILin module here.
-    
+    if (sciLinMutex == NULL) {
+        sciLinMutex = xSemaphoreCreateMutex();
+    }
     /* USER CODE END */
 }
 
@@ -44,6 +46,15 @@ uint8_t sciPrintText(sciBASE_t *sci, unsigned char *text, uint32_t length) {
     /* USER CODE BEGIN */
     // Print text to the SCILin serial port here.
     
+    if (sci == scilinREG) {
+        if (sciLinMutex) {
+            if (xSemaphoreTake(sciLinMutex, portMAX_DELAY) == pdTRUE) {
+                sciSendBytes(sci, text, length);
+                xSemaphoreGive(sciLinMutex);
+                return 1;
+            }
+        }
+    }
     /* USER CODE END */
     
     return 0;

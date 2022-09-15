@@ -6,7 +6,15 @@
 
 /* USER CODE BEGIN */
 // Include any additional headers and global variables here
+#include "FreeRTOS.h"
+#include "os_task.h"
+#include "os_queue.h"
 
+void adcStartConversion_selChn(adcBASE_t *adc, unsigned channel, unsigned fifo_size, unsigned group);
+void adcGetSingleData(adcBASE_t *adc, unsigned group, adcData_t *data);
+
+static TaskHandle_t lightServiceTaskHandle = NULL;
+static QueueHandle_t lightServiceQueueHandle = NULL;
 /* USER CODE END */
 
 /**
@@ -18,7 +26,23 @@ static void lightServiceTask(void * pvParameters);
 uint8_t initLightService(void) {
     /* USER CODE BEGIN */
     // Create the task and queue here.
+    BaseType_t xReturned = pdFAIL;
+    if (lightServiceTaskHandle == NULL) {
+        // Create controller task
+        xReturned = xTaskCreate(lightServiceTask,           /* Function that implements the task. */
+                                LIGHT_SERVICE_NAME,         /* Text name for the task. */
+                                LIGHT_SERVICE_STACK_SIZE,   /* Stack size in words, not bytes. */
+                                NULL,                       /* Parameter passed into the task. */
+                                LIGHT_SERVICE_PRIORITY,     /* Priority at which the task is created. */
+                                &lightServiceTaskHandle);   /* Used to pass out the created task's handle. */
+    }
 
+    if(xReturned == pdFAIL) return 0;
+
+    if (lightServiceQueueHandle == NULL) {
+        lightServiceQueueHandle = xQueueCreate(LIGHT_SERVICE_QUEUE_SIZE,
+                                                LIGHT_SERVICE_ITEM_SIZE);
+    }
     /* USER CODE END */
     return 1;
 }
@@ -26,6 +50,30 @@ uint8_t initLightService(void) {
 static void lightServiceTask(void * pvParameters) {
     /* USER CODE BEGIN */
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
+    ASSERT(lightServiceTaskHandle != NULL);
+    ASSERT(lightServiceQueueHandle != NULL);
+    
+    light_event_t event;
+    BaseType_t xReturned = pdFAIL;
+
+    adcData_t lightData;
+    adcData_t *lightDataPtr = &lightData;
+    while(1) {
+        xReturned = xQueueReceive(lightServiceQueueHandle,
+                                &event,
+                                0);
+        if (xReturned == pdPASS && event == MEASURE_LIGHT) {
+            adcStartConversion(adcREG1, adcGROUP1);
+            adcStartConversion_selChn(adcREG1, LIGHT_SENSOR_PIN, 1, adcGROUP1);
+            while(!adcIsConversionComplete(adcREG1, adcGROUP1));
+            adcGetSingleData(adcREG1, adcGROUP1, lightDataPtr);
+            char *msg = malloc(20 * sizeof(char));
+            sprintf(msg, "light level: %d", lightData.value);
+            sciPrintText(scilinREG, msg, strlen(msg));
+            free(msg);
+        }
+    }
+
 
     /* USER CODE END */
 }
@@ -33,7 +81,36 @@ static void lightServiceTask(void * pvParameters) {
 uint8_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue.
-    
+    xQueueSend(lightServiceQueueHandle,
+                event,
+                0);
     /* USER CODE END */
     return 0;
 }
+
+void adcStartConversion_selChn(adcBASE_t *adc, unsigned channel, unsigned fifo_size, unsigned group)
+{
+    /** - Setup FiFo size */
+    adc->GxINTCR[group] = fifo_size;
+
+    /** - Start Conversion */
+    adc->GxSEL[group] = 1 << channel;
+}
+
+void adcGetSingleData(adcBASE_t *adc, unsigned group, adcData_t *data)
+{
+    unsigned  buf;
+    adcData_t *ptr = data; 
+
+    /** -  Get conversion data and channel/pin id */
+    buf        = adc->GxBUF[group].BUF0;
+    ptr->value = (unsigned short)(buf & 0xFFFU);
+    ptr->id    = (unsigned short)((buf >> 16U) & 0x1FU); // int to unsigned short
+
+    adc->GxINTFLG[group] = 9U;
+
+    /**   @note The function canInit has to be called before this function can be used.\n
+    *           The user is responsible to initialize the message box.
+    */
+}
+
