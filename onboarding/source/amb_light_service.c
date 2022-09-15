@@ -14,8 +14,8 @@
 #include <os_queue.h>
 
 static TaskHandle_t lightServiceTaskHandle = NULL;
-static QueueHandle_t eventQueue = NULL; 
-#define LIGHT_SENSOR  6U
+static QueueHandle_t eventQueue = NULL; // CHANGE: more descriptive name for variable
+#define LIGHT_SENSOR  6U // CHANGE: capital
 
 // Helper functions for ADC conversion
 uint16_t getAmbientLightData(void);
@@ -66,9 +66,9 @@ static void lightServiceTask(void * pvParameters) {
         if (xQueueReceive(eventQueue, &event, (TickType_t) 0) == pdPASS) {
             if(event == MEASURE_LIGHT) {
                 // if event recieved is MEASURE_LIGHT, get value from adc and send over serial
-                uint16_t data = getAmbientLightData();
-                unsigned char adc_value[10];
-                sprintf(adc_value, "%d", data); 
+                uint16_t data = getAmbientLightData(); // CHANGE: data now uint16_t since ADC is 12-bit
+                unsigned char adc_value[10]; 
+                sprintf(adc_value, "%d", data); // CHANGE: convert ADC integer value to char
                 sciPrintText(scilinREG, adc_value, sizeof(uint8_t));
             }
         }
@@ -80,7 +80,7 @@ static void lightServiceTask(void * pvParameters) {
 uint8_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue.
-    if (xQueueSend(eventQueue, (void *) event, (TickType_t) 0) == pdPASS) {
+    if (xQueueSend(eventQueue, (void *) event, (TickType_t) 0) == pdPASS) { // CHANGE: just pass (void *) event into function
         return 1;
     }
     /* USER CODE END */

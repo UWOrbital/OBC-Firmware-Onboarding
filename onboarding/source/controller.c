@@ -121,10 +121,10 @@ static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
     ASSERT(xTimer != NULL);
-    light_event_t event = MEASURE_LIGHT;
-    if (sendToLightServiceQueue(&event) == 0)
+    light_event_t event = MEASURE_LIGHT; 
+    if (sendToLightServiceQueue(&event) == 0) // CHANGE: pass a pointer to the event
     {
-        // send error message if event doesn't send successfully
+        // CHANGE: send error message if event doesn't send successfully
         unsigned char errorText[] = "MEASURE_LIGHT event not successfully sent";
         sciPrintText(scilinREG, errorText, strlen((const char*) errorText));
         return 0;
@@ -133,11 +133,3 @@ static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE END */
 }
 
-/*
-if ((xReturned == pdFAIL) || (xQueue1 == NULL)) {
-        // send error message if light service task or queue fails to be created
-        unsigned char errorText[] = "ERROR in initLightService(void)";
-        sciPrintText(scilinREG, errorText, strlen((const char*) errorText));
-        return 0;
-    }
-    */
