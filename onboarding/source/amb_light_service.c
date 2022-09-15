@@ -18,7 +18,7 @@ static QueueHandle_t eventQueue = NULL;
 #define LIGHT_SENSOR  6U
 
 // Helper functions for ADC conversion
-uint8_t getAmbientLightData(void);
+uint16_t getAmbientLightData(void);
 void adcGetSingleData(adcBASE_t *adc, unsigned group, adcData_t *data);
 void adcStartConversion_selChn(adcBASE_t *adc, unsigned channel, unsigned fifo_size, unsigned group);
 /* USER CODE END */
@@ -66,9 +66,10 @@ static void lightServiceTask(void * pvParameters) {
         if (xQueueReceive(eventQueue, &event, (TickType_t) 0) == pdPASS) {
             if(event == MEASURE_LIGHT) {
                 // if event recieved is MEASURE_LIGHT, get value from adc and send over serial
-                uint8_t data = getAmbientLightData();
-                unsigned char adc_value= data + '0';
-                sciPrintText(scilinREG, &adc_value, sizeof(uint8_t));
+                uint16_t data = getAmbientLightData();
+                unsigned char adc_value[10];
+                sprintf(adc_value, "%d", data); 
+                sciPrintText(scilinREG, adc_value, sizeof(uint8_t));
             }
         }
     }
@@ -87,7 +88,7 @@ uint8_t sendToLightServiceQueue(light_event_t *event) {
 }
 
 // Function that does ADC conversion and returns ambient light value
-uint8_t getAmbientLightData(void) {
+uint16_t getAmbientLightData(void) {
     adcData_t adc_data;
     adcData_t *adc_data_ptr = &adc_data;
 
