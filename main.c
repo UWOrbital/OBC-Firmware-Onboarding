@@ -27,7 +27,7 @@ void main(void) {
     retval1 = xTaskCreate( blinkGIOB1, BLINK1_NAME, BLINKY_STACK_SIZE, NULL, BLINK1_PRIORITY, &xTask1Handle );
     retval2 = xTaskCreate( blinkGIOB2, BLINK2_NAME, BLINKY_STACK_SIZE, NULL, BLINK2_PRIORITY, &xTask2Handle );
 
-    if(retval1 == pdPass && retval2 == pdPass){
+    if(retval1 == pdPASS && retval2 == pdPASS){
         vTaskStartScheduler();
     }
 
