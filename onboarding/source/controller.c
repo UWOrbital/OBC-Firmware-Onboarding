@@ -45,6 +45,13 @@ uint8_t initController(void) {
                                 &controllerTaskHandle);     /* Used to pass out the created task's handle. */
     }
 
+    // Check if task was created successfully
+    if (xReturned == pdFAIL) {
+        unsigned char* errorMsg = (unsigned char*) "Error creating controller task.\n";
+        sciPrintText(scilinREG, errorMsg, strlen((const char*) errorMsg));
+        return 0;
+    }
+
     if (ledTimerHandle == NULL) {
         // Create led timer
         ledTimerHandle = xTimerCreate(LED_TIMER_NAME,
@@ -56,7 +63,24 @@ uint8_t initController(void) {
 
     /* USER CODE BEGIN */
     // Create light timer and check if task/timers were created successfully
+    if (lightTimerHandle == NULL) {
+        // Create light timer
+        lightTimerHandle = xTimerCreate(LIGHT_TIMER_NAME,
+                                        LIGHT_TIMER_PERIOD,
+                                        LIGHT_TIMER_AUTORELOAD,
+                                        (void *) 0,
+                                        lightTimerCallback);
+    }
 
+    // Check if timers were created successfully
+    if (ledTimerHandle == NULL) {
+        unsigned char* errorMsg = (unsigned char*) "Error creating led timer.\n";
+        sciPrintText(scilinREG, errorMsg, strlen((const char*) errorMsg));
+    }
+    if (lightTimerHandle == NULL) {
+        unsigned char* errorMsg = (unsigned char*) "Error creating light timer.\n";
+        sciPrintText(scilinREG, errorMsg, strlen((const char*) errorMsg));
+    }
     /* USER CODE END */
 
     return 1;
@@ -70,15 +94,28 @@ static void controllerTask(void * pvParameters) {
     if (lightServiceStatus == 0) {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
-
+        unsigned char* errorMsg = (unsigned char*) "Error initializing light service task and/or queue.\n";
+        sciPrintText(scilinREG, errorMsg, strlen((const char*) errorMsg));
         /* USER CODE END */
     } else { 
         /* Light service task and queue created successfully */
         BaseType_t xReturned = xTimerStart(ledTimerHandle, 0);
         
+        // Check if led timer was started successfully
+        if (xReturned == pdFAIL) {
+            unsigned char* errorMsg = (unsigned char*) "Error starting led timer.\n";
+            sciPrintText(scilinREG, errorMsg, strlen((const char*) errorMsg));
+        }
+        
         /* USER CODE BEGIN */
         // Start light timer
+        xReturned = xTimerStart(lightTimerHandle, 0);
 
+        // Check if led timer was started successfully
+        if (xReturned == pdFAIL) {
+            unsigned char* errorMsg = (unsigned char*) "Error starting light timer.\n";
+            sciPrintText(scilinREG, errorMsg, strlen((const char*) errorMsg));
+        }
         /* USER CODE END */
     }
 
@@ -94,7 +131,11 @@ static void ledTimerCallback(TimerHandle_t xTimer) {
 static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
-
+    uint8_t returned = sendToLightServiceQueue(MEASURE_LIGHT);
+    if (returned == 0) {
+        unsigned char* errorMsg = (unsigned char*) "Error sending to light service queue.\n";
+        sciPrintText(scilinREG, errorMsg, strlen((const char*) errorMsg));
+    }
     /* USER CODE END */
 }
 

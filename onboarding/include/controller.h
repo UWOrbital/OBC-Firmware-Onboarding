@@ -16,7 +16,10 @@
 
 /* USER CODE BEGIN */
 // define config for the light timer
-
+/* Light timer config */
+#define LIGHT_TIMER_NAME        "light_timer"
+#define LIGHT_TIMER_PERIOD      pdMS_TO_TICKS(1000)
+#define LIGHT_TIMER_AUTORELOAD  pdTRUE
 /* USER CODE END */
 
 /**
