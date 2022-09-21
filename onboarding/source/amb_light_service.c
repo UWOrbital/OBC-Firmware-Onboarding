@@ -10,8 +10,12 @@
 #include "os_task.h"
 #include "os_queue.h"
 
-void adcStartConversion_selChn(adcBASE_t *adc, unsigned channel, unsigned fifo_size, unsigned group);
+#include <string.h>
+#include <stdio.h>
+
+void adcStartConversion_selChn(adcBASE_t *adc, uint8_t channel, uint8_t fifo_size, uint8_t group);
 void adcGetSingleData(adcBASE_t *adc, unsigned group, adcData_t *data);
+uint16_t getADCConversion();
 
 static TaskHandle_t lightServiceTaskHandle = NULL;
 static QueueHandle_t lightServiceQueueHandle = NULL;
@@ -37,11 +41,18 @@ uint8_t initLightService(void) {
                                 &lightServiceTaskHandle);   /* Used to pass out the created task's handle. */
     }
 
-    if(xReturned == pdFAIL) return 0;
+    
 
     if (lightServiceQueueHandle == NULL) {
         lightServiceQueueHandle = xQueueCreate(LIGHT_SERVICE_QUEUE_SIZE,
                                                 LIGHT_SERVICE_ITEM_SIZE);
+
+    }
+
+    if(xReturned == pdFAIL ||
+       lightServiceQueueHandle == NULL)
+    {
+        return 0;
     }
     /* USER CODE END */
     return 1;
@@ -56,39 +67,33 @@ static void lightServiceTask(void * pvParameters) {
     light_event_t event;
     BaseType_t xReturned = pdFAIL;
 
-    adcData_t lightData;
-    adcData_t *lightDataPtr = &lightData;
     while(1) {
         xReturned = xQueueReceive(lightServiceQueueHandle,
                                 &event,
                                 0);
         if (xReturned == pdPASS && event == MEASURE_LIGHT) {
-            adcStartConversion(adcREG1, adcGROUP1);
-            adcStartConversion_selChn(adcREG1, LIGHT_SENSOR_PIN, 1, adcGROUP1);
-            while(!adcIsConversionComplete(adcREG1, adcGROUP1));
-            adcGetSingleData(adcREG1, adcGROUP1, lightDataPtr);
-            char *msg = malloc(20 * sizeof(char));
-            sprintf(msg, "light level: %d", lightData.value);
-            sciPrintText(scilinREG, msg, strlen(msg));
-            free(msg);
+            char msg[20];
+            uint16_t lightlevel = getADCConversion();
+            
+            snprintf(msg, 20, "light level: %d\n", lightlevel);
+            sciPrintText(scilinREG, (unsigned char*) msg, 20);
+
         }
     }
-
-
     /* USER CODE END */
 }
 
 uint8_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue.
-    xQueueSend(lightServiceQueueHandle,
-                event,
-                0);
+    return xQueueSend(lightServiceQueueHandle,
+                    event,
+                    0);
     /* USER CODE END */
-    return 0;
+    
 }
 
-void adcStartConversion_selChn(adcBASE_t *adc, unsigned channel, unsigned fifo_size, unsigned group)
+void adcStartConversion_selChn(adcBASE_t *adc, uint8_t channel, uint8_t fifo_size, uint8_t group)
 {
     /** - Setup FiFo size */
     adc->GxINTCR[group] = fifo_size;
@@ -114,3 +119,12 @@ void adcGetSingleData(adcBASE_t *adc, unsigned group, adcData_t *data)
     */
 }
 
+uint16_t getADCConversion(){
+    adcData_t lightData;
+
+    adcStartConversion_selChn(adcREG1, LIGHT_SENSOR_PIN, 1, adcGROUP1);
+    while(!adcIsConversionComplete(adcREG1, adcGROUP1));
+    adcGetSingleData(adcREG1, adcGROUP1, &lightData);
+    
+    return lightData.value; 
+}

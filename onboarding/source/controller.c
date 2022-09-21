@@ -63,6 +63,13 @@ uint8_t initController(void) {
                                         (void *) 0,
                                         lightTimerCallback);
     }
+
+    if(xReturned == pdFAIL ||
+        ledTimerHandle == NULL ||
+        lightTimerHandle == NULL)
+    {
+        return 0;
+    }
     /* USER CODE END */
 
     return 1;
@@ -76,7 +83,7 @@ static void controllerTask(void * pvParameters) {
     if (lightServiceStatus == 0) {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
-        sciPrintText(scilinREG, "Error", 6);
+        sciPrintText(scilinREG, (unsigned char*)"Error\n", strlen("Error\n"));
         /* USER CODE END */
     } else { 
         /* Light service task and queue created successfully */
@@ -102,7 +109,11 @@ static void lightTimerCallback(TimerHandle_t xTimer) {
     // Send light event to light service queue
     ASSERT(xTimer != NULL);
     
-    sendToLightServiceQueue(MEASURE_LIGHT);
+    if(sendToLightServiceQueue(MEASURE_LIGHT) == 0){
+        sciPrintText(scilinREG, 
+                    (unsigned char*) "sendToLightServiceQueue failed\n",
+                    strlen("sendToLightServiceQueue failed\n"));
+    }
     /* USER CODE END */
 }
 
