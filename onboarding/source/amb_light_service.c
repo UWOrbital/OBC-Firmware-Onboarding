@@ -14,8 +14,8 @@
 #include <stdio.h>
 
 void adcStartConversion_selChn(adcBASE_t *adc, uint8_t channel, uint8_t fifo_size, uint8_t group);
-void adcGetSingleData(adcBASE_t *adc, unsigned group, adcData_t *data);
-uint16_t getADCConversion();
+void adcGetSingleData(adcBASE_t *adc, uint8_t group, adcData_t *data);
+static uint16_t getLightValue(void);
 
 static TaskHandle_t lightServiceTaskHandle = NULL;
 static QueueHandle_t lightServiceQueueHandle = NULL;
@@ -73,7 +73,7 @@ static void lightServiceTask(void * pvParameters) {
                                 0);
         if (xReturned == pdPASS && event == MEASURE_LIGHT) {
             char msg[20];
-            uint16_t lightlevel = getADCConversion();
+            uint16_t lightlevel = getLightValue();
             
             snprintf(msg, 20, "light level: %d\n", lightlevel);
             sciPrintText(scilinREG, (unsigned char*) msg, 20);
@@ -102,7 +102,7 @@ void adcStartConversion_selChn(adcBASE_t *adc, uint8_t channel, uint8_t fifo_siz
     adc->GxSEL[group] = 1 << channel;
 }
 
-void adcGetSingleData(adcBASE_t *adc, unsigned group, adcData_t *data)
+void adcGetSingleData(adcBASE_t *adc, uint8_t group, adcData_t *data)
 {
     unsigned  buf;
     adcData_t *ptr = data; 
@@ -119,7 +119,7 @@ void adcGetSingleData(adcBASE_t *adc, unsigned group, adcData_t *data)
     */
 }
 
-uint16_t getADCConversion(){
+uint16_t getLightValue(void){
     adcData_t lightData;
 
     adcStartConversion_selChn(adcREG1, LIGHT_SENSOR_PIN, 1, adcGROUP1);
