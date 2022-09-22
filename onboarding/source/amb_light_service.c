@@ -79,7 +79,7 @@ static void adcGetSingleData(adcBASE_t *adc, uint32_t group, adcData_t *data) {
     adc->GxINTFLG[group] = 9U;
 }
 
-static uint32 getLightSensorData(void) {
+static uint32_t getLightSensorData(void) {
 	adcData_t adc_data;
 	adcData_t *adc_data_ptr = &adc_data;
 
@@ -113,7 +113,7 @@ static void lightServiceTask(void * pvParameters) {
                                         (TickType_t) 0);
 
     if (returned == pdPASS) {
-        uint32 sensor_data = getLightSensorData();
+        uint32_t sensor_data = getLightSensorData();
         char result[30];
         snprintf(result, 30, "Ambient light: %lu\n", sensor_data);
         sciPrintText(scilinREG, (unsigned char*) result, sizeof(result));
