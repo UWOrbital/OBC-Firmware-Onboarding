@@ -59,7 +59,7 @@ uint8_t initLightService(void) {
     return 1;
 }
 
-static void adcStartConversion_selChn(adcBASE_t *adc, unsigned channel, unsigned fifo_size, unsigned group) {
+static void adcStartConversion_selChn(adcBASE_t *adc, uint32_t channel, uint32_t fifo_size, uint32_t group) {
     /** - Setup FiFo size */
     adc->GxINTCR[group] = fifo_size;
 
@@ -67,14 +67,14 @@ static void adcStartConversion_selChn(adcBASE_t *adc, unsigned channel, unsigned
     adc->GxSEL[group] = 1 << channel;
 }
 
-static void adcGetSingleData(adcBASE_t *adc, unsigned group, adcData_t *data) {
-    unsigned  buf;
+static void adcGetSingleData(adcBASE_t *adc, uint32_t group, adcData_t *data) {
+    uint32_t buf;
     adcData_t *ptr = data; 
 
     /** -  Get conversion data and channel/pin id */
     buf        = adc->GxBUF[group].BUF0;
-    ptr->value = (unsigned short)(buf & 0xFFFU);
-    ptr->id    = (unsigned short)((buf >> 16U) & 0x1FU); // int to unsigned short
+    ptr->value = (uint16_t)(buf & 0xFFFU);
+    ptr->id    = (uint16_t)((buf >> 16U) & 0x1FU); // int to unsigned short
 
     adc->GxINTFLG[group] = 9U;
 }
