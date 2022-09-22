@@ -131,7 +131,9 @@ static void ledTimerCallback(TimerHandle_t xTimer) {
 static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
-    uint8_t returned = sendToLightServiceQueue(MEASURE_LIGHT);
+
+    light_event_t event = MEASURE_LIGHT;
+    uint8_t returned = sendToLightServiceQueue(&event);
     if (returned == 0) {
         unsigned char* errorMsg = (unsigned char*) "Error sending to light service queue.\n";
         sciPrintText(scilinREG, errorMsg, strlen((const char*) errorMsg));

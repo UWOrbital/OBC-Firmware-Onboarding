@@ -128,7 +128,7 @@ static void lightServiceTask(void * pvParameters) {
 uint8_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue.
-    BaseType_t returned = xQueueSend(lightServiceQueue, (void *) &event, (TickType_t) 0);
+    BaseType_t returned = xQueueSend(lightServiceQueue, (void *) event, (TickType_t) 0);
     // Check if queue send was successful
     if (returned == pdPASS) {
         return 1;
