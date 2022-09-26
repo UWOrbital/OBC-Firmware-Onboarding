@@ -54,9 +54,21 @@ uint8_t initController(void) {
                                     ledTimerCallback);
     }
 
+    if (lightTimerHandle == NULL) {
+        // Create led timer
+        lightTimerHandle = xTimerCreate(LED_TIMER_NAME,
+                                    LIGHT_TIMER_PERIOD,
+                                    LIGHT_TIMER_AUTORELOAD,
+                                    (void *) 0,
+                                    lightTimerCallback);
+    }
+
     /* USER CODE BEGIN */
     // Create light timer and check if task/timers were created successfully
-
+    if(xReturned == pdFAIL){
+        unsigned char err[] = "Error Starting Light Service";
+        sciPrintText(sciREG, (unsigned char*) err, strlen((const char*) err));
+    }
     /* USER CODE END */
 
     return 1;
@@ -65,20 +77,26 @@ uint8_t initController(void) {
 static void controllerTask(void * pvParameters) {
     ASSERT(controllerTaskHandle != NULL);
     ASSERT(ledTimerHandle != NULL);
+    ASSERT(lightTimerHandle != NULL);
 
     uint8_t lightServiceStatus = initLightService();
     if (lightServiceStatus == 0) {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
-
+        unsigned char err[] = "Error With Light Service";
+        sciPrintText(sciREG, (unsigned char*) err, strlen((const char*) err));
         /* USER CODE END */
     } else { 
         /* Light service task and queue created successfully */
-        BaseType_t xReturned = xTimerStart(ledTimerHandle, 0);
         
         /* USER CODE BEGIN */
         // Start light timer
+        BaseType_t xReturned = xTimerStart(ledTimerHandle, 0);
 
+        if(xReturned == pdFAIL){
+            unsigned char err[] = "Error With Light Service";
+            sciPrintText(sciREG, (unsigned char*) err, strlen((const char*) err));
+        }
         /* USER CODE END */
     }
 
@@ -95,6 +113,9 @@ static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
 
+    ASSERT(xTimer != NULL);
+
+    sendToLightServiceQueue(MEASURE_LIGHT);
     /* USER CODE END */
 }
 
