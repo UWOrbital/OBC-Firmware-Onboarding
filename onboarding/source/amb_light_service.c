@@ -66,13 +66,8 @@ static void lightServiceTask(void * pvParameters) {
     light_event_t eventBuffer;
 
     uint8_t lightServiceStatus = initLightService();
-    if (lightServiceStatus == 0) {
-        /* USER CODE BEGIN */
-        // Deal with error when initializing light service task and/or queue
-        unsigned char err[] = "Error With Light Service";
-        sciPrintText(sciREG, (unsigned char*) err, strlen((const char*) err));
-        /* USER CODE END */
-    } else {
+
+    while(true) {
         if(xQueueReceive(queue, &eventBuffer, ( TickType_t ) 0) == pdPASS) {
             if(eventBuffer == MEASURE_LIGHT) {
                 uint16_t lightMeasurement = Get_Light_Sensor_data();
@@ -83,7 +78,6 @@ static void lightServiceTask(void * pvParameters) {
         }
     }
 
-    while(1);
     /* USER CODE END */
 }
 
