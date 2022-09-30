@@ -11,6 +11,7 @@
 
 /* LED timer config */
 #define LED_TIMER_NAME          "led_timer"
+#define LIGHT_TIMER_NAME        "light_timer"
 #define LED_TIMER_PERIOD        pdMS_TO_TICKS(2500)
 #define LIGHT_TIMER_PERIOD      pdMS_TO_TICKS(1000)
 #define LED_TIMER_AUTORELOAD    pdTRUE

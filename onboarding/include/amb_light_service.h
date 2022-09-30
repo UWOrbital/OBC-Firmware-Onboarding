@@ -29,6 +29,7 @@ uint8_t initLightService(void);
 #define CONTROLLER_NAME_LIGHT   "lightService"
 #define CONTROLLER_STACK_SIZE   256
 #define CONTROLLER_PRIORITY     1
+#define LIGHT_SERVICE_QUEUE_SIZE 1
 
 /**
  * @brief Send an event to the light service queue.

@@ -56,7 +56,7 @@ uint8_t initController(void) {
 
     if (lightTimerHandle == NULL) {
         // Create led timer
-        lightTimerHandle = xTimerCreate(LED_TIMER_NAME,
+        lightTimerHandle = xTimerCreate(LIGHT_TIMER_NAME,
                                     LIGHT_TIMER_PERIOD,
                                     LIGHT_TIMER_AUTORELOAD,
                                     (void *) 0,
@@ -65,9 +65,10 @@ uint8_t initController(void) {
 
     /* USER CODE BEGIN */
     // Create light timer and check if task/timers were created successfully
-    if(xReturned == pdFAIL){
+    if(xReturned == pdFAIL || ledTimerHandle == pdFAIL || lightTimerHandle == pdFAIL){
         unsigned char err[] = "Error Starting Light Service";
         sciPrintText(sciREG, (unsigned char*) err, strlen((const char*) err));
+        return 0;
     }
     /* USER CODE END */
 
@@ -91,10 +92,11 @@ static void controllerTask(void * pvParameters) {
         
         /* USER CODE BEGIN */
         // Start light timer
-        BaseType_t xReturned = xTimerStart(ledTimerHandle, 0);
+        BaseType_t xReturnedLed = xTimerStart(ledTimerHandle, 0);
+        BaseType_t xReturnedLight = xTimerStart(lightTimerHandle, 0);
 
-        if(xReturned == pdFAIL){
-            unsigned char err[] = "Error With Light Service";
+        if(xReturnedLed == pdFAIL || xReturnedLight == pdFAIL){
+            unsigned char err[] = "Timer or/and light has failed to been created";
             sciPrintText(sciREG, (unsigned char*) err, strlen((const char*) err));
         }
         /* USER CODE END */
@@ -115,7 +117,8 @@ static void lightTimerCallback(TimerHandle_t xTimer) {
 
     ASSERT(xTimer != NULL);
 
-    sendToLightServiceQueue(MEASURE_LIGHT);
+    light_event_t event = MEASURE_LIGHT;
+    sendToLightServiceQueue(&event);
     /* USER CODE END */
 }
 
