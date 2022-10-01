@@ -2,6 +2,7 @@
 #define ONBOARDING_INCLUDE_AMB_LIGHT_SERVICE_H_
 
 #include <stdint.h>
+#include <FreeRTOS.h>
 #include <os_queue.h>
 
 /* Event types to be sent to light service queue */

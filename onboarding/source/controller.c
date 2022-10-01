@@ -66,8 +66,8 @@ uint8_t initController(void) {
     }
 
     if(xReturned == pdFAIL || ledTimerHandle == NULL || lightTimerHandle == NULL) {
-        unsigned char error_message [] = "Could not set up timer!";
-        sciPrintText(scilinREG, (unsigned char *)error_message, strlen(error_message));
+        unsigned char* error_message = (unsigned char*)"Could not set up timer!";
+        sciPrintText(scilinREG, (unsigned char *)error_message, strlen((char *)error_message));
     }
     /* USER CODE END */
 
@@ -94,8 +94,8 @@ static void controllerTask(void * pvParameters) {
         BaseType_t xReturnedLight = xTimerStart(lightTimerHandle, 0);
 
         if(xReturnedLed == pdFAIL || xReturnedLight == pdFAIL) {
-            unsigned char error_message [] = "Could not start timer!";
-            sciPrintText(scilinREG, (unsigned char *)error_message, strlen(error_message));
+            unsigned char* error_message = (unsigned char*)"Could not start timer!";
+            sciPrintText(scilinREG, (unsigned char *)error_message, strlen((char *)error_message));
         }
         /* USER CODE END */
     }

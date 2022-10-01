@@ -1,0 +1,142 @@
+hal/source/sys_selftest.c: In function 'fmcECCcheck':
+hal/source/sys_selftest.c:797:21: warning: variable 'temp' set but not used [-Wunused-but-set-variable]
+  797 |     volatile uint32 temp;
+      |                     ^~~~
+hal/source/sys_selftest.c:796:21: warning: variable 'otpread' set but not used [-Wunused-but-set-variable]
+  796 |     volatile uint32 otpread;
+      |                     ^~~~~~~
+hal/source/sys_selftest.c: In function 'checkB0RAMECC':
+hal/source/sys_selftest.c:853:25: warning: variable 'regread' set but not used [-Wunused-but-set-variable]
+  853 |         volatile uint32 regread = 0U;
+      |                         ^~~~~~~
+hal/source/sys_selftest.c:852:21: warning: variable 'ramread' set but not used [-Wunused-but-set-variable]
+  852 |     volatile uint64 ramread = 0U;
+      |                     ^~~~~~~
+hal/source/sys_selftest.c: In function 'checkB1RAMECC':
+hal/source/sys_selftest.c:951:25: warning: variable 'regread' set but not used [-Wunused-but-set-variable]
+  951 |         volatile uint32 regread = 0U;
+      |                         ^~~~~~~
+hal/source/sys_selftest.c:950:21: warning: variable 'ramread' set but not used [-Wunused-but-set-variable]
+  950 |     volatile uint64 ramread = 0U;
+      |                     ^~~~~~~
+hal/source/sys_selftest.c: In function 'checkFlashECC':
+hal/source/sys_selftest.c:1049:21: warning: variable 'flashread' set but not used [-Wunused-but-set-variable]
+ 1049 |     volatile uint32 flashread = 0U;
+      |                     ^~~~~~~~~
+hal/source/sys_selftest.c: In function 'vimParityCheck':
+hal/source/sys_selftest.c:1188:21: warning: variable 'vimramread' set but not used [-Wunused-but-set-variable]
+ 1188 |     volatile uint32 vimramread = 0U;
+      |                     ^~~~~~~~~~
+hal/source/sys_selftest.c: In function 'dmaParityCheck':
+hal/source/sys_selftest.c:1245:21: warning: variable 'dmaread' set but not used [-Wunused-but-set-variable]
+ 1245 |     volatile uint32 dmaread = 0U;
+      |                     ^~~~~~~
+hal/source/sys_selftest.c: In function 'het1ParityCheck':
+hal/source/sys_selftest.c:1302:21: warning: variable 'nhetread' set but not used [-Wunused-but-set-variable]
+ 1302 |     volatile uint32 nhetread = 0U;
+      |                     ^~~~~~~~
+hal/source/sys_selftest.c: In function 'htu1ParityCheck':
+hal/source/sys_selftest.c:1356:21: warning: variable 'hturead' set but not used [-Wunused-but-set-variable]
+ 1356 |     volatile uint32 hturead = 0U;
+      |                     ^~~~~~~
+hal/source/sys_selftest.c: In function 'het2ParityCheck':
+hal/source/sys_selftest.c:1412:21: warning: variable 'nhetread' set but not used [-Wunused-but-set-variable]
+ 1412 |     volatile uint32 nhetread = 0U;
+      |                     ^~~~~~~~
+hal/source/sys_selftest.c: In function 'htu2ParityCheck':
+hal/source/sys_selftest.c:1472:21: warning: variable 'hturead' set but not used [-Wunused-but-set-variable]
+ 1472 |     volatile uint32 hturead = 0U;
+      |                     ^~~~~~~
+hal/source/sys_selftest.c: In function 'adc1ParityCheck':
+hal/source/sys_selftest.c:1527:21: warning: variable 'adcramread' set but not used [-Wunused-but-set-variable]
+ 1527 |     volatile uint32 adcramread = 0U;
+      |                     ^~~~~~~~~~
+hal/source/sys_selftest.c: In function 'adc2ParityCheck':
+hal/source/sys_selftest.c:1581:21: warning: variable 'adcramread' set but not used [-Wunused-but-set-variable]
+ 1581 |     volatile uint32 adcramread = 0U;
+      |                     ^~~~~~~~~~
+hal/source/sys_selftest.c: In function 'can1ParityCheck':
+hal/source/sys_selftest.c:1634:21: warning: variable 'canread' set but not used [-Wunused-but-set-variable]
+ 1634 |     volatile uint32 canread = 0U;
+      |                     ^~~~~~~
+hal/source/sys_selftest.c: In function 'can2ParityCheck':
+hal/source/sys_selftest.c:1698:21: warning: variable 'canread' set but not used [-Wunused-but-set-variable]
+ 1698 |     volatile uint32 canread = 0U;
+      |                     ^~~~~~~
+hal/source/sys_selftest.c: In function 'can3ParityCheck':
+hal/source/sys_selftest.c:1762:21: warning: variable 'canread' set but not used [-Wunused-but-set-variable]
+ 1762 |     volatile uint32 canread = 0U;
+      |                     ^~~~~~~
+hal/source/sys_selftest.c: In function 'mibspi1ParityCheck':
+hal/source/sys_selftest.c:1826:21: warning: variable 'spiread' set but not used [-Wunused-but-set-variable]
+ 1826 |     volatile uint32 spiread = 0U;
+      |                     ^~~~~~~
+hal/source/sys_selftest.c: In function 'mibspi3ParityCheck':
+hal/source/sys_selftest.c:1890:21: warning: variable 'spiread' set but not used [-Wunused-but-set-variable]
+ 1890 |     volatile uint32 spiread = 0U;
+      |                     ^~~~~~~
+hal/source/sys_selftest.c: In function 'mibspi5ParityCheck':
+hal/source/sys_selftest.c:1954:21: warning: variable 'spiread' set but not used [-Wunused-but-set-variable]
+ 1954 |     volatile uint32 spiread = 0U;
+      |                     ^~~~~~~
+hal/source/sys_selftest.c: In function 'checkRAMECC':
+hal/source/sys_selftest.c:2019:25: warning: variable 'regread' set but not used [-Wunused-but-set-variable]
+ 2019 |         volatile uint32 regread = 0U;
+      |                         ^~~~~~~
+hal/source/sys_selftest.c:2018:21: warning: variable 'ramread' set but not used [-Wunused-but-set-variable]
+ 2018 |     volatile uint64 ramread = 0U;
+      |                     ^~~~~~~
+hal/source/sys_selftest.c: In function 'checkFlashEEPROMECC':
+hal/source/sys_selftest.c:2175:21: warning: variable 'regread' set but not used [-Wunused-but-set-variable]
+ 2175 |     volatile uint32 regread;
+      |                     ^~~~~~~
+hal/source/sys_selftest.c: In function 'checkRAMAddrParity':
+hal/source/sys_selftest.c:2410:25: warning: variable 'regread' set but not used [-Wunused-but-set-variable]
+ 2410 |         volatile uint32 regread;
+      |                         ^~~~~~~
+hal/source/sys_selftest.c: In function 'fmcBus1ParityCheck':
+hal/source/sys_selftest.c:2534:21: warning: variable 'flashread' set but not used [-Wunused-but-set-variable]
+ 2534 |     volatile uint32 flashread = 0U;
+      |                     ^~~~~~~~~
+onboarding/source/amb_light_service.c: In function 'getLightSensorData':
+onboarding/source/amb_light_service.c:57:9: error: too many arguments to function 'adcStartConversion'
+   57 |         adcStartConversion(adcREG1, Light_Sensor, 1, adcGROUP1);
+      |         ^~~~~~~~~~~~~~~~~~
+In file included from onboarding/source/amb_light_service.c:4:
+hal/include/adc.h:274:6: note: declared here
+  274 | void adcStartConversion(adcBASE_t *adc, uint32 group);
+      |      ^~~~~~~~~~~~~~~~~~
+onboarding/source/amb_light_service.c: In function 'lightServiceTask':
+onboarding/source/amb_light_service.c:106:9: warning: implicit declaration of function 'sprintf' [-Wimplicit-function-declaration]
+  106 |         sprintf(ambient_light, "%d", (long)light_sensor_data);
+      |         ^~~~~~~
+onboarding/source/amb_light_service.c:12:1: note: include '<stdio.h>' or provide a declaration of 'sprintf'
+   11 | #include <os_task.h>
+  +++ |+#include <stdio.h>
+   12 | #include <FreeRTOS.h>
+onboarding/source/amb_light_service.c:106:9: warning: incompatible implicit declaration of built-in function 'sprintf' [-Wbuiltin-declaration-mismatch]
+  106 |         sprintf(ambient_light, "%d", (long)light_sensor_data);
+      |         ^~~~~~~
+onboarding/source/amb_light_service.c:106:9: note: include '<stdio.h>' or provide a declaration of 'sprintf'
+onboarding/source/amb_light_service.c:106:17: warning: pointer targets in passing argument 1 of 'sprintf' differ in signedness [-Wpointer-sign]
+  106 |         sprintf(ambient_light, "%d", (long)light_sensor_data);
+      |                 ^~~~~~~~~~~~~
+      |                 |
+      |                 unsigned char *
+onboarding/source/amb_light_service.c:106:17: note: expected 'char *' but argument is of type 'unsigned char *'
+onboarding/source/amb_light_service.c:106:34: warning: format '%d' expects argument of type 'int', but argument 3 has type 'long int' [-Wformat=]
+  106 |         sprintf(ambient_light, "%d", (long)light_sensor_data);
+      |                                 ~^   ~~~~~~~~~~~~~~~~~~~~~~~
+      |                                  |   |
+      |                                  int long int
+      |                                 %ld
+onboarding/source/amb_light_service.c:107:72: warning: pointer targets in passing argument 1 of 'strlen' differ in signedness [-Wpointer-sign]
+  107 |         sciPrintText(scilinREG, (unsigned char *)ambient_light, strlen(ambient_light));
+      |                                                                        ^~~~~~~~~~~~~
+      |                                                                        |
+      |                                                                        unsigned char *
+In file included from onboarding/source/amb_light_service.c:6:
+d:\arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi\arm-none-eabi\include\string.h:41:18: note: expected 'const char *' but argument is of type 'unsigned char *'
+   41 | size_t   strlen (const char *);
+      |                  ^~~~~~~~~~~~
+make: *** [Makefile:55: build/onboarding/source/amb_light_service.o] Error 1
