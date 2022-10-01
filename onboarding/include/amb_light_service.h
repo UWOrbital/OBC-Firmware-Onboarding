@@ -2,6 +2,7 @@
 #define ONBOARDING_INCLUDE_AMB_LIGHT_SERVICE_H_
 
 #include <stdint.h>
+#include <os_queue.h>
 
 /* Event types to be sent to light service queue */
 typedef enum {
@@ -15,7 +16,9 @@ typedef enum {
 
 /* USER CODE BEGIN */
 // Define light service queue config here
-
+// Settings
+static const uint8_t event_queue_len = 10;
+static QueueHandle_t event_queue;
 /* USER CODE END */
 
 /**

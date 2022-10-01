@@ -56,7 +56,19 @@ uint8_t initController(void) {
 
     /* USER CODE BEGIN */
     // Create light timer and check if task/timers were created successfully
+    if (lightTimerHandle == NULL) {
+        // Create led timer
+        lightTimerHandle = xTimerCreate(LIGHT_TIMER_NAME,
+                                    LIGHT_TIMER_PERIOD,
+                                    LIGHT_TIMER_AUTORELOAD,
+                                    (void *) 0,
+                                    lightTimerCallback);
+    }
 
+    if(xReturned == pdFAIL || ledTimerHandle == NULL || lightTimerHandle == NULL) {
+        unsigned char error_message [] = "Could not set up timer!";
+        sciPrintText(scilinREG, (unsigned char *)error_message, strlen(error_message));
+    }
     /* USER CODE END */
 
     return 1;
@@ -65,6 +77,7 @@ uint8_t initController(void) {
 static void controllerTask(void * pvParameters) {
     ASSERT(controllerTaskHandle != NULL);
     ASSERT(ledTimerHandle != NULL);
+    ASSERT(lightTimerHandle != NULL);
 
     uint8_t lightServiceStatus = initLightService();
     if (lightServiceStatus == 0) {
@@ -74,11 +87,16 @@ static void controllerTask(void * pvParameters) {
         /* USER CODE END */
     } else { 
         /* Light service task and queue created successfully */
-        BaseType_t xReturned = xTimerStart(ledTimerHandle, 0);
+        BaseType_t xReturnedLed = xTimerStart(ledTimerHandle, 0);
         
         /* USER CODE BEGIN */
         // Start light timer
+        BaseType_t xReturnedLight = xTimerStart(lightTimerHandle, 0);
 
+        if(xReturnedLed == pdFAIL || xReturnedLight == pdFAIL) {
+            unsigned char error_message [] = "Could not start timer!";
+            sciPrintText(scilinREG, (unsigned char *)error_message, strlen(error_message));
+        }
         /* USER CODE END */
     }
 
@@ -92,9 +110,11 @@ static void ledTimerCallback(TimerHandle_t xTimer) {
 }
 
 static void lightTimerCallback(TimerHandle_t xTimer) {
+    ASSERT(xTimer != NULL);
     /* USER CODE BEGIN */
     // Send light event to light service queue
-
+    light_event_t *event = MEASURE_LIGHT;
+    sendToLightServiceQueue(event);
     /* USER CODE END */
 }
 
