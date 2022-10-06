@@ -65,9 +65,9 @@ uint8_t initController(void) {
 
     /* USER CODE BEGIN */
     // Create light timer and check if task/timers were created successfully
-    if(xReturned == pdFAIL || ledTimerHandle == pdFAIL || lightTimerHandle == pdFAIL){
+    if(xReturned == pdFAIL || ledTimerHandle == NULL || lightTimerHandle == NULL){
         unsigned char err[] = "Error Starting Light Service";
-        sciPrintText(sciREG, (unsigned char*) err, strlen((const char*) err));
+        sciPrintText(scilinREG, (unsigned char*) err, strlen((const char*) err));
         return 0;
     }
     /* USER CODE END */
@@ -85,7 +85,7 @@ static void controllerTask(void * pvParameters) {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
         unsigned char err[] = "Error With Light Service";
-        sciPrintText(sciREG, (unsigned char*) err, strlen((const char*) err));
+        sciPrintText(scilinREG, (unsigned char*) err, strlen((const char*) err));
         /* USER CODE END */
     } else { 
         /* Light service task and queue created successfully */
@@ -97,7 +97,7 @@ static void controllerTask(void * pvParameters) {
 
         if(xReturnedLed == pdFAIL || xReturnedLight == pdFAIL){
             unsigned char err[] = "Timer or/and light has failed to been created";
-            sciPrintText(sciREG, (unsigned char*) err, strlen((const char*) err));
+            sciPrintText(scilinREG, (unsigned char*) err, strlen((const char*) err));
         }
         /* USER CODE END */
     }

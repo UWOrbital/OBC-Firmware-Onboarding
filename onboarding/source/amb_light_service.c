@@ -54,7 +54,7 @@ uint8_t initLightService(void) {
         sciPrintText(scilinREG, (unsigned char*) err, strlen((const char*) err));
     }
 
-    if(event_queue == pdFAIL){
+    if(event_queue == NULL){
         unsigned char err[] = "Error Starting Queue";
         sciPrintText(scilinREG, (unsigned char*) err, strlen((const char*) err));
     }    
@@ -81,8 +81,8 @@ static void lightServiceTask(void * pvParameters) {
             if(eventBuffer == MEASURE_LIGHT) {
                 uint16_t lightMeasurement = getLightSensorData();
                 char output[7];
-                sprintf(output, "%d", lightMeasurement);
-                sciPrintText(sciREG, (unsigned char*) output, strlen((const char*) output));
+                snprintf(output, 7, "%d", lightMeasurement);
+                sciPrintText(scilinREG, (unsigned char*) output, strlen((const char*) output));
             }
         }
     }
@@ -95,7 +95,7 @@ uint8_t sendToLightServiceQueue(light_event_t *event) {
     // Send the event to the queue.
     if(xQueueSend(event_queue, event, ( TickType_t ) 0) != pdPASS) {
         unsigned char err[] = "Error";
-        sciPrintText(sciREG, (unsigned char*) err, strlen((const char*) err));
+        sciPrintText(scilinREG, (unsigned char*) err, strlen((const char*) err));
         return 0;   
     }
     /* USER CODE END */
