@@ -1,11 +1,16 @@
 name: build
-on: [push, pull_request]
+on: 
+  pull_request:
+    branches:
+      - level2
 env:
   ARM_NONE_EABI_GCC_PATH: none
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
     - uses: actions/checkout@v3
 
