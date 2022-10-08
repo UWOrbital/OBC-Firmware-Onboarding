@@ -32,7 +32,6 @@ void sciMutexInit(void) {
 
 uint8_t sciPrintText(sciBASE_t *sci, unsigned char *text, uint32_t length) {
     /* initSciMutex must be called before printing is allowed */
-    sciMutexInit();
     ASSERT(sciMutex != NULL);
     ASSERT(sciLinMutex != NULL);
 

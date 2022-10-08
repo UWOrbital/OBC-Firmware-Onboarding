@@ -12,8 +12,9 @@
 #include <os_task.h>
 #include <FreeRTOS.h>
 
-#define Light_Sensor 6U
+#define LIGHT_SENSOR 6U
 static TaskHandle_t lightServiceTaskHandle = NULL;
+static QueueHandle_t event_queue;
 /* USER CODE END */
 
 /**
@@ -23,7 +24,7 @@ static TaskHandle_t lightServiceTaskHandle = NULL;
 static void lightServiceTask(void * pvParameters);
 
 
-void adcStartConversion_selChn(adcBASE_t *adc, unsigned channel, unsigned fifo_size, unsigned group)
+void adcStartConversionSelChn(adcBASE_t *adc, unsigned int channel, unsigned int fifo_size, unsigned int group)
 {
     /** - Setup FiFo size */
     adc->GxINTCR[group] = fifo_size;
@@ -31,7 +32,7 @@ void adcStartConversion_selChn(adcBASE_t *adc, unsigned channel, unsigned fifo_s
     adc->GxSEL[group] = 1 << channel;
 }
 
-void adcGetSingleData(adcBASE_t *adc, unsigned group, adcData_t *data) {
+void adcGetSingleData(adcBASE_t *adc, unsigned int group, adcData_t *data) {
     unsigned  buf;
     adcData_t *ptr = data; 
 
@@ -47,14 +48,14 @@ void adcGetSingleData(adcBASE_t *adc, unsigned group, adcData_t *data) {
     */
 }
 
-uint32 getLightSensorData(void) {
+uint32_t getLightSensorData(void) {
 	adcData_t adc_data;
 	adcData_t *adc_data_ptr = &adc_data;
 
  	/** - Start Group1 ADC Conversion 
  	*     Select Channel 6 - Light Sensor for Conversion
  	*/
-	adcStartConversion_selChn(adcREG1, Light_Sensor, 1, adcGROUP1);
+	adcStartConversionSelChn(adcREG1, LIGHT_SENSOR, 1, adcGROUP1);
 
  	/** - Wait for ADC Group1 conversion to complete */
  	while(!adcIsConversionComplete(adcREG1, adcGROUP1)); 
@@ -83,7 +84,7 @@ uint8_t initLightService(void) {
                                 &lightServiceTaskHandle);     /* Used to pass out the created task's handle. */
     }
 
-    event_queue = xQueueCreate(event_queue_len, sizeof(MEASURE_LIGHT));
+    event_queue = xQueueCreate(EVENT_QUEUE_LEN, sizeof(MEASURE_LIGHT));
 
     if(xReturned == pdFAIL) {
         // error: couldnt create light service task
@@ -98,13 +99,15 @@ uint8_t initLightService(void) {
 static void lightServiceTask(void * pvParameters) {
     /* USER CODE BEGIN */
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
-    light_event_t ignore = 0;
-    if(xQueueReceive(event_queue, (void *)&ignore, 0) == pdTRUE) {
+    light_event_t event;
+    if(xQueueReceive(event_queue, &event, 0) == pdTRUE) {
         // new event received
-        uint32 light_sensor_data = getLightSensorData();
-        unsigned char* ambient_light = (unsigned char*)"";
-        sprintf(ambient_light, "%ld", (long)light_sensor_data);
-        sciPrintText(scilinREG, (unsigned char *)ambient_light, strlen((char *)ambient_light));
+        if(event == MEASURE_LIGHT) {
+            uint32 Light_Sensor_data = getLightSensorData();
+            char ambient_light[100];
+            snprintf(ambient_light, strlen(ambient_light), "%lu\n", Light_Sensor_data);
+            sciPrintText(scilinREG, (unsigned char *)ambient_light, strlen((char *)ambient_light));
+        }
     }
     /* USER CODE END */
 }

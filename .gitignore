@@ -57,3 +57,10 @@ dkms.conf
 
 .env
 build/
+
+.ccsproject
+.cproject
+.launches/
+.project
+.settings/
+Debug/

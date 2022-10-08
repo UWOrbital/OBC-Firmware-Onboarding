@@ -113,8 +113,8 @@ static void lightTimerCallback(TimerHandle_t xTimer) {
     ASSERT(xTimer != NULL);
     /* USER CODE BEGIN */
     // Send light event to light service queue
-    light_event_t *event = MEASURE_LIGHT;
-    sendToLightServiceQueue(event);
+    light_event_t event = MEASURE_LIGHT;
+    sendToLightServiceQueue(&event);
     /* USER CODE END */
 }
 

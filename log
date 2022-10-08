@@ -98,45 +98,20 @@ hal/source/sys_selftest.c: In function 'fmcBus1ParityCheck':
 hal/source/sys_selftest.c:2534:21: warning: variable 'flashread' set but not used [-Wunused-but-set-variable]
  2534 |     volatile uint32 flashread = 0U;
       |                     ^~~~~~~~~
-onboarding/source/amb_light_service.c: In function 'getLightSensorData':
-onboarding/source/amb_light_service.c:57:9: error: too many arguments to function 'adcStartConversion'
-   57 |         adcStartConversion(adcREG1, Light_Sensor, 1, adcGROUP1);
-      |         ^~~~~~~~~~~~~~~~~~
-In file included from onboarding/source/amb_light_service.c:4:
-hal/include/adc.h:274:6: note: declared here
-  274 | void adcStartConversion(adcBASE_t *adc, uint32 group);
-      |      ^~~~~~~~~~~~~~~~~~
-onboarding/source/amb_light_service.c: In function 'lightServiceTask':
-onboarding/source/amb_light_service.c:106:9: warning: implicit declaration of function 'sprintf' [-Wimplicit-function-declaration]
-  106 |         sprintf(ambient_light, "%d", (long)light_sensor_data);
-      |         ^~~~~~~
-onboarding/source/amb_light_service.c:12:1: note: include '<stdio.h>' or provide a declaration of 'sprintf'
-   11 | #include <os_task.h>
-  +++ |+#include <stdio.h>
-   12 | #include <FreeRTOS.h>
-onboarding/source/amb_light_service.c:106:9: warning: incompatible implicit declaration of built-in function 'sprintf' [-Wbuiltin-declaration-mismatch]
-  106 |         sprintf(ambient_light, "%d", (long)light_sensor_data);
-      |         ^~~~~~~
-onboarding/source/amb_light_service.c:106:9: note: include '<stdio.h>' or provide a declaration of 'sprintf'
-onboarding/source/amb_light_service.c:106:17: warning: pointer targets in passing argument 1 of 'sprintf' differ in signedness [-Wpointer-sign]
-  106 |         sprintf(ambient_light, "%d", (long)light_sensor_data);
-      |                 ^~~~~~~~~~~~~
-      |                 |
-      |                 unsigned char *
-onboarding/source/amb_light_service.c:106:17: note: expected 'char *' but argument is of type 'unsigned char *'
-onboarding/source/amb_light_service.c:106:34: warning: format '%d' expects argument of type 'int', but argument 3 has type 'long int' [-Wformat=]
-  106 |         sprintf(ambient_light, "%d", (long)light_sensor_data);
-      |                                 ~^   ~~~~~~~~~~~~~~~~~~~~~~~
-      |                                  |   |
-      |                                  int long int
-      |                                 %ld
-onboarding/source/amb_light_service.c:107:72: warning: pointer targets in passing argument 1 of 'strlen' differ in signedness [-Wpointer-sign]
-  107 |         sciPrintText(scilinREG, (unsigned char *)ambient_light, strlen(ambient_light));
-      |                                                                        ^~~~~~~~~~~~~
-      |                                                                        |
-      |                                                                        unsigned char *
-In file included from onboarding/source/amb_light_service.c:6:
-d:\arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi\arm-none-eabi\include\string.h:41:18: note: expected 'const char *' but argument is of type 'unsigned char *'
-   41 | size_t   strlen (const char *);
-      |                  ^~~~~~~~~~~~
-make: *** [Makefile:55: build/onboarding/source/amb_light_service.o] Error 1
+d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/../../../../arm-none-eabi/bin/ld.exe: d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/thumb/v7/nofp\libc.a(libc_a-closer.o): in function `_close_r':
+/data/jenkins/workspace/GNU-toolchain/arm-12-mpacbti/src/newlib-cygwin/newlib/libc/reent/closer.c:47: warning: _close is not implemented and will always fail
+d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/../../../../arm-none-eabi/bin/ld.exe: d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/thumb/v7/nofp\libc.a(libc_a-fstatr.o): in function `_fstat_r':
+/data/jenkins/workspace/GNU-toolchain/arm-12-mpacbti/src/newlib-cygwin/newlib/libc/reent/fstatr.c:55: warning: _fstat is not implemented and will always fail
+d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/../../../../arm-none-eabi/bin/ld.exe: d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/thumb/v7/nofp\libc.a(libc_a-signalr.o): in function `_getpid_r':
+/data/jenkins/workspace/GNU-toolchain/arm-12-mpacbti/src/newlib-cygwin/newlib/libc/reent/signalr.c:83: warning: _getpid is not implemented and will always fail
+d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/../../../../arm-none-eabi/bin/ld.exe: d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/thumb/v7/nofp\libc.a(libc_a-isattyr.o): in function `_isatty_r':
+/data/jenkins/workspace/GNU-toolchain/arm-12-mpacbti/src/newlib-cygwin/newlib/libc/reent/isattyr.c:52: warning: _isatty is not implemented and will always fail
+d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/../../../../arm-none-eabi/bin/ld.exe: d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/thumb/v7/nofp\libc.a(libc_a-signalr.o): in function `_kill_r':
+/data/jenkins/workspace/GNU-toolchain/arm-12-mpacbti/src/newlib-cygwin/newlib/libc/reent/signalr.c:53: warning: _kill is not implemented and will always fail
+d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/../../../../arm-none-eabi/bin/ld.exe: d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/thumb/v7/nofp\libc.a(libc_a-lseekr.o): in function `_lseek_r':
+/data/jenkins/workspace/GNU-toolchain/arm-12-mpacbti/src/newlib-cygwin/newlib/libc/reent/lseekr.c:49: warning: _lseek is not implemented and will always fail
+d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/../../../../arm-none-eabi/bin/ld.exe: d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/thumb/v7/nofp\libc.a(libc_a-readr.o): in function `_read_r':
+/data/jenkins/workspace/GNU-toolchain/arm-12-mpacbti/src/newlib-cygwin/newlib/libc/reent/readr.c:49: warning: _read is not implemented and will always fail
+d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/../../../../arm-none-eabi/bin/ld.exe: d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/thumb/v7/nofp\libc.a(libc_a-writer.o): in function `_write_r':
+/data/jenkins/workspace/GNU-toolchain/arm-12-mpacbti/src/newlib-cygwin/newlib/libc/reent/writer.c:49: warning: _write is not implemented and will always fail
+d:/arm-gnu-toolchain-12.2.mpacbti-bet1-mingw-w64-i686-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/12.2.0/../../../../arm-none-eabi/bin/ld.exe: warning: build/onboarding.out has a LOAD segment with RWX permissions

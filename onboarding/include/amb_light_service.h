@@ -18,8 +18,7 @@ typedef enum {
 /* USER CODE BEGIN */
 // Define light service queue config here
 // Settings
-static const uint8_t event_queue_len = 10;
-static QueueHandle_t event_queue;
+#define EVENT_QUEUE_LEN 10
 /* USER CODE END */
 
 /**
