@@ -25,11 +25,9 @@ typedef enum {
  */
 uint8_t initLightService(void);
 
-/* Controller task config */
-#define CONTROLLER_NAME_LIGHT   "lightService"
-#define CONTROLLER_STACK_SIZE   256
-#define CONTROLLER_PRIORITY     1
+/* Light task config */
 #define LIGHT_SERVICE_QUEUE_SIZE 1
+#define LIGHT_ELEMENT_SIZE sizeof(light_event_t)
 
 /**
  * @brief Send an event to the light service queue.

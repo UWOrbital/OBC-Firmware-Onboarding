@@ -36,22 +36,29 @@ uint8_t initLightService(void) {
     BaseType_t xReturned = pdFAIL;
     
     if (event_queue == NULL) {
-        event_queue = xQueueCreate(1, LIGHT_SERVICE_QUEUE_SIZE);
+        event_queue = xQueueCreate(LIGHT_SERVICE_QUEUE_SIZE, LIGHT_ELEMENT_SIZE);
     }
 
     if (lightServiceHandle == NULL) {
         // Create controller task
         xReturned = xTaskCreate(lightServiceTask,             /* Function that implements the task. */
-                                CONTROLLER_NAME_LIGHT,            /* Text name for the task. */
-                                CONTROLLER_STACK_SIZE,      /* Stack size in words, not bytes. */
+                                LIGHT_SERVICE_NAME,            /* Text name for the task. */
+                                LIGHT_SERVICE_STACK_SIZE,      /* Stack size in words, not bytes. */
                                 NULL,                       /* Parameter passed into the task. */
-                                CONTROLLER_PRIORITY,        /* Priority at which the task is created. */
+                                LIGHT_SERVICE_PRIORITY,        /* Priority at which the task is created. */
                                 &lightServiceHandle);     /* Used to pass out the created task's handle. */
+    }
+
+    if (event_queue == NULL) {
+        unsigned char err[] = "Error Starting Queue";
+        sciPrintText(scilinREG, (unsigned char*) err, strlen((const char*) err));    
+        return 0;   
     }
 
     if(xReturned == pdFAIL){
         unsigned char err[] = "Error Starting Light Service";
         sciPrintText(scilinREG, (unsigned char*) err, strlen((const char*) err));
+        return 0;
     }
 
     if(event_queue == NULL){
@@ -77,11 +84,11 @@ static void lightServiceTask(void * pvParameters) {
     }
 
     while(true) {
-        if(xQueueReceive(event_queue, &eventBuffer, ( TickType_t ) 0) == pdPASS) {
+        if(xQueueReceive(event_queue, &eventBuffer, ( TickType_t ) 2) == pdPASS) {
             if(eventBuffer == MEASURE_LIGHT) {
                 uint16_t lightMeasurement = getLightSensorData();
                 char output[7];
-                snprintf(output, 7, "%d", lightMeasurement);
+                snprintf(output, 7, "%d\n", lightMeasurement);
                 sciPrintText(scilinREG, (unsigned char*) output, strlen((const char*) output));
             }
         }
