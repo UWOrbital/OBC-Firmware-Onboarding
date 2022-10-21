@@ -56,7 +56,19 @@ uint8_t initController(void) {
 
     /* USER CODE BEGIN */
     // Create light timer and check if task/timers were created successfully
+    if (lightTimerHandle == NULL) {
+        // Create led timer
+        lightTimerHandle = xTimerCreate(LIGHT_TIMER_NAME,
+                                    LIGHT_TIMER_PERIOD,
+                                    LIGHT_TIMER_AUTORELOAD,
+                                    (void *) 0,
+                                    lightTimerCallback);
+    }
 
+    if (xReturned == pdFAIL || ledTimerHandle == NULL || lightTimerHandle == NULL) {
+        sciPrintText(scilinREG, (unsigned char *) "Error: Cannot start controller task, led timer or light timer", 61);
+        return 0;
+    }
     /* USER CODE END */
 
     return 1;
@@ -70,7 +82,7 @@ static void controllerTask(void * pvParameters) {
     if (lightServiceStatus == 0) {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
-
+        sciPrintText(scilinREG, (unsigned char *) "Error: Cannot initialize light service", 38);
         /* USER CODE END */
     } else { 
         /* Light service task and queue created successfully */
@@ -78,7 +90,11 @@ static void controllerTask(void * pvParameters) {
         
         /* USER CODE BEGIN */
         // Start light timer
+        xReturned = xTimerStart(lightTimerHandle, 0);
 
+        if (xReturned == pdFAIL) {
+            sciPrintText(scilinREG, (unsigned char *) "Error: Cannot start LED or light timer", 38);
+        }
         /* USER CODE END */
     }
 
@@ -94,7 +110,8 @@ static void ledTimerCallback(TimerHandle_t xTimer) {
 static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
-
+    ASSERT(xTimer != NULL);
+    sendToLightServiceQueue(MEASURE_LIGHT);
     /* USER CODE END */
 }
 
