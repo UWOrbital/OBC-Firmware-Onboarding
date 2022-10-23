@@ -20,13 +20,12 @@
 //-------------------------------------------------------------------------
 // Question 3
 // Complete the following function. The function should flip the most 
-// significant bit of the input parameter `x` and the least significant
-// bit of the input parameter `y`. The function should return the new y
-// value appended to the new x value.
+// significant bit and the least significant bit of the input byte `x`.
+// The function should return the y value appended to the new x value.
 // 
 // Example: x = 0b10010010, y = 0b01100101
-//          x becomes 0b00010010, y becomes 0b01100100
-//          The function should return 0b0001001001100100
+//          x becomes 0b00010011
+//          The function should return 0b0001001101100101
 //-------------------------------------------------------------------------
 uint16_t q3(uint8_t x, uint8_t y) {
 
@@ -99,9 +98,9 @@ int main(void) {
     ASSERT(q2Array[1] == -1);
 
     // Question 3 Test
-    ASSERT(q3(0b10010010, 0b01100101) == 0b0001001001100100);
-    ASSERT(q3(3, 3) == 33538);
-    ASSERT(q3(0x0, 0x0) == 0x8001);
+    ASSERT(q3(0b10010010, 0b01100101) == 0b0001001101100101);
+    ASSERT(q3(3, 3) == 33283);
+    ASSERT(q3(0x0, 0x0) == 0x8100);
 
     // Question 4 Test
     uint8_t smallArray[5] = {1, 2, 3, 4, 5};
