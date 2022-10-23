@@ -1,15 +1,14 @@
 # C Programming Challenge - Level 1
 
-Before you begin, make sure you have Make and GCC installed on your machine. 
+This mini-challenge is intended to test your knowledge of C programming. There are 8 C programming questions that can be found in the challenge.c file. Your solution to this challenge will be verified automatically on a standard Linux machine once you make a pull request.
 
-Your solution to this challenge will be verified automatically on a standard Linux machine.
+If you'd like to test your solution locally, make sure you have Make and GCC for your system installed.
 
-There are 8 C programming questions that can be found in the challenge.c file.
-
-If you've answered the questions, you can build your program and test your solutions locally. To do this, run:
-```
+To test your solution, run:
+```sh
 make clean
 make all
+./build/challenge # Or ./build/challenge.exe on Windows
 ```
 
 If you've answered all the questions correctly, you'll pass all the test cases. There should be zero build errors/warnings.
