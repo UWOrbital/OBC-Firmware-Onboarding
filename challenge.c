@@ -109,7 +109,6 @@ int main(void) {
     ASSERT(q4(smallArray, 5) == 15);
     ASSERT(q4(smallArray, 0) == 0);
     ASSERT(q4(NULL, 10) == -1);
-    ASSERT(q4(smallArray, 10) == -1);
     ASSERT(q4(largeArray, 1000) == 1);
     
     // Question 5 Test
