@@ -7,7 +7,7 @@
 // Question 1
 // Include the challenge.h header file
 //-------------------------------------------------------------------------
-
+#include "challenge.h"
 
 //-------------------------------------------------------------------------
 // Question 2
@@ -15,7 +15,8 @@
 // the array should be `q2Array`. The size should be defined by a macro
 // named `Q2_ARRAY_SIZE`.
 //-------------------------------------------------------------------------
-
+#define Q2_ARRAY_SIZE 10
+int q2Array[Q2_ARRAY_SIZE];
 
 //-------------------------------------------------------------------------
 // Question 3
@@ -28,7 +29,8 @@
 //          The function should return 0b0001001101100101
 //-------------------------------------------------------------------------
 uint16_t q3(uint8_t x, uint8_t y) {
-
+    x ^= 0b10000001;
+    return (x << 8) | y;
 }
 
 //-------------------------------------------------------------------------
@@ -38,10 +40,14 @@ uint16_t q3(uint8_t x, uint8_t y) {
 // Deal with all possible errors. It should return -1 if any errors occur.
 //-------------------------------------------------------------------------
 int32_t q4(uint8_t * array, uint32_t arrayLength) {
-    for (uint8_t i = 0; i <= arrayLength; i++) {
-        int32_t sum = 0;
+    if (array == NULL)
+        return -1;
+
+    int32_t sum = 0;
+    for (uint32_t i = 0; i < arrayLength; i++) {
         sum += array[i];
     }
+    return sum;
 }
 
 //-------------------------------------------------------------------------
@@ -50,7 +56,10 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - uint32_t a
 // - uint16_t b
 //-------------------------------------------------------------------------
-
+typedef union {
+    uint32_t a;
+    uint16_t b;
+} q5_t;
 
 //-------------------------------------------------------------------------
 // Question 6
@@ -59,7 +68,10 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - uint32_t x
 // - uint16_t y
 //-------------------------------------------------------------------------
-
+typedef struct {
+    uint32_t x;
+    uint16_t y;
+} q6_t;
 
 //-------------------------------------------------------------------------
 // Question 7
@@ -70,14 +82,19 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - STATE_C = 2
 // - FAIL_STATE = 3
 //-------------------------------------------------------------------------
-
+typedef enum {
+    STATE_A,
+    STATE_B,
+    STATE_C,
+    FAIL_STATE
+} state_t;
 
 //-------------------------------------------------------------------------
 // Question 8
 // Define a macro called `MULTIPLY` that takes two parameters and multiplies
 // them together. The macro should return the result.
 //-------------------------------------------------------------------------
-
+#define MULTIPLY(x, y) ((x) * (y))
 
 //-------------------------------------------------------------------------
 // The following function is used to test your code. Do not remove any 
