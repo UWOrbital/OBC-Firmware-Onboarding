@@ -5,12 +5,12 @@ on:
     branches: [level1]
 
 jobs:
-build:
-  runs-on: ubuntu-latest
-  steps:
-  - name: Checkout Repo
-    uses: actions/checkout@v2
-  - name: Build Application
-    run: make all
-  - name: Run Tests
-    run: ./build/challenge
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v2
+    - name: Build Application
+      run: make all
+    - name: Run Tests
+      run: ./build/challenge
