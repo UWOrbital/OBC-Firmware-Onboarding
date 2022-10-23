@@ -81,18 +81,16 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 
 //-------------------------------------------------------------------------
 // Question 9
-// The following function stores the sum of `a` and `b` in `c` and returns
-// a pointer to `c`.
-//
-// Explain why the following code does not work. How would you fix it?
+// The following function swaps the values of two integers. The function
+// should return 0 if the swap was successful, and -1 if the swap failed.
 // 
-// ANSWER HERE:
-// 
-// 
+// Example: 
+// int x = 5, y = 10;
+// q9(&x, &y); // returns 0
+// Now, x = 10 and y = 5
 //-------------------------------------------------------------------------
-int * q9(int a, int b) {
-    int c = a + b;
-    return &c;
+int q9(int *a, int *b) {
+
 }
 
 //-------------------------------------------------------------------------
@@ -155,6 +153,15 @@ int main(void) {
     ASSERT(MULTIPLY(-1, 1) == -1);
     ASSERT(MULTIPLY(2.0, 2.0) == 4.0);
     ASSERT(MULTIPLY(1 + 3, 4 + 6) == 40);
+
+    // Question 9 Test
+    int x = 5, y = 10;
+    ASSERT(q9(&x, &y) == 0);
+    ASSERT(x == 10);
+    ASSERT(y == 5);
+    ASSERT(q9(NULL, &y) == -1);
+    ASSERT(q9(&x, NULL) == -1);
+    ASSERT(q9(NULL, NULL) == -1);
 
     return 0;
 }
