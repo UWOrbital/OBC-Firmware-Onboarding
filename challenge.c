@@ -80,6 +80,22 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 
 
 //-------------------------------------------------------------------------
+// Question 9
+// The following function stores the sum of `a` and `b` in `c` and returns
+// a pointer to `c`.
+//
+// Explain why the following code does not work. How would you fix it?
+// 
+// ANSWER HERE:
+// 
+// 
+//-------------------------------------------------------------------------
+int * q9(int a, int b) {
+    int c = a + b;
+    return &c;
+}
+
+//-------------------------------------------------------------------------
 // The following function is used to test your code. Do not remove any 
 // existing code. You may add additional code if you wish.
 //-------------------------------------------------------------------------
