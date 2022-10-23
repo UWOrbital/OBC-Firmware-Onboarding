@@ -1,12 +1,16 @@
-# OnboardingDebug - Level 1
+# C Programming Challenge - Level 1
 
-There are 5 errors in main.c which will prevent it from running. Can you find them all?
+Before you begin, make sure you have Make and GCC installed on your machine. 
 
-The intended behaviour of the code is to control to LEDs on the devboard - the blink pattern should be:
-<pre>
-LED A: ||: o       |x       |o       |x       :||     
-LED B: ||: o   x   |o   x   |o x o x |o x o x :||
-</pre>
-...Where O represents an LED turning on, and X represents an LED turning off. Each LED is controlled in its own task.
+Your solution to this challenge will be verified automatically on a standard Linux machine.
 
-The errors are mostly classic C programming mistakes. If you don't have a background in operating systems, or freeRTOS specifically, you should still be able to find all the bugs with C knowledge and basic pattern recognition skills. Good luck!
+There are 8 C programming questions that can be found in the challenge.c file.
+
+If you've answered the questions, you can build your program and test your solutions locally. To do this, run:
+```
+make clean
+make all
+```
+
+If you've answered all the questions correctly, you'll pass all the test cases. There should be zero build errors/warnings.
+
