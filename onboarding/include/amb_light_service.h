@@ -9,14 +9,15 @@ typedef enum {
 } light_event_t;
 
 /* Light service task config */
-#define LIGHT_SERVICE_NAME "light_service"
+#define LIGHT_SERVICE_NAME       "light_service"
 #define LIGHT_SERVICE_STACK_SIZE 256
-#define LIGHT_SERVICE_PRIORITY 1
+#define LIGHT_SERVICE_PRIORITY   1
 
 /* USER CODE BEGIN */
 // Define light service queue config here
-#define QUEUE_SIZE 2
-#define QUEUE_ITEM_SIZE sizeof(light_event_t)
+#define LIGHT_SERVICE_QUEUE_SIZE      10
+#define LIGHT_SERVICE_QUEUE_ITEM_SIZE sizeof(light_event_t)
+#define LIGHT_SERVICE_QUEUE_DELAY     pdMS_TO_TICKS(1000)
 /* USER CODE END */
 
 /**

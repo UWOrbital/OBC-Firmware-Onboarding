@@ -6,11 +6,12 @@
 
 /* USER CODE BEGIN */
 // Include any additional headers and global variables here
-#include <stdio.h>
-#include <math.h>
 #include <FreeRTOS.h>
 #include <os_task.h>
 #include <os_queue.h>
+
+#include <stdio.h>
+#include <math.h>
 
 static TaskHandle_t lightServiceTaskHandle = NULL;
 static QueueHandle_t lightQueueHandle = NULL;
@@ -39,7 +40,7 @@ uint8_t initLightService(void) {
     }
 
     if (lightQueueHandle == NULL) {
-        lightQueueHandle = xQueueCreate(QUEUE_SIZE, QUEUE_ITEM_SIZE);
+        lightQueueHandle = xQueueCreate(LIGHT_SERVICE_QUEUE_SIZE, LIGHT_SERVICE_QUEUE_ITEM_SIZE);
         if (lightQueueHandle == NULL) {
             sciPrintText(scilinREG, (unsigned char *) "Error: Cannot initialize light queue", 36);
             return 0;
@@ -77,11 +78,11 @@ uint8_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue.
     if (lightQueueHandle != NULL) {
-        if (xQueueSend(lightQueueHandle, MEASURE_LIGHT, 1000) != pdPASS) {
-            sciPrintText(scilinREG, (unsigned char *) "Error: Unable to send MEASURE_LIGHT event", 41);
+        if (xQueueSend(lightQueueHandle, event, LIGHT_SERVICE_QUEUE_DELAY) == pdPASS) {
             return 1;
         }
     }
+    sciPrintText(scilinREG, (unsigned char *) "Error: Unable to send MEASURE_LIGHT event", 41);
     /* USER CODE END */
     return 0;
 }
