@@ -5,6 +5,7 @@
 
 /* Event types to be sent to light service queue */
 typedef enum {
+    NULL_EVENT,
     MEASURE_LIGHT
 } light_event_t;
 
@@ -15,7 +16,10 @@ typedef enum {
 
 /* USER CODE BEGIN */
 // Define light service queue config here
+#define LIGHT_SERVICE_QUEUE_LENGTH 16
+#define LIGHT_SERVICE_ITEM_SIZE sizeof(light_event_t)
 
+#define MAX_STRING_SIZE 32
 /* USER CODE END */
 
 /**

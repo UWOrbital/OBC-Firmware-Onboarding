@@ -66,7 +66,7 @@ uint8_t initController(void) {
     }
     /* USER CODE END */
 
-    return 1;
+    return xReturned;
 }
 
 static void controllerTask(void * pvParameters) {
@@ -77,6 +77,8 @@ static void controllerTask(void * pvParameters) {
     if (lightServiceStatus == 0) {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
+        char s[] = "Error occurred while initializing light service";
+        sciPrintText(scilinREG, (unsigned char *) s, strlen(s));
 
         /* USER CODE END */
     } else { 
@@ -85,10 +87,11 @@ static void controllerTask(void * pvParameters) {
         
         /* USER CODE BEGIN */
         // Start light timer
+        xReturned = xReturned | xTimerStart(lightTimerHandle, 0);
 
         /* USER CODE END */
     }
-
+    
     while (1);
 }
 
@@ -102,7 +105,7 @@ static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
     light_event_t event = MEASURE_LIGHT;
-    sendToLightServiceQueue(light_event_t *event);
+    sendToLightServiceQueue(&event);
     /* USER CODE END */
 }
 

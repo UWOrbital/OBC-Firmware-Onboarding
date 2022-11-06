@@ -48,7 +48,7 @@ uint8_t sciPrintText(sciBASE_t *sci, unsigned char *text, uint32_t length) {
     // Print text to the SCILin serial port here.
     if(sci == scilinREG) {
         if(sciLinMutex != NULL){
-            if(xSemaphoreTake(sciLinMutex, portMAX_DELAY) == pdTrue){
+            if(xSemaphoreTake(sciLinMutex, portMAX_DELAY) == pdTRUE){
                 sciSendBytes(sci, text, length);
                 xSemaphoreGive(sciLinMutex);
                 return 1;
