@@ -56,7 +56,14 @@ uint8_t initController(void) {
 
     /* USER CODE BEGIN */
     // Create light timer and check if task/timers were created successfully
-
+    if(lightTimerHandle == NULL) {
+        // Create light timer
+        lightTimerHandle = xTimerCreate(LIGHT_TIMER_NAME,
+                                        LIGHT_TIMER_PERIOD,
+                                        LIGHT_TIMER_AUTORELOAD,
+                                        (void *) 0,
+                                        lightTimerCallback);
+    }
     /* USER CODE END */
 
     return 1;
@@ -94,7 +101,8 @@ static void ledTimerCallback(TimerHandle_t xTimer) {
 static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
-
+    light_event_t event = MEASURE_LIGHT;
+    sendToLightServiceQueue(light_event_t *event);
     /* USER CODE END */
 }
 
