@@ -64,6 +64,11 @@ uint8_t initController(void) {
                                         (void *) 0,
                                         lightTimerCallback);
     }
+
+
+    if(ledTimerHandle == NULL || lightTimerHandle == NULL) {
+        xReturned = pdFAIL;
+    }
     /* USER CODE END */
 
     return xReturned;

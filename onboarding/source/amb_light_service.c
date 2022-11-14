@@ -44,11 +44,10 @@ uint8_t initLightService(void) {
         lightServiceQueue = xQueueCreate(LIGHT_SERVICE_QUEUE_LENGTH, LIGHT_SERVICE_ITEM_SIZE);
     }
     
-    // inititalize printing
-    sciMutexInit();
-
-    // initialize ADC 
-    adcInit();
+    // Check if create queue failed
+    if(lightServiceQueue == NULL){
+        xReturned = pdFAIL;
+    }
 
     /* USER CODE END */
     return xReturned;
@@ -58,13 +57,13 @@ static void lightServiceTask(void * pvParameters) {
     /* USER CODE BEGIN */
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
     while(1){
-        light_event_t *nextEvent = NULL;
+        light_event_t nextEvent;
 
-        if(xQueueReceive(lightServiceQueue, nextEvent, portMAX_DELAY) != pdFALSE){  // receive next item in queue
-            *nextEvent = NULL_EVENT;
+        if(xQueueReceive(lightServiceQueue, &nextEvent, portMAX_DELAY) != pdFALSE){  // receive next item in queue
+            nextEvent = NULL_EVENT;
         }
 
-        switch (*nextEvent) {
+        switch (nextEvent) {
             case MEASURE_LIGHT:
                 adcData_t lightDataBuf;
                 // do measure light routine
