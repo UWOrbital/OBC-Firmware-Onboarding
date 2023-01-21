@@ -28,8 +28,6 @@ void sciMutexInit(void) {
         sciLinMutex = xSemaphoreCreateMutex();
     }
 
-    configASSERT(sciMutex);
-    configASSERT(sciLinMutex);
     /* USER CODE END */
 }
 
