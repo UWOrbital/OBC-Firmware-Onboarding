@@ -52,7 +52,7 @@
 
 #include "adc.h"
 #include "sys_vim.h"
-
+#include "reg_adc.h"
 /* USER CODE BEGIN (1) */
 /* USER CODE END */
 
