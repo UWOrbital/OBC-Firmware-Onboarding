@@ -50,7 +50,7 @@ uint8_t initLightService(void) {
  * @brief Get light data from adcData
  * @param void
  **/
-uint8_t* Get_Light_Sensor_data(void)
+uint16_t Get_Light_Sensor_data(void)
 {
 
 	adcData_t *adc_data_ptr = pvPortMalloc(sizeof(adcData_t));
@@ -81,21 +81,18 @@ static void lightServiceTask(void * pvParameters) {
     ASSERT(lightServiceTaskHandle != NULL);
     uint8_t lightServiceStatus = initLightService();
     
-    if(lightServiceStatus == 0){
-        
-        printf("Failed to create a queue");
-        
-    }else{
-        
-        uint32 Light_Sensor_Data = Get_Light_Sensor_data();
-        int length = snprintf(NULL, 0, "&#37;u", Light_Sensor_Data);
+    while(lightServiceStatus == 0){
+    	lightServiceStatus = initLightService()
+    }
+	    
+        uint16 Light_Sensor_Data = Get_Light_Sensor_data();
+        int length = snprintf(NULL, 0, "&#37;", Light_Sensor_Data);
         char *data = malloc(length + 1);
         
         snprintf(data, "&#37;u", Light_Sensor_Data);
         sciPrintText(scilinREG, data, length + 1);
         
         free(data);
-    }
     /* USER CODE END */
 }
 
