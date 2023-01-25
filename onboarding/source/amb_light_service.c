@@ -79,20 +79,23 @@ static void lightServiceTask(void * pvParameters) {
     /* USER CODE BEGIN */
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
     ASSERT(lightServiceTaskHandle != NULL);
-    uint8_t lightServiceStatus = initLightService();
-    
-    while(lightServiceStatus == 0){
-    	lightServiceStatus = initLightService()
-    }
+    light_event_t queueTask = NULL;
+	
+    while (xQueueReceive(xLightQueue, *queueTask, 0) == pdTRUE) {
 	    
-        uint16 Light_Sensor_Data = Get_Light_Sensor_data();
-        int length = snprintf(NULL, 0, "&#37;", Light_Sensor_Data);
-        char *data = malloc(length + 1);
+        if (queueTask == MEASURE_LIGHT){
+		
+    		lightServiceStatus = initLightService();
+        	uint16 Light_Sensor_Data = Get_Light_Sensor_data();
+        	int length = snprintf(NULL, 0, "&#37;", Light_Sensor_Data);
+        	char *data = malloc(length + 1);
         
-        snprintf(data, "&#37;u", Light_Sensor_Data);
-        sciPrintText(scilinREG, data, length + 1);
+        	snprintf(data, "&#37;u", Light_Sensor_Data);
+        	sciPrintText(scilinREG, data, length + 1);
         
-        free(data);
+        	free(data);
+	}
+    }
     /* USER CODE END */
 }
 
@@ -104,7 +107,7 @@ uint8_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue.
     event = &light_event;
-    lightServiceTask(event);
+    xQueueSend(xLightServiceQueue, event, LIGHT_EVENT_SIZE);
     /* USER CODE END */
     return 0;
 }
