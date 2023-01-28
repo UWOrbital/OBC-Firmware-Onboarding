@@ -40,26 +40,24 @@ uint8_t initLightService(void) {
     }
 
     if(xReturned == pdFAIL){
-        printf("Unable to create a light service task\n");
+        return 0;
     }
-	
+
+    xLightServiceQueue = xQueueCreate(LIGHT_SERVICE_QUEUE_SiZE, LIGHT_EVENT_SIZE);
+    
     if(xLightServiceQueue == NULL){
-        xLightServiceQueue = xQueueCreate(QUEUE_SiZE, LIGHT_EVENT_SIZE);
+        return 0;
     }
     /* USER CODE END */
     return 1;
 }
 
-/**
- * @brief Get light data from adcData
- * @param void
- **/
-uint16_t Get_Light_Sensor_data(void)
+uint16_t getLightSensorData(void)
 {
 
-	adcData_t *adc_data_ptr = pvPortMalloc(sizeof(adcData_t));
-    adc_data_ptr->id = 6;
-    //adc_data_ptr->value;
+	adcData_t lightData;
+    	lightData.id = 6;
+	adcData_t *adcDataPtr = &lightData;
 
  	/** - Start Group1 ADC Conversion 
  	*     Select Channel 6 - Light Sensor for Conversion
@@ -76,28 +74,30 @@ uint16_t Get_Light_Sensor_data(void)
 	
 	/** - Transmit the Conversion data to PC using SCI
     */
-	return (adc_data_ptr->value);
+	return (adcDataPtr->value);
 }
 
 static void lightServiceTask(void * pvParameters) {
     /* USER CODE BEGIN */
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
     ASSERT(lightServiceTaskHandle != NULL);
-    light_event_t queueTask;
+    light_event_t queueTask = NULL_EVENT;
 	
-    while (xQueueReceive(xLightServiceQueue, &queueTask, 0) == pdTRUE) {
-	    
+    while(1){
+
+        if (xQueueReceive(xLightServiceQueue, &queueTask, portMAX_DELAY) == pdTRUE) {
+            queueTask = NULL_EVENT;   
+        }
+        
         if (queueTask == MEASURE_LIGHT){
-		
-        	uint16 Light_Sensor_Data = Get_Light_Sensor_data();
-        	int length = snprintf(NULL, 0, "%c;", (char)Light_Sensor_Data);
-        	char *data = malloc(length + 1);
+            
+            uint16_t lightSensorData = getLightSensorData();
+            char data[sizeof(lightSensorData)];
+            int length = snprintf(data, sizeof(data), "%c", lightSensorData);
+
+            sciPrintText(scilinREG, (unsigned char*)data, length + 1);
+        }
         
-        	sprintf(data, "%c;", (char)Light_Sensor_Data);
-        	sciPrintText(scilinREG, (unsigned char*)data, length + 1);
-        
-        	free(data);
-	}
     }
     /* USER CODE END */
 }
@@ -109,8 +109,17 @@ static void lightServiceTask(void * pvParameters) {
 uint8_t sendToLightServiceQueue(light_event_t *event) { 
     /* USER CODE BEGIN */
     // Send the event to the queue.
-    event = &light_event;
-    xQueueSend(xLightServiceQueue, event, LIGHT_EVENT_SIZE);
+    if(event == NULL){
+        
+        return 0;
+    }
+    BaseType_t xReturned = xQueueSend(xLightServiceQueue, event, LIGHT_EVENT_SIZE);
+
+    if(xReturned == pdPASS){
+
+        return 1;
+
+    }
     /* USER CODE END */
     return 0;
 }
