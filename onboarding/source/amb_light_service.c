@@ -69,7 +69,7 @@ uint16_t getLightSensorData(void)
 	/** - Read the conversion result
 	*     The data contains the Light sensor data
     */
-	adcGetData(adcREG1, adcGROUP1, adc_data_ptr);
+	adcGetData(adcREG1, adcGROUP1, adcDataPtr);
 	
 	/** - Transmit the Conversion data to PC using SCI
     */
