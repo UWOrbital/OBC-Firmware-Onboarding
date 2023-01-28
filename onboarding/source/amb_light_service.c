@@ -16,7 +16,6 @@
 
 static TaskHandle_t lightServiceTaskHandle = NULL;
 static QueueHandle_t xLightServiceQueue = NULL;
-light_event_t light_event;
 /* USER CODE END */
 
 /**
