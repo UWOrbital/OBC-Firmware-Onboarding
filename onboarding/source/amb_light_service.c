@@ -39,6 +39,10 @@ uint8_t initLightService(void) {
 
     }
 
+    if(xReturned == pdFAIL){
+        printf("Unable to create a light service task\n");
+    }
+	
     if(xLightServiceQueue == NULL){
         xLightServiceQueue = xQueueCreate(QUEUE_SiZE, LIGHT_EVENT_SIZE);
     }
