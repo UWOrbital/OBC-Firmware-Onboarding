@@ -86,11 +86,11 @@ static void lightServiceTask(void * pvParameters) {
         if (queueTask == MEASURE_LIGHT){
 		
         	uint16 Light_Sensor_Data = Get_Light_Sensor_data();
-        	int length = snprintf(NULL, 0, "&#37;", Light_Sensor_Data);
+        	int length = snprintf(NULL, 0, "%c;", (char)Light_Sensor_Data);
         	char *data = malloc(length + 1);
         
-        	snprintf(data, "&#37;", Light_Sensor_Data);
-        	sciPrintText(scilinREG, data, length + 1);
+        	sprintf(data, "%c;", (char)Light_Sensor_Data);
+        	sciPrintText(scilinREG, (unsigned char*)data, length + 1);
         
         	free(data);
 	}
