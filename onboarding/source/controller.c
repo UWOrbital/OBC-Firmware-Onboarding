@@ -64,6 +64,10 @@ uint8_t initController(void) {
                                         (void *) 0,
                                         lightTimerCallback);
     }
+    
+    if(xReturned == pdFAIL){
+        printf("Unable to create a task");
+    }
     /* USER CODE END */
 
     return 1;
@@ -86,6 +90,10 @@ static void controllerTask(void * pvParameters) {
         /* USER CODE BEGIN */
         // Start light timer
         xReturned = xTimerStart(lightTimerHandle, 0);
+        
+        if(xReturned == pdFAIL){
+            printf("Timer start failed.");
+        }
         /* USER CODE END */
     }
 
