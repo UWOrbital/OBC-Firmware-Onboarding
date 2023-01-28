@@ -81,7 +81,7 @@ static void lightServiceTask(void * pvParameters) {
     ASSERT(lightServiceTaskHandle != NULL);
     light_event_t queueTask;
 	
-    while (xQueueReceive(xLightQueue, &queueTask, 0) == pdTRUE) {
+    while (xQueueReceive(xLightServiceQueue, &queueTask, 0) == pdTRUE) {
 	    
         if (queueTask == MEASURE_LIGHT){
 		
