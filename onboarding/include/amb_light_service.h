@@ -5,6 +5,7 @@
 
 /* Event types to be sent to light service queue */
 typedef enum {
+    NULL_EVENT,
     MEASURE_LIGHT
 } light_event_t;
 
