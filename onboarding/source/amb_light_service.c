@@ -13,6 +13,7 @@
 #include <os_queue.h>
 #include <reg_adc.h>
 #include <stdlib.h>
+#include <math.h>
 
 static TaskHandle_t lightServiceTaskHandle = NULL;
 static QueueHandle_t xLightServiceQueue = NULL;
@@ -89,10 +90,11 @@ static void lightServiceTask(void * pvParameters) {
             if (queueTask == MEASURE_LIGHT){
             
             	uint16_t lightSensorData = getLightSensorData();
-            	char data[6] = {0};
-            	snprintf(data, 5, "%u", lightSensorData);
+		uint32_t length = (uint32_t) log10(lightSensorData);
+            	char data[length+1] = {0};
+            	snprintf(data, length+2, "%u\r\n", lightSensorData);
 
-            	sciPrintText(scilinREG, (unsigned char*)data, 5);
+            	sciPrintText(scilinREG, (unsigned char*)data, length);
         }  
       
     }
