@@ -90,7 +90,6 @@ static void lightServiceTask(void * pvParameters) {
             if (queueTask == MEASURE_LIGHT){
             
             	uint16_t lightSensorData = getLightSensorData();
-		//uint32_t length = (uint32_t) log10(lightSensorData);
             	char data[6] = {0};
             	snprintf(data, 8, "%u\r\n", lightSensorData);
 
