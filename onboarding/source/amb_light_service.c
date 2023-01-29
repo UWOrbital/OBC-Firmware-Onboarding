@@ -87,22 +87,17 @@ static void lightServiceTask(void * pvParameters) {
     ASSERT(lightServiceTaskHandle != NULL);
     light_event_t queueTask = NULL_EVENT;
 	
-    while(1){
-
         if (xQueueReceive(xLightServiceQueue, &queueTask, portMAX_DELAY) == pdTRUE) {
 		
-            	if (queueTask == MEASURE_LIGHT){
+            if (queueTask == MEASURE_LIGHT){
             
             	uint16_t lightSensorData = getLightSensorData();
             	char data[sizeof(lightSensorData)];
             	int length = snprintf(data, sizeof(data), "%c", lightSensorData);
 
             	sciPrintText(scilinREG, (unsigned char*)data, length + 1);
-        	}   
-        }
-        
-        
-        
+        }  
+      
     }
     /* USER CODE END */
 }
