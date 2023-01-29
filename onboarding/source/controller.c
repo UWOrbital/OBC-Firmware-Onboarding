@@ -65,7 +65,9 @@ uint8_t initController(void) {
                                         lightTimerCallback);
     }
     
-    if(xReturned == pdFAIL){
+    if(xReturned == pdFAIL || ledTimerHandle == NULL || lightTimerHandle == NULL){
+        char* message = "Unable to start task or timer."
+        sciPrintText(scilinREG, (unsigned char *) message, sizeof(message));
         return 0;
     }
     /* USER CODE END */
@@ -111,6 +113,7 @@ static void ledTimerCallback(TimerHandle_t xTimer) {
 static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
+    ASSER(xTimer != NULL);
     light_event_t lightEvent = MEASURE_LIGHT;
     sendToLightServiceQueue(&lightEvent);
     /* USER CODE END */
