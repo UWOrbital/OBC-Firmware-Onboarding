@@ -106,7 +106,6 @@ static void controllerTask(void * pvParameters) {
 
 static void ledTimerCallback(TimerHandle_t xTimer) {
     ASSERT(xTimer != NULL);
-
     gioToggleBit(gioPORTB, 1);
 }
 
