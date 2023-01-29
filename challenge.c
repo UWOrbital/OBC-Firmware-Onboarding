@@ -4,8 +4,16 @@
 #include <stdio.h>
 
 //-------------------------------------------------------------------------
-// Question 1
+// Question 0
 // Include the challenge.h header file
+//-------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------
+// Question 1
+// Declare two global variables. Both are integers named `q1A` and `q1B`, 
+// respectively. The value of `q1A` should be initialized to 0 and the value 
+// of `q1B`should be initialized to 1.
 //-------------------------------------------------------------------------
 
 
@@ -21,7 +29,7 @@
 // Question 3
 // Complete the following function. The function should flip the most 
 // significant bit and the least significant bit of the input byte `x`.
-// The function should return the y value appended to the new x value.
+// The function should then return the y value appended to the new x value.
 // 
 // Example: x = 0b10010010, y = 0b01100101
 //          x becomes 0b00010011
@@ -33,9 +41,13 @@ uint16_t q3(uint8_t x, uint8_t y) {
 
 //-------------------------------------------------------------------------
 // Question 4
-// Fix all the problems with the following function
-// The function should return the sum of all the elements in the array.
-// Deal with all possible errors. It should return -1 if any errors occur.
+// Fix all the issues with the following function, `q4`.
+// The function should return the sum of all the elements in the array 
+// pointed to by `array`. The length of the array is given by the parameter
+// `arrayLength`. Deal with all possible errors. It should return -1 if any 
+// errors occur.
+//
+// Note: The array contains 8-bit unsigned integers.
 //-------------------------------------------------------------------------
 int32_t q4(uint8_t * array, uint32_t arrayLength) {
     for (uint8_t i = 0; i <= arrayLength; i++) {
@@ -63,12 +75,10 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 
 //-------------------------------------------------------------------------
 // Question 7
-// Define a type called `state_t` that is an enum with the following
-// possible values:
-// - STATE_A = 0
-// - STATE_B = 1
-// - STATE_C = 2
-// - FAIL_STATE = 3
+// Define a type called `error_t` that is an enum with the following
+// values:
+// - SUCCESS = 0
+// - FAIL = 1
 //-------------------------------------------------------------------------
 
 
@@ -81,8 +91,9 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 
 //-------------------------------------------------------------------------
 // Question 9
-// The following function swaps the values of two integers. The function
-// should return 0 if the swap was successful, and -1 if the swap failed.
+// Complete the following function. The function swaps the values of two 
+// integers pointed to by `a` and `b`. The function should return 0 if the 
+// swap was successful and -1 if the swap failed.
 // 
 // Example: 
 // int x = 5, y = 10;
@@ -94,12 +105,43 @@ int q9(int *a, int *b) {
 }
 
 //-------------------------------------------------------------------------
+// Question 10
+// Complete the following function. The function should swap the values of
+// the `a` and `b` members in the `q10_t` structure pointed to by `q10`. Use 
+// the `q9` function you created. The `q10` function should return SUCCESS 
+// if the swap was successful, and FAIL if the swap failed.
+// 
+// Note: The error_t type is defined in question 7.
+//-------------------------------------------------------------------------
+typedef struct {
+    int a;
+    int b;
+} q10_t;
+
+error_t q10(q10_t *q10) {
+
+}
+
+//-------------------------------------------------------------------------
 // The following function is used to test your code. Do not remove any 
-// existing code. You may add additional code if you wish.
+// existing code. You may add additional tests if you wish.
 //-------------------------------------------------------------------------
 int main(void) {
-    // Question 1 Test
+    // Question 0 Test
     ASSERT(0 == 0);
+
+    // Question 1 Test
+    ASSERT(q1A == 0);
+    ASSERT(q1B == 1);
+
+    q1A = -1;
+    ASSERT(q1A == -1);
+
+    q1B = -3;
+    ASSERT(q1B == -3);
+
+    q1A = 0;
+    q1B = 1;
 
     // Question 2 Test
     ASSERT(Q2_ARRAY_SIZE == 10);
@@ -139,15 +181,11 @@ int main(void) {
     ASSERT(q6.y == 0x0506);
 
     // Question 7 Test
-    state_t state = STATE_A;
-    ASSERT(state == 0);
-    state = STATE_B;
-    ASSERT(state == 1);
-    state = STATE_C;
-    ASSERT(state == 2);
-    state = FAIL_STATE;
-    ASSERT(state == 3);
-    
+    error_t error = SUCCESS;
+    ASSERT(error == SUCCESS);
+    error = FAIL;
+    ASSERT(error == FAIL);
+
     // Question 8 Test
     ASSERT(MULTIPLY(1, 2) == 2);
     ASSERT(MULTIPLY(-1, 1) == -1);
@@ -162,6 +200,13 @@ int main(void) {
     ASSERT(q9(NULL, &y) == -1);
     ASSERT(q9(&x, NULL) == -1);
     ASSERT(q9(NULL, NULL) == -1);
+
+    // Question 10 Test
+    q10_t q10Test = {.a = 5, .b = 10};
+    ASSERT(q10(&q10Test) == SUCCESS);
+    ASSERT(q10Test.a == 10);
+    ASSERT(q10Test.b == 5);
+    ASSERT(q10(NULL) == FAIL);
 
     return 0;
 }
