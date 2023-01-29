@@ -60,9 +60,6 @@ uint16_t getLightSensorData(void)
 {
 
 	adcData_t lightData;
-    	lightData.id = 6;
-	adcData_t *adcDataPtr = &lightData;
-
  	/** - Start Group1 ADC Conversion 
  	*     Select Channel 6 - Light Sensor for Conversion
  	*/
@@ -74,11 +71,11 @@ uint16_t getLightSensorData(void)
 	/** - Read the conversion result
 	*     The data contains the Light sensor data
     */
-	adcGetData(adcREG1, adcGROUP1, adcDataPtr);
+	adcGetData(adcREG1, adcGROUP1, &lightData);
 	
 	/** - Transmit the Conversion data to PC using SCI
     */
-	return (adcDataPtr->value);
+	return (&lightData->value);
 }
 
 static void lightServiceTask(void * pvParameters) {
@@ -92,10 +89,10 @@ static void lightServiceTask(void * pvParameters) {
             if (queueTask == MEASURE_LIGHT){
             
             	uint16_t lightSensorData = getLightSensorData();
-            	char data[sizeof(lightSensorData)];
-            	int length = snprintf(data, sizeof(data), "%c", lightSensorData);
+            	char data[6];
+            	snprintf(data, 5, "%lu", lightSensorData);
 
-            	sciPrintText(scilinREG, (unsigned char*)data, length + 1);
+            	sciPrintText(scilinREG, (unsigned char*)data, 5);
         }  
       
     }
