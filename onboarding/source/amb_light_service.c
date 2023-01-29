@@ -90,17 +90,18 @@ static void lightServiceTask(void * pvParameters) {
     while(1){
 
         if (xQueueReceive(xLightServiceQueue, &queueTask, portMAX_DELAY) == pdTRUE) {
-            queueTask = NULL_EVENT;   
+		
+            	if (queueTask == MEASURE_LIGHT){
+            
+            	uint16_t lightSensorData = getLightSensorData();
+            	char data[sizeof(lightSensorData)];
+            	int length = snprintf(data, sizeof(data), "%c", lightSensorData);
+
+            	sciPrintText(scilinREG, (unsigned char*)data, length + 1);
+        	}   
         }
         
-        if (queueTask == MEASURE_LIGHT){
-            
-            uint16_t lightSensorData = getLightSensorData();
-            char data[sizeof(lightSensorData)];
-            int length = snprintf(data, sizeof(data), "%c", lightSensorData);
-
-            sciPrintText(scilinREG, (unsigned char*)data, length + 1);
-        }
+        
         
     }
     /* USER CODE END */
