@@ -66,7 +66,7 @@ uint8_t initController(void) {
     }
     
     if(xReturned == pdFAIL || ledTimerHandle == NULL || lightTimerHandle == NULL){
-        char* message = "Unable to start task or timer."
+        char* message = "Unable to start task or timer.";
         sciPrintText(scilinREG, (unsigned char *) message, sizeof(message));
         return 0;
     }
