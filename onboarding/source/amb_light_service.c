@@ -75,7 +75,7 @@ uint16_t getLightSensorData(void)
 	
 	/** - Transmit the Conversion data to PC using SCI
     */
-	return (&lightData->value);
+	return lightData.value;
 }
 
 static void lightServiceTask(void * pvParameters) {
@@ -89,8 +89,8 @@ static void lightServiceTask(void * pvParameters) {
             if (queueTask == MEASURE_LIGHT){
             
             	uint16_t lightSensorData = getLightSensorData();
-            	char data[6];
-            	snprintf(data, 5, "%lu", lightSensorData);
+            	char data[6] = {0};
+            	snprintf(data, 5, "%u", lightSensorData);
 
             	sciPrintText(scilinREG, (unsigned char*)data, 5);
         }  
