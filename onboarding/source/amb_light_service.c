@@ -42,10 +42,15 @@ uint8_t initLightService(void) {
         return 0;
     }
 
-    xLightServiceQueue = xQueueCreate(LIGHT_SERVICE_QUEUE_SiZE, LIGHT_EVENT_SIZE);
+    
     
     if(xLightServiceQueue == NULL){
-        return 0;
+	    
+	xLightServiceQueue = xQueueCreate(LIGHT_SERVICE_QUEUE_SiZE, LIGHT_EVENT_SIZE);
+	    
+	if(xLightServiceQueue == NULL){
+        	return 0;
+	}
     }
     /* USER CODE END */
     return 1;
