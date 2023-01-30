@@ -25,6 +25,7 @@ INCLUDE_DIRS :=
 INCLUDE_DIRS += -I"${CC_FOLDER_ROOT}/arm-none-eabi/include"
 INCLUDE_DIRS += -I"hal/include"
 INCLUDE_DIRS += -I"drivers/include"
+INCLUDE_DIRS += -I"common/include"
 INCLUDE_DIRS += -I"onboarding/include"
 
 LIBS := 
@@ -32,6 +33,7 @@ LIBS :=
 SRC_DIRS :=
 SRC_DIRS += hal/source
 SRC_DIRS += drivers/source
+SRC_DIRS += common/source
 SRC_DIRS += onboarding/source
 
 SRCS := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))

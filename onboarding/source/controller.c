@@ -1,8 +1,10 @@
 #include "controller.h"
 #include "amb_light_service.h"
 #include "serial_io.h"
+#include "obc_errors.h"
 
 #include <FreeRTOS.h>
+#include <os_projdefs.h>
 #include <os_task.h>
 #include <os_timer.h>
 #include <sys_common.h>
@@ -11,6 +13,21 @@
 #include <sci.h>
 
 #include <string.h>
+
+/* Controller task config */
+#define CONTROLLER_NAME         "controller"
+#define CONTROLLER_STACK_SIZE   256
+#define CONTROLLER_PRIORITY     1
+
+/* LED timer config */
+#define LED_TIMER_NAME          "led_timer"
+#define LED_TIMER_PERIOD        pdMS_TO_TICKS(2500)
+#define LED_TIMER_AUTORELOAD    pdTRUE
+
+/* USER CODE BEGIN */
+// define config for the light timer
+
+/* USER CODE END */
 
 /* Declare handlers for tasks and timers */
 static TaskHandle_t controllerTaskHandle = NULL;
@@ -33,7 +50,7 @@ static void lightTimerCallback(TimerHandle_t xTimer);
  */
 static void ledTimerCallback(TimerHandle_t xTimer);
 
-uint8_t initController(void) {
+obc_error_code_t initController(void) {
     BaseType_t xReturned = pdFAIL;
     if (controllerTaskHandle == NULL) {
         // Create controller task
@@ -45,6 +62,9 @@ uint8_t initController(void) {
                                 &controllerTaskHandle);     /* Used to pass out the created task's handle. */
     }
 
+    if (xReturned != pdPASS)
+        return OBC_ERROR_TASK_CREATION_FAILED;
+
     if (ledTimerHandle == NULL) {
         // Create led timer
         ledTimerHandle = xTimerCreate(LED_TIMER_NAME,
@@ -54,30 +74,32 @@ uint8_t initController(void) {
                                     ledTimerCallback);
     }
 
+    if (ledTimerHandle == NULL)
+        return OBC_ERROR_TIMER_CREATION_FAILED;
+
     /* USER CODE BEGIN */
-    // Create light timer and check if task/timers were created successfully
+    // Create light timer and check if it was created successfully
 
     /* USER CODE END */
-
-    return 1;
 }
 
 static void controllerTask(void * pvParameters) {
     ASSERT(controllerTaskHandle != NULL);
     ASSERT(ledTimerHandle != NULL);
 
-    uint8_t lightServiceStatus = initLightService();
-    if (lightServiceStatus == 0) {
+    obc_error_code_t lightServiceStatus = initLightService();
+    if (lightServiceStatus != OBC_ERR_CODE_SUCCESS) {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
 
         /* USER CODE END */
     } else { 
         /* Light service task and queue created successfully */
-        BaseType_t xReturned = xTimerStart(ledTimerHandle, 0);
+        BaseType_t xReturned; 
+        xReturned = xTimerStart(ledTimerHandle, 0);
         
         /* USER CODE BEGIN */
-        // Start light timer
+        // Start light timer and check if both timers were started successfully
 
         /* USER CODE END */
     }
