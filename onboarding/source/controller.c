@@ -56,7 +56,14 @@ uint8_t initController(void) {
 
     /* USER CODE BEGIN */
     // Create light timer and check if task/timers were created successfully
-
+    if (lightTimerHandle == NULL) {
+        // Create light timer
+        lightTimerHandle = xTimerCreate(LIGHT_TIMER_NAME,
+                                    LIGHT_TIMER_PERIOD,
+                                    LIGHT_TIMER_AUTORELOAD,
+                                    (void *) 0,
+                                    lightTimerCallback);
+    }
     /* USER CODE END */
 
     return 1;
@@ -70,7 +77,7 @@ static void controllerTask(void * pvParameters) {
     if (lightServiceStatus == 0) {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
-
+        printf("Failed to init light service");
         /* USER CODE END */
     } else { 
         /* Light service task and queue created successfully */
@@ -78,7 +85,7 @@ static void controllerTask(void * pvParameters) {
         
         /* USER CODE BEGIN */
         // Start light timer
-
+        xTimerStart(lightTimerHandle, 0);
         /* USER CODE END */
     }
 
@@ -94,7 +101,10 @@ static void ledTimerCallback(TimerHandle_t xTimer) {
 static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
+    ASSERT(xTimer != NULL);
 
+    light_event_t measureLight = MEASURE_LIGHT;
+    sendToLightServiceQueue(&measureLight);
     /* USER CODE END */
 }
 
