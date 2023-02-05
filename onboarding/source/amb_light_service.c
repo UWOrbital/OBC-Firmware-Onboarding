@@ -84,22 +84,22 @@ static void lightServiceTask(void * pvParameters) {
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
     ASSERT(lightServiceTaskHandle != NULL);
     light_event_t lightEvent = NULL_EVENT;
-	
+    while(1){
         if (xQueueReceive(xLightServiceQueue, &lightEvent, portMAX_DELAY) == pdTRUE) {
 		
             if (lightEvent == MEASURE_LIGHT){
             
             	uint16_t lightSensorData = getLightSensorData();
-		int dataSize = (int)(ceil(log(lightSensorData))+1);
-            	char data[dataSize];
+		int dataSize = 6;
+            	char data[dataSize] = {0};
             	snprintf(data, dataSize, "%u\r\n", lightSensorData);
 
             	sciPrintText(scilinREG, (unsigned char*)data, dataSize-1);
-        }  
+               }  
       
-    }
-	
-    while(1);
+        }
+    }	
+    ;
     /* USER CODE END */
 }
 
