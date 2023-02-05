@@ -58,7 +58,7 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
         return -1;
     }
     int32_t sum = 0;
-    for (uint8_t i = 0; i < arrayLength; i++) {
+    for (uint32_t i = 0; i < arrayLength; i++) {
         sum += array[i];
     }
     return sum;
