@@ -90,7 +90,7 @@ static void lightServiceTask(void * pvParameters) {
             if (lightEvent == MEASURE_LIGHT){
             
             	uint16_t lightSensorData = getLightSensorData();
-		int dataSize = 6;
+		const uint8_t dataSize = 6;
             	char data[dataSize];
             	snprintf(data, dataSize, "%u\r\n", lightSensorData);
 
