@@ -163,6 +163,8 @@
 #define configASSERT( x ) if( ( x ) == pdFALSE ) { taskDISABLE_INTERRUPTS(); for( ;; ); }
 
 /* USER CODE BEGIN (5) */
+#undef configSUPPORT_STATIC_ALLOCATION
+#define configSUPPORT_STATIC_ALLOCATION 1
 /* USER CODE END */
 
 #endif /* FREERTOS_CONFIG_H */
