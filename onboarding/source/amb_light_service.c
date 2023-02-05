@@ -6,7 +6,7 @@
 #include <sci.h>
 
 /* USER CODE BEGIN */
-// Include any additional headers and global variables here
+// Include any additional headers here
 
 /* USER CODE END */
 
@@ -20,6 +20,10 @@
 
 /* USER CODE END */
 
+/* USER CODE BEGIN */
+// Declare any global variables here
+
+/* USER CODE END */
 
 /**
  * @brief Task that waits for MEASURE_LIGHT event and then prints the ambient light value to the serial port.
