@@ -91,7 +91,7 @@ static void lightServiceTask(void * pvParameters) {
             
             	uint16_t lightSensorData = getLightSensorData();
 		int dataSize = (int)(ceil(log(lightSensorData))+1);
-            	char data[dataSize] = {0};
+            	char data[dataSize];
             	snprintf(data, dataSize, "%u\r\n", lightSensorData);
 
             	sciPrintText(scilinREG, (unsigned char*)data, dataSize-1);
