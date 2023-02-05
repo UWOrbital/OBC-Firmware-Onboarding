@@ -18,6 +18,7 @@ CC_FLAGS += -gdwarf-3
 CC_FLAGS += -gstrict-dwarf
 CC_FLAGS += -Wall
 CC_FLAGS += -Wextra
+CC_FLAGS += -Werror
 CC_FLAGS += -Wno-unused-parameter
 CC_FLAGS += -Wno-unused-but-set-variable
 CC_FLAGS += -specs="nosys.specs"
