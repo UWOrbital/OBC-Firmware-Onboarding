@@ -12,8 +12,8 @@
 
 /* Light service task config */
 #define LIGHT_SERVICE_NAME "light_service"
-#define LIGHT_SERVICE_STACK_SIZE 256
-#define LIGHT_SERVICE_PRIORITY 1
+#define LIGHT_SERVICE_STACK_SIZE 256UL
+#define LIGHT_SERVICE_PRIORITY 1UL
 
 /* USER CODE BEGIN */
 // Define light service queue config here

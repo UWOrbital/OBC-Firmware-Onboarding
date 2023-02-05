@@ -16,8 +16,8 @@
 
 /* Controller task config */
 #define CONTROLLER_NAME         "controller"
-#define CONTROLLER_STACK_SIZE   256
-#define CONTROLLER_PRIORITY     1
+#define CONTROLLER_STACK_SIZE   256UL
+#define CONTROLLER_PRIORITY     1UL
 
 /* LED timer config */
 #define LED_TIMER_NAME          "led_timer"
@@ -29,10 +29,16 @@
 
 /* USER CODE END */
 
-/* Declare handlers for tasks and timers */
-static TaskHandle_t controllerTaskHandle = NULL;
-static TimerHandle_t lightTimerHandle = NULL;
-static TimerHandle_t ledTimerHandle = NULL;
+/* Declare handlers and buffers for tasks and timers */
+static TaskHandle_t controllerTaskHandle;
+static StaticTask_t controllerTaskBuffer;
+static StackType_t controllerTaskStack[CONTROLLER_STACK_SIZE];
+
+static TimerHandle_t lightTimerHandle;
+static StaticTimer_t lightTimerBuffer;
+
+static TimerHandle_t ledTimerHandle;
+static StaticTimer_t ledTimerBuffer;
 
 /**
  * @brief Task that starts the led and light timers.
@@ -54,28 +60,30 @@ obc_error_code_t initController(void) {
     BaseType_t xReturned = pdFAIL;
     if (controllerTaskHandle == NULL) {
         // Create controller task
-        xReturned = xTaskCreate(controllerTask,             /* Function that implements the task. */
-                                CONTROLLER_NAME,            /* Text name for the task. */
-                                CONTROLLER_STACK_SIZE,      /* Stack size in words, not bytes. */
-                                NULL,                       /* Parameter passed into the task. */
-                                CONTROLLER_PRIORITY,        /* Priority at which the task is created. */
-                                &controllerTaskHandle);     /* Used to pass out the created task's handle. */
+        controllerTaskHandle = xTaskCreateStatic(   controllerTask,             /* Function that implements the task. */
+                                                    CONTROLLER_NAME,            /* Text name for the task. */
+                                                    CONTROLLER_STACK_SIZE,      /* Stack size in words, not bytes. */
+                                                    NULL,                       /* Parameter passed into the task. */
+                                                    CONTROLLER_PRIORITY,        /* Priority at which the task is created. */
+                                                    controllerTaskBuffer,        /* Array to use as the task's stack. */
+                                                    &controllerTaskHandle);     /* Used to hold the task's data structure */
     }
 
-    if (xReturned != pdPASS)
-        return OBC_ERROR_TASK_CREATION_FAILED;
+    if (controllerTaskHandle == NULL)
+        return OBC_ERR_CODE_TASK_CREATION_FAILED;
 
     if (ledTimerHandle == NULL) {
         // Create led timer
-        ledTimerHandle = xTimerCreate(LED_TIMER_NAME,
-                                    LED_TIMER_PERIOD,
-                                    LED_TIMER_AUTORELOAD,
-                                    (void *) 0,
-                                    ledTimerCallback);
+        ledTimerHandle = xTimerCreateStatic(LED_TIMER_NAME,
+                                            LED_TIMER_PERIOD,
+                                            LED_TIMER_AUTORELOAD,
+                                            (void *) 0,
+                                            ledTimerCallback
+                                            &ledTimerBuffer);
     }
 
     if (ledTimerHandle == NULL)
-        return OBC_ERROR_TIMER_CREATION_FAILED;
+        return OBC_ERR_CODE_TIMER_CREATION_FAILED;
 
     /* USER CODE BEGIN */
     // Create light timer and check if it was created successfully
@@ -109,7 +117,6 @@ static void controllerTask(void * pvParameters) {
 
 static void ledTimerCallback(TimerHandle_t xTimer) {
     ASSERT(xTimer != NULL);
-
     gioToggleBit(gioPORTB, 1);
 }
 

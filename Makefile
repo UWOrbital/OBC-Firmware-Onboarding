@@ -17,6 +17,7 @@ CC_FLAGS += -g
 CC_FLAGS += -gdwarf-3
 CC_FLAGS += -gstrict-dwarf
 CC_FLAGS += -Wall
+CC_FLAGS += -Wextra
 CC_FLAGS += -specs="nosys.specs"
 CC_FLAGS += -MMD
 CC_FLAGS += -std=gnu99
@@ -33,7 +34,6 @@ LIBS :=
 SRC_DIRS :=
 SRC_DIRS += hal/source
 SRC_DIRS += drivers/source
-SRC_DIRS += common/source
 SRC_DIRS += onboarding/source
 
 SRCS := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))

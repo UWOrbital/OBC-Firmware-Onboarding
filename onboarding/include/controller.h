@@ -1,8 +1,7 @@
 #ifndef ONBOARDING_INCLUDE_CONTROLLER_H_
 #define ONBOARDING_INCLUDE_CONTROLLER_H_
 
-#include "obc_error.h"
-#include <stdint.h>
+#include "obc_errors.h"
 
 /**
  * @brief Initialize the controller task and any timers.
