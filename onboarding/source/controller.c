@@ -57,7 +57,6 @@ static void lightTimerCallback(TimerHandle_t xTimer);
 static void ledTimerCallback(TimerHandle_t xTimer);
 
 obc_error_code_t initController(void) {
-    BaseType_t xReturned = pdFAIL;
     if (controllerTaskHandle == NULL) {
         // Create controller task
         controllerTaskHandle = xTaskCreateStatic(   controllerTask,             /* Function that implements the task. */
@@ -65,8 +64,8 @@ obc_error_code_t initController(void) {
                                                     CONTROLLER_STACK_SIZE,      /* Stack size in words, not bytes. */
                                                     NULL,                       /* Parameter passed into the task. */
                                                     CONTROLLER_PRIORITY,        /* Priority at which the task is created. */
-                                                    controllerTaskBuffer,        /* Array to use as the task's stack. */
-                                                    &controllerTaskHandle);     /* Used to hold the task's data structure */
+                                                    controllerTaskStack,        /* Array to use as the task's stack. */
+                                                    &controllerTaskBuffer);     /* Used to hold the task's data structure */
     }
 
     if (controllerTaskHandle == NULL)
@@ -78,7 +77,7 @@ obc_error_code_t initController(void) {
                                             LED_TIMER_PERIOD,
                                             LED_TIMER_AUTORELOAD,
                                             (void *) 0,
-                                            ledTimerCallback
+                                            ledTimerCallback,
                                             &ledTimerBuffer);
     }
 

@@ -19,7 +19,6 @@
 
 STATIC_ASSERT((UART_PRINT_REG == sciREG) || (UART_PRINT_REG == scilinREG), "UART_PRINT_REG must be sciREG or scilinREG");
 STATIC_ASSERT(MAX_PRINTF_SIZE > 0, "MAX_PRINTF_SIZE must be greater than 0");
-STATIC_ASSERT(UART_MUTEX_BLOCK_TIME >= 0, "UART_MUTEX_BLOCK_TIME must be greater than 0");
 
 /* GLOBAL VARIABLES */
 static SemaphoreHandle_t sciMutex; // Protects SCI1/SCI module
