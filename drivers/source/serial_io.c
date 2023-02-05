@@ -17,7 +17,10 @@
 #define MAX_PRINTF_SIZE 128U
 #define UART_MUTEX_BLOCK_TIME portMAX_DELAY
 
-STATIC_ASSERT((UART_PRINT_REG == sciREG) || (UART_PRINT_REG == scilinREG), "UART_PRINT_REG must be sciREG or scilinREG");
+/* USER CODE BEGIN */
+// Add a static assertion to ensure that UART_PRINT_REG is defined as either scilinREG or sciREG
+
+/* USER CODE END */
 STATIC_ASSERT(MAX_PRINTF_SIZE > 0, "MAX_PRINTF_SIZE must be greater than 0");
 
 /* GLOBAL VARIABLES */
