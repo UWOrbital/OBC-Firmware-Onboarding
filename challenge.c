@@ -38,8 +38,9 @@ int q2Array[Q2_ARRAY_SIZE];
 //          The function should return 0b0001001101100101
 //-------------------------------------------------------------------------
 uint16_t q3(uint8_t x, uint8_t y) {
-    (x & 0x01) << 7 | (x & 0x80) >> 7 | (x & 0x7E);
-    return (uint16_t)x << 8 | y;
+    x ^= 1;
+    x ^= 0x80;
+    return (uint16_t)((x << 8) | y);
 }
 
 //-------------------------------------------------------------------------
@@ -53,8 +54,11 @@ uint16_t q3(uint8_t x, uint8_t y) {
 // Note: The array contains 8-bit unsigned integers.
 //-------------------------------------------------------------------------
 int32_t q4(uint8_t * array, uint32_t arrayLength) {
+    if (!array) {
+        return -1;
+    }
     int32_t sum = 0;
-    for (uint8_t i = 0; i <= arrayLength; i++) {
+    for (uint8_t i = 0; i < arrayLength; i++) {
         sum += array[i];
     }
     return sum;
