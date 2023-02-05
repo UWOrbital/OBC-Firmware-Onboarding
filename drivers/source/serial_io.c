@@ -63,8 +63,6 @@ obc_error_code_t sciPrintText(unsigned char *text, uint32_t length) {
     // Print text to the serial port using sciSendBytes. Use the mutex to protect the SCI module.
 
     /* USER CODE END */
-    
-    return 0;
 }
 
 obc_error_code_t sciPrintf(const char *s, ...){
