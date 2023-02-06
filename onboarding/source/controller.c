@@ -6,6 +6,7 @@
 #include <os_task.h>
 #include <os_timer.h>
 #include <sys_common.h>
+#include <stdio.h>
 
 #include <gio.h>
 #include <sci.h>
@@ -43,6 +44,10 @@ uint8_t initController(void) {
                                 NULL,                       /* Parameter passed into the task. */
                                 CONTROLLER_PRIORITY,        /* Priority at which the task is created. */
                                 &controllerTaskHandle);     /* Used to pass out the created task's handle. */
+
+        if (xReturned == pdFAIL) {
+            printf("\ncontrollerTask not created...\n");
+        }
     }
 
     if (ledTimerHandle == NULL) {
@@ -85,7 +90,12 @@ static void controllerTask(void * pvParameters) {
         
         /* USER CODE BEGIN */
         // Start light timer
-        xTimerStart(lightTimerHandle, 0);
+        xReturned = xTimerStart(lightTimerHandle, 0);
+        
+        if (xReturned == pdFAIL) {
+            printf("\nlightTimer not started...\n");
+        }
+
         /* USER CODE END */
     }
 
@@ -103,8 +113,8 @@ static void lightTimerCallback(TimerHandle_t xTimer) {
     // Send light event to light service queue
     ASSERT(xTimer != NULL);
 
-    light_event_t measureLight = MEASURE_LIGHT;
-    sendToLightServiceQueue(&measureLight);
+    light_event_t xLightEvent = MEASURE_LIGHT;
+    sendToLightServiceQueue(&xLightEvent);
     /* USER CODE END */
 }
 
