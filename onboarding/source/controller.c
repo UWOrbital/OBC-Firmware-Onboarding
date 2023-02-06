@@ -9,6 +9,7 @@
 
 #include <gio.h>
 #include <sci.h>
+#include <stdio.h>
 
 #include <string.h>
 
@@ -64,6 +65,10 @@ uint8_t initController(void) {
                                         (void *) 0, 
                                         lightTimerCallback);
     }
+
+    if(xReturned == pdFAIL) {
+        printf("Error - could not create controller task");
+    }
     /* USER CODE END */
 
     return 1;
@@ -85,7 +90,11 @@ static void controllerTask(void * pvParameters) {
         
         /* USER CODE BEGIN */
         // Start light timer
-        xTimerStart(lightTimerHandle, 0); 
+        xReturned = xTimerStart(lightTimerHandle, 0); 
+
+        if(xReturned == pdFAIL) {
+            printf("Error - could not create light timer handle");
+        }
         /* USER CODE END */
     }
 
@@ -100,6 +109,9 @@ static void ledTimerCallback(TimerHandle_t xTimer) {
 
 static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
+
+    ASSERT(xTimer != NULL);
+
     // Send light event to light service queue
     light_event_t measureLight = MEASURE_LIGHT;
     sendToLightServiceQueue(&measureLight);
