@@ -64,9 +64,14 @@ uint8_t initController(void) {
                                         LIGHT_TIMER_AUTORELOAD, 
                                         (void *) 0, 
                                         lightTimerCallback);
+
+        if(lightTimerHandle == NULL)
+        {
+            sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
+        }
     }
 
-    if(lightTimerHandle == NULL || xReturned == pdFAIL)
+    if(xReturned == pdFAIL)
     {
         sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
     }
