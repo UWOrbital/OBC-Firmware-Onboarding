@@ -57,11 +57,11 @@ static void lightServiceTask(void * pvParameters) {
     /* USER CODE BEGIN */
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
     adcData_t adcData;
-    light_event_t *currentEvent = NULL;
+    light_event_t currentEvent;
 
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
     while (1) {
-        if (xQueueReceive(xQueue, currentEvent, portMAX_DELAY) == pdPASS) {
+        if (xQueueReceive(xQueue, &currentEvent, portMAX_DELAY) == pdPASS) {
             
             if(currentEvent == MEASURE_LIGHT) {
                 adcStartConversion(adcREG1, adcGROUP1);
@@ -70,9 +70,9 @@ static void lightServiceTask(void * pvParameters) {
 
                 adcGetData(adcREG1, adcGROUP1, &adcData);
 
-                char text[TEXT_SIZE];
+                char text[CHAR_BUFFER_SIZE];
 
-                int count = snprintf(text, TEXT_SIZE, "%u\r\n", adcData.value);
+                int count = snprintf(text, CHAR_BUFFER_SIZE, "%u\r\n", adcData.value);
 
                 if(count <= 0) {
                     sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
