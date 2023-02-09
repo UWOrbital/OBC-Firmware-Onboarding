@@ -43,7 +43,11 @@ uint8_t initLightService(void) {
 
     // Create queue
     if (lightServiceQueue == NULL) {
-        lightServiceQueue = xQueueCreate(LIGHT_QUEUE_LENGTH, LIGHT_QUEUE_LENGTH);
+        lightServiceQueue = xQueueCreate(LIGHT_QUEUE_LENGTH, LIGHT_QUEUE_SIZE);
+
+        if (lightServiceQueue == NULL) {
+            sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
+        }
     }
 
     /* USER CODE END */
@@ -52,20 +56,22 @@ uint8_t initLightService(void) {
 
 static void lightServiceTask(void * pvParameters) {
     /* USER CODE BEGIN */
-    adcData_t adc_data;
-    adcData_t *adc_data_ptr = &adc_data;
+    adcData_t adcData;
+    light_event_t *eventReceived = NULL;
 
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
     while (1) {
-        if (xQueueReceive(lightServiceQueue, NULL, (TickType_t) 11) == pdPASS) {
-            adcStartConversion(adcREG1, adcGROUP1);
-            while (!adcIsConversionComplete(adcREG1, adcGROUP1));
-            adcGetData(adcREG1, adcGROUP1, adc_data_ptr);
+        if (xQueueReceive(lightServiceQueue, eventReceived, portMAX_DELAY) == pdPASS) {
 
-            unsigned char txt[2];
-            txt[0] = adc_data.value && 0xFF;     
-            txt[1] = adc_data.value >> 8;     
-            sciPrintText(scilinREG, (unsigned char*)txt, 2);
+            if (eventReceived == MEASURE_LIGHT) {
+                adcStartConversion(adcREG1, adcGROUP1);
+                while (!adcIsConversionComplete(adcREG1, adcGROUP1));
+                adcGetData(adcREG1, adcGROUP1, &adcData);
+
+                char txtBuffer[TEXT_SIZE];
+                int count = snprintf(txtBuffer, TEXT_SIZE, "%u\r\n", adcData.value); 
+                sciPrintText(scilinREG, (unsigned char*)txtBuffer, count);
+            }
 
         }
     }
@@ -75,7 +81,7 @@ static void lightServiceTask(void * pvParameters) {
 uint8_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue.
-    xQueueSend(lightServiceQueue, (light_event_t*) event, (TickType_t) 10);
+    xQueueSend(lightServiceQueue, event, portMAX_DELAY);
     /* USER CODE END */
     return 0;
 }

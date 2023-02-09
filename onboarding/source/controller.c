@@ -68,6 +68,11 @@ uint8_t initController(void) {
                                     LIGHT_TIMER_AUTORELOAD,
                                     (void *) 0,
                                     lightTimerCallback);
+
+        if(lightTimerHandle == NULL || xReturned == pdFAIL) {
+            sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
+        }
+
     }
     /* USER CODE END */
 
@@ -82,7 +87,7 @@ static void controllerTask(void * pvParameters) {
     if (lightServiceStatus == 0) {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
-        printf("Failed to init light service");
+        sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
         /* USER CODE END */
     } else { 
         /* Light service task and queue created successfully */
@@ -93,7 +98,7 @@ static void controllerTask(void * pvParameters) {
         xReturned = xTimerStart(lightTimerHandle, 0);
         
         if (xReturned == pdFAIL) {
-            printf("\nlightTimer not started...\n");
+            sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
         }
 
         /* USER CODE END */
