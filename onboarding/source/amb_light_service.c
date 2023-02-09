@@ -41,11 +41,11 @@ uint8_t initLightService(void) {
     // Create queue
     if (xQueue == NULL) {
         xQueue = xQueueCreate(LIGHT_QUEUE_LENGTH, 
-                            LIGHT_SERVICE_ITEM_SIZE);
+                        LIGHT_SERVICE_ITEM_SIZE);
     }
 
-    if(xReturned == pdFAIL) {
-        printf("Error - could not create light service task");
+    if (xQueue == NULL || xReturned == pdFAIL) {
+        sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
     }
 
     /* USER CODE END */
@@ -57,34 +57,36 @@ uint8_t initLightService(void) {
 static void lightServiceTask(void * pvParameters) {
     /* USER CODE BEGIN */
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
-    adcData_t adc_data;
-    adcData_t *adc_data_ptr = &adc_data;
+    adcData_t adcData;
+    light_event_t *currentEvent = NULL;
 
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
     while (1) {
-        if (xQueueReceive(xQueue, NULL, (TickType_t) 11) == pdPASS) {
-            adcStartConversion(adcREG1, 
-                                adcGROUP1);
+        if (xQueueReceive(xQueue, currentEvent, portMAX_DELAY) == pdPASS) {
+            
+            if(currentEvent == MEASURE_LIGHT) {
+                adcStartConversion(adcREG1, 
+                                    adcGROUP1);
 
-            while (!adcIsConversionComplete(adcREG1, 
-                                            adcGROUP1));
+                while (!adcIsConversionComplete(adcREG1, 
+                                                adcGROUP1));
 
-            adcGetData(adcREG1, 
-                        adcGROUP1, 
-                        adc_data_ptr);
+                adcGetData(adcREG1, 
+                            adcGROUP1, 
+                            &adcData);
 
-            unsigned char text[2];
+                char text[TEXT_SIZE];
 
-            // LSB by masking with 0xFF
-            uint8_t first_half = (uint16_t) adc_data_ptr->value & 0xFF;
-            uint8_t second_half = ((uint16_t) adc_data_ptr->value >> 8) & 0xFF;
+                int count = snprintf(text, TEXT_SIZE, "%u\r\n", adcData.value);
 
-            text[0] = (unsigned char) first_half;
-            text[1] = (unsigned char) second_half;
+                if(count <= 0) {
+                    sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
+                }
 
-            sciPrintText(scilinREG, 
-                        (unsigned char*) text,
-                        sizeof(text));
+                sciPrintText(scilinREG, 
+                            (unsigned char*) text,
+                            count);
+            }
         }
     }
     
@@ -94,8 +96,7 @@ static void lightServiceTask(void * pvParameters) {
 uint8_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue.
-    // don't need to dereference pointer to event as it takes ptr
-    xQueueSend(xQueue, (light_event_t *) event, (TickType_t) 10);
+    xQueueSend(xQueue, event, portMAX_DELAY);
     /* USER CODE END */
     return 0;
 }

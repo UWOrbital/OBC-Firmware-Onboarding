@@ -17,6 +17,9 @@ typedef enum {
 // Define light service queue config here
 #define LIGHT_QUEUE_LENGTH 3
 #define LIGHT_SERVICE_ITEM_SIZE (sizeof(light_event_t))
+
+#define ERROR_MESSAGE "Error - operation failed"
+#define TEXT_SIZE 8
 /* USER CODE END */
 
 /**
