@@ -40,8 +40,7 @@ uint8_t initLightService(void) {
 
     // Create queue
     if (xQueue == NULL) {
-        xQueue = xQueueCreate(LIGHT_QUEUE_LENGTH, 
-                        LIGHT_SERVICE_ITEM_SIZE);
+        xQueue = xQueueCreate(LIGHT_QUEUE_LENGTH, LIGHT_SERVICE_ITEM_SIZE);
     }
 
     if (xQueue == NULL || xReturned == pdFAIL) {
@@ -65,15 +64,11 @@ static void lightServiceTask(void * pvParameters) {
         if (xQueueReceive(xQueue, currentEvent, portMAX_DELAY) == pdPASS) {
             
             if(currentEvent == MEASURE_LIGHT) {
-                adcStartConversion(adcREG1, 
-                                    adcGROUP1);
+                adcStartConversion(adcREG1, adcGROUP1);
 
-                while (!adcIsConversionComplete(adcREG1, 
-                                                adcGROUP1));
+                while (!adcIsConversionComplete(adcREG1, adcGROUP1));
 
-                adcGetData(adcREG1, 
-                            adcGROUP1, 
-                            &adcData);
+                adcGetData(adcREG1, adcGROUP1, &adcData);
 
                 char text[TEXT_SIZE];
 
@@ -83,9 +78,7 @@ static void lightServiceTask(void * pvParameters) {
                     sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
                 }
 
-                sciPrintText(scilinREG, 
-                            (unsigned char*) text,
-                            count);
+                sciPrintText(scilinREG, (unsigned char*) text, count);
             }
         }
     }
