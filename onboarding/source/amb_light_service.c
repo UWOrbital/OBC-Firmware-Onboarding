@@ -57,11 +57,11 @@ uint8_t initLightService(void) {
 static void lightServiceTask(void * pvParameters) {
     /* USER CODE BEGIN */
     adcData_t adcData;
-    light_event_t *eventReceived = NULL;
+    light_event_t eventReceived;
 
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
     while (1) {
-        if (xQueueReceive(lightServiceQueue, eventReceived, portMAX_DELAY) == pdPASS) {
+        if (xQueueReceive(lightServiceQueue, &eventReceived, portMAX_DELAY) == pdPASS) {
 
             if (eventReceived == MEASURE_LIGHT) {
                 adcStartConversion(adcREG1, adcGROUP1);
