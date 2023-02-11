@@ -93,11 +93,11 @@ static void controllerTask(void *pvParameters)
     else
     {
         /* Light service task and queue created successfully */
-        BaseType_t xReturned = xTimerStart(ledTimerHandle, 0);
+        xTimerStart(ledTimerHandle, 0);
 
         /* USER CODE BEGIN */
         // Start light timer
-        BaseType_t xLightTimerReturned = xTimerStart(lightTimerHandle, 0);
+        xTimerStart(lightTimerHandle, 0);
         /* USER CODE END */
     }
 

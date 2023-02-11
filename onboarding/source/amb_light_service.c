@@ -28,7 +28,8 @@ uint8_t initLightService(void) {
     // Create the task and queue here.
     BaseType_t xReturned = pdFAIL;
     if (lightServiceTaskHandle == NULL){
-        xReturned = xTaskCreate(LIGHT_SERVICE_NAME,
+        xReturned = xTaskCreate(lightServiceTask,
+                                LIGHT_SERVICE_NAME,
                                 LIGHT_SERVICE_STACK_SIZE,
                                 NULL,
                                 LIGHT_SERVICE_PRIORITY,
@@ -54,14 +55,14 @@ static void lightServiceTask(void * pvParameters) {
         adcData_t adc_data;
         adcData_t *adc_data_ptr = &adc_data;
 
-        adcStartConversion_selChn(adcREG1, Light_Sensor, 1, adcGROUP1);
+        adcStartConversion(adcREG1, adcGROUP1);
 
         while(!adcIsConversionComplete(adcREG1, adcGROUP1)); 
 
-        adcGetSingleData(adcREG1, adcGROUP1, adc_data_ptr);
+        adcGetData(adcREG1, adcGROUP1, adc_data_ptr);
 
-        char str[MAX_STRING_SIZE];
-        snprintf(str, MAX_STRING_SIZE, "The ambient light is %d", adc_data_ptr->value);
+        char str[32];
+        snprintf(str, 32, "The ambient light is %d", adc_data_ptr->value);
 
         sciPrintText(scilinREG, (unsigned char *) str, strlen(str));
     }
