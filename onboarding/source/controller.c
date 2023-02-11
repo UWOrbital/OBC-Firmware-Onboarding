@@ -68,12 +68,12 @@ uint8_t initController(void)
                                         lightTimerCallback);
     }
 
-    if(xReturned != pdPASS){
-        sciPrintText()
+    if((ledTimerHandle == NULL) || (lightTimerHandle == NULL)){
+        xReturned = pdFAIL;
     }
+    return xReturned;
     /* USER CODE END */
 
-    return 1;
 }
 
 static void controllerTask(void *pvParameters)
@@ -87,7 +87,7 @@ static void controllerTask(void *pvParameters)
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
         char str[] = "Error: Light service was not properly initialized";
-        sciPrintText(sciREG, str, sizeof(str));
+        sciPrintText(sciREG, (unsigned char *) str, sizeof(str));
         /* USER CODE END */
     }
     else

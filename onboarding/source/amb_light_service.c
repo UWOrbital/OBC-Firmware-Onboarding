@@ -63,7 +63,7 @@ static void lightServiceTask(void * pvParameters) {
         char str[MAX_STRING_SIZE];
         snprintf(str, MAX_STRING_SIZE, "The ambient light is %d", adc_data_ptr->value);
 
-        sciPrintText(scilinREG, str, strlen(str));
+        sciPrintText(scilinREG, (unsigned char *) str, strlen(str));
     }
 
     /* USER CODE END */
