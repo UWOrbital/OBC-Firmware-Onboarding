@@ -87,7 +87,7 @@ static void controllerTask(void *pvParameters)
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
         char str[] = "Error: Light service was not properly initialized";
-        sciPrintText(sciREG, (unsigned char *) str, sizeof(str));
+        sciPrintText(scilinREG, (unsigned char *) str, strlen(str));
         /* USER CODE END */
     }
     else
