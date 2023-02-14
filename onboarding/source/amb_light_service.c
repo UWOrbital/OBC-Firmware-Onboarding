@@ -1,11 +1,27 @@
 #include "amb_light_service.h"
 #include "serial_io.h"
+#include "obc_errors.h"
 
 #include <adc.h>
 #include <sci.h>
 
 /* USER CODE BEGIN */
-// Include any additional headers and global variables here
+// Include any additional headers here
+
+/* USER CODE END */
+
+/* Light service task config */
+#define LIGHT_SERVICE_NAME "light_service"
+#define LIGHT_SERVICE_STACK_SIZE 256UL
+#define LIGHT_SERVICE_PRIORITY 1UL
+
+/* USER CODE BEGIN */
+// Define light service queue config here
+
+/* USER CODE END */
+
+/* USER CODE BEGIN */
+// Declare any global variables here
 
 /* USER CODE END */
 
@@ -15,12 +31,11 @@
  */
 static void lightServiceTask(void * pvParameters);
 
-uint8_t initLightService(void) {
+obc_error_code_t initLightService(void) {
     /* USER CODE BEGIN */
-    // Create the task and queue here.
+    // Create the task and queue here. Return error code if task/queue was not created successfully.
 
     /* USER CODE END */
-    return 1;
 }
 
 static void lightServiceTask(void * pvParameters) {
@@ -30,10 +45,9 @@ static void lightServiceTask(void * pvParameters) {
     /* USER CODE END */
 }
 
-uint8_t sendToLightServiceQueue(light_event_t *event) {
+obc_error_code_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
-    // Send the event to the queue.
+    // Send the event to the queue. Return error code if event was not sent successfully.
     
     /* USER CODE END */
-    return 0;
 }
