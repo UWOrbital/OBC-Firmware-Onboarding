@@ -2,6 +2,9 @@
 #define ONBOARDING_INCLUDE_CONTROLLER_H_
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 7a0f9bc594f30784786ff4599438af7966e5c99e
 #include <os_projdefs.h>
 #include <stdint.h>
 
@@ -22,15 +25,18 @@
 #define LIGHT_CONTROLLER_AUTORELOAD    pdTRUE
 #define ERROR_MESSAGE                 "Error" 
 /* USER CODE END */
+<<<<<<< HEAD
 =======
 #include "obc_errors.h"
 >>>>>>> e95293f2e8ddbf374c16667cc3619425316cd73d
+=======
+>>>>>>> 7a0f9bc594f30784786ff4599438af7966e5c99e
 
 /**
  * @brief Initialize the controller task and any timers.
  * 
- * @return obc_error_code_t OBC_ERR_CODE_SUCCESS if successful, otherwise an error code. 
+ * @return uint8_t 1 if successful, 0 otherwise 
  */
-obc_error_code_t initController(void);
+uint8_t initController(void);
 
 #endif /* ONBOARDING_INCLUDE_CONTROLLER_H_ */
