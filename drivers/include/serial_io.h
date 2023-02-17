@@ -1,8 +1,9 @@
 #ifndef ONBOARDING_INCLUDE_SERIAL_IO_H_
 #define ONBOARDING_INCLUDE_SERIAL_IO_H_
 
+#include "obc_errors.h"
+
 #include <stdint.h>
-#include <sci.h>
 
 /**
  * @brief Initialize mutexes protecting SCI and SCI2.
@@ -10,12 +11,21 @@
 void sciMutexInit(void);
 
 /**
- * @brief Send a string of text via SCI or SCI2.
- * @param sci The SCI register to use (sciREG or scilinREG).
+ * @brief Send a string of text via UART_PRINT_REG.
+ * 
  * @param text The text to send.
  * @param length The length of the text to send.
- * @return 1 if the text was sent, 0 otherwise.
+ * @return OBC_ERR_CODE_SUCCESS on success, else an error code
  */
-uint8_t sciPrintText(sciBASE_t *sci, unsigned char *text, uint32_t length);
+obc_error_code_t sciPrintText(unsigned char *text, uint32_t length);
+
+/**
+ * @brief Printf via UART_PRINT_REG.
+ * 
+ * @param s The format string
+ * @param ... Arguments to use in format string
+ * @return OBC_ERR_CODE_SUCCESS on success, else an error code
+ */
+obc_error_code_t sciPrintf(const char *s, ...);
 
 #endif /* ONBOARDING_INCLUDE_SERIAL_IO_H_ */

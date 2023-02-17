@@ -1,11 +1,13 @@
 #include "amb_light_service.h"
 #include "serial_io.h"
+#include "obc_errors.h"
 
 
 #include <adc.h>
 #include <sci.h>
 
 /* USER CODE BEGIN */
+<<<<<<< HEAD
 #include <string.h>
 #include <stdio.h>
 #include <FreeRTOS.h>
@@ -13,6 +15,24 @@
 #include <os_queue.h>
 #include <adc.h>
 #include <sci.h>
+=======
+// Include any additional headers here
+
+/* USER CODE END */
+
+/* Light service task config */
+#define LIGHT_SERVICE_NAME "light_service"
+#define LIGHT_SERVICE_STACK_SIZE 256UL
+#define LIGHT_SERVICE_PRIORITY 1UL
+
+/* USER CODE BEGIN */
+// Define light service queue config here
+
+/* USER CODE END */
+
+/* USER CODE BEGIN */
+// Declare any global variables here
+>>>>>>> e95293f2e8ddbf374c16667cc3619425316cd73d
 
 static TaskHandle_t lightServiceHandle = NULL;
 static QueueHandle_t lightserviceQueue;
@@ -24,8 +44,9 @@ static QueueHandle_t lightserviceQueue;
  */
 static void lightServiceTask(void * pvParameters);
 
-uint8_t initLightService(void) {
+obc_error_code_t initLightService(void) {
     /* USER CODE BEGIN */
+<<<<<<< HEAD
     BaseType_t xReturned = pdFAIL;
         if (lightServiceHandle == NULL) {
             xReturned = xTaskCreate(lightServiceTask,
@@ -50,6 +71,11 @@ uint8_t initLightService(void) {
                 }
         }
     return 1;
+=======
+    // Create the task and queue here. Return error code if task/queue was not created successfully.
+
+    /* USER CODE END */
+>>>>>>> e95293f2e8ddbf374c16667cc3619425316cd73d
 }
 
 static void lightServiceTask(void * pvParameters) {
@@ -77,12 +103,15 @@ static void lightServiceTask(void * pvParameters) {
     /* USER CODE END */
 }
 
-uint8_t sendToLightServiceQueue(light_event_t *event) {
+obc_error_code_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
+<<<<<<< HEAD
      xQueueSend(lightserviceQueue, event, portMAX_DELAY);
 
     
+=======
+    // Send the event to the queue. Return error code if event was not sent successfully.
+>>>>>>> e95293f2e8ddbf374c16667cc3619425316cd73d
     
     /* USER CODE END */
-    return 0;
 }

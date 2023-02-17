@@ -17,6 +17,10 @@ CC_FLAGS += -g
 CC_FLAGS += -gdwarf-3
 CC_FLAGS += -gstrict-dwarf
 CC_FLAGS += -Wall
+CC_FLAGS += -Wextra
+CC_FLAGS += -Werror
+CC_FLAGS += -Wno-unused-parameter
+CC_FLAGS += -Wno-unused-but-set-variable
 CC_FLAGS += -specs="nosys.specs"
 CC_FLAGS += -MMD
 CC_FLAGS += -std=gnu99
@@ -25,6 +29,7 @@ INCLUDE_DIRS :=
 INCLUDE_DIRS += -I"${CC_FOLDER_ROOT}/arm-none-eabi/include"
 INCLUDE_DIRS += -I"hal/include"
 INCLUDE_DIRS += -I"drivers/include"
+INCLUDE_DIRS += -I"common/include"
 INCLUDE_DIRS += -I"onboarding/include"
 
 LIBS := 
