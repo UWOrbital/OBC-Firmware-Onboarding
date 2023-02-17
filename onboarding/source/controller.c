@@ -6,6 +6,7 @@
 #include <os_task.h>
 #include <os_timer.h>
 #include <sys_common.h>
+#include <stdio.h>
 
 #include <gio.h>
 #include <sci.h>
@@ -43,7 +44,10 @@ uint8_t initController(void) {
                                 NULL,                       /* Parameter passed into the task. */
                                 CONTROLLER_PRIORITY,        /* Priority at which the task is created. */
                                 &controllerTaskHandle);     /* Used to pass out the created task's handle. */
-    }
+        if (xReturned == pdFAIL) {
+                printf("\ncontrollerTask not created...\n");
+            }
+        }
 
     if (ledTimerHandle == NULL) {
         // Create led timer
@@ -55,11 +59,22 @@ uint8_t initController(void) {
     }
 
     /* USER CODE BEGIN */
-    // Create light timer and check if task/timers were created successfully
+   if (lightTimerHandle == NULL) {
+    // Create light timer
+       lightTimerHandle = xTimerCreate(LIGHT_CONTROLLER_NAME,
+                                    LIGHT_CONTROLLER_PERIOD, 
+                                    LIGHT_CONTROLLER_AUTORELOAD,
+                                    (void *) 0,
+                                    lightTimerCallback);
+                                    
+         if(lightTimerHandle == NULL || xReturned == pdFAIL) {
+            sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
+        }
+    }
 
     /* USER CODE END */
 
-    return 1;
+        return 1;
 }
 
 static void controllerTask(void * pvParameters) {
@@ -69,15 +84,21 @@ static void controllerTask(void * pvParameters) {
     uint8_t lightServiceStatus = initLightService();
     if (lightServiceStatus == 0) {
         /* USER CODE BEGIN */
-        // Deal with error when initializing light service task and/or queue
+        sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
 
-        /* USER CODE END */
     } else { 
+        /* USER CODE END 
+ 
         /* Light service task and queue created successfully */
         BaseType_t xReturned = xTimerStart(ledTimerHandle, 0);
         
         /* USER CODE BEGIN */
-        // Start light timer
+        xReturned = xTimerStart(lightTimerHandle, 0);
+
+        if (xReturned == pdFAIL) {
+            sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
+        }
+            
 
         /* USER CODE END */
     }
@@ -94,6 +115,9 @@ static void ledTimerCallback(TimerHandle_t xTimer) {
 static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
+    ASSERT(xTimer != NULL);
+    light_event_t xlightevent = MEASURE_LIGHT;
+    sendToLightServiceQueue(&xlightevent);
 
     /* USER CODE END */
 }

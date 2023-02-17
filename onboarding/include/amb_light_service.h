@@ -2,7 +2,6 @@
 #define ONBOARDING_INCLUDE_AMB_LIGHT_SERVICE_H_
 
 #include <stdint.h>
-
 /* Event types to be sent to light service queue */
 typedef enum {
     MEASURE_LIGHT
@@ -14,7 +13,10 @@ typedef enum {
 #define LIGHT_SERVICE_PRIORITY 1
 
 /* USER CODE BEGIN */
-// Define light service queue config here
+#define LIGHT_SERVICE_SIZE 10
+#define LIGHT_QUEUE_SIZE sizeof(light_event_t)
+#define ERROR_MESSAGE "Error" 
+#define TEXT_SIZE 8
 
 /* USER CODE END */
 

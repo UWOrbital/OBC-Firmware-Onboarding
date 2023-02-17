@@ -15,8 +15,11 @@
 #define LED_TIMER_AUTORELOAD    pdTRUE
 
 /* USER CODE BEGIN */
-// define config for the light timer
-
+/* Light controller config */
+#define LIGHT_CONTROLLER_NAME         "light timer" 
+#define LIGHT_CONTROLLER_PERIOD        pdMS_TO_TICKS(1000)
+#define LIGHT_CONTROLLER_AUTORELOAD    pdTRUE
+#define ERROR_MESSAGE                 "Error" 
 /* USER CODE END */
 
 /**
