@@ -24,29 +24,34 @@
 STATIC_ASSERT(MAX_PRINTF_SIZE > 0, "MAX_PRINTF_SIZE must be greater than 0");
 
 /* GLOBAL VARIABLES */
-static SemaphoreHandle_t sciMutex; // Protects SCI1/SCI module
+static SemaphoreHandle_t sciMutex;       // Protects SCI1/SCI module
 static StaticSemaphore_t sciMutexBuffer; // Buffer for SCI mutex
 
-static SemaphoreHandle_t sciLinMutex; // Protects SCI2/SCILin module
+static SemaphoreHandle_t sciLinMutex;       // Protects SCI2/SCILin module
 static StaticSemaphore_t sciLinMutexBuffer; // Buffer for SCI2 mutex
 
 /**
  * @brief Iterate through an array of bytes and transmit them via UART_PRINT_REG.
- * 
+ *
  * @param bytes The array of bytes to transmit.
  * @param length The length of the array of bytes to transmit.
  * @return OBC_ERR_CODE_SUCCESS on success, else an error code
  */
 static obc_error_code_t sciSendBytes(unsigned char *bytes, uint32_t length);
 
-void sciMutexInit(void) {
-    if (sciMutex == NULL) {
+void sciMutexInit(void)
+{
+    if (sciMutex == NULL)
+    {
         sciMutex = xSemaphoreCreateMutexStatic(&sciMutexBuffer);
     }
-    
+
     /* USER CODE BEGIN */
     // Create mutex to protect SCI2/SCILin module here.
-    
+    sciLinMutex = xSemaphoreCreateMutexStatic(&sciLinMutexBuffer);
+
+    STATIC_ASSERT_EQ(UART_PRINT_REG, sciREG);
+
     /* USER CODE END */
 
     // Static allocation of mutexes can only fail if the buffer is NULL
@@ -54,7 +59,8 @@ void sciMutexInit(void) {
     configASSERT(sciLinMutex != NULL);
 }
 
-obc_error_code_t sciPrintText(unsigned char *text, uint32_t length) {
+obc_error_code_t sciPrintText(unsigned char *text, uint32_t length)
+{
     if (text == NULL || length == 0)
         return OBC_ERR_CODE_INVALID_ARG;
 
@@ -64,16 +70,22 @@ obc_error_code_t sciPrintText(unsigned char *text, uint32_t length) {
 
     /* USER CODE BEGIN */
     // Print text to the serial port using sciSendBytes. Use the mutex to protect the SCI module.
+    if (xSemaphoreTake(sciLinMutex, UART_MUTEX_BLOCK_TIME) == pdTRUE)
+    {
+        sciSendBytes(UART_PRINT_REG, MAX_PRINTF_SIZE);
+        xSemaphoreGive(sciLinMutex);
+    }
 
     /* USER CODE END */
 }
 
-obc_error_code_t sciPrintf(const char *s, ...){
+obc_error_code_t sciPrintf(const char *s, ...)
+{
     if (s == NULL)
         return OBC_ERR_CODE_INVALID_ARG;
 
     char buf[MAX_PRINTF_SIZE] = {0};
-    
+
     va_list args;
     va_start(args, s);
     int n = vsnprintf(buf, MAX_PRINTF_SIZE, s, args);
@@ -89,17 +101,19 @@ obc_error_code_t sciPrintf(const char *s, ...){
     return sciPrintText((unsigned char *)buf, MAX_PRINTF_SIZE);
 }
 
-static obc_error_code_t sciSendBytes(unsigned char *bytes, uint32_t length) {
+static obc_error_code_t sciSendBytes(unsigned char *bytes, uint32_t length)
+{
     if (bytes == NULL || length == 0)
         return OBC_ERR_CODE_INVALID_ARG;
-    
-    for (uint32_t i = 0; i < length; i++) {
+
+    for (uint32_t i = 0; i < length; i++)
+    {
         if (bytes[i] == '\0')
             break;
-            
+
         // sciSendByte waits for the transmit buffer to be empty before sending
         sciSendByte(UART_PRINT_REG, bytes[i]);
     }
-    
+
     return OBC_ERR_CODE_SUCCESS;
 }
