@@ -7,7 +7,6 @@
 #include <sci.h>
 
 /* USER CODE BEGIN */
-<<<<<<< HEAD
 #include <string.h>
 #include <stdio.h>
 #include <FreeRTOS.h>
@@ -15,7 +14,7 @@
 #include <os_queue.h>
 #include <adc.h>
 #include <sci.h>
-=======
+
 // Include any additional headers here
 
 /* USER CODE END */
@@ -27,12 +26,14 @@
 
 /* USER CODE BEGIN */
 // Define light service queue config here
-
+#define LIGHT_SERVICE_SIZE 10
+#define LIGHT_QUEUE_SIZE sizeof(light_event_t)
+#define TEXT_SIZE 8
 /* USER CODE END */
 
 /* USER CODE BEGIN */
 // Declare any global variables here
->>>>>>> e95293f2e8ddbf374c16667cc3619425316cd73d
+
 
 static TaskHandle_t lightServiceHandle = NULL;
 static QueueHandle_t lightserviceQueue;
@@ -46,7 +47,6 @@ static void lightServiceTask(void * pvParameters);
 
 obc_error_code_t initLightService(void) {
     /* USER CODE BEGIN */
-<<<<<<< HEAD
     BaseType_t xReturned = pdFAIL;
         if (lightServiceHandle == NULL) {
             xReturned = xTaskCreate(lightServiceTask,
@@ -55,11 +55,9 @@ obc_error_code_t initLightService(void) {
                                     NULL,
                                     LIGHT_SERVICE_PRIORITY,
                                     &lightServiceHandle);
-    
-    /* USER CODE END */
-        }
+                                     }
         if (xReturned == pdFAIL) {
-             printf("\nlightServiceTask not created...\n");
+             return OBC_ERR_CODE_TASK_CREATION_FAILED;
         
         }
 
@@ -67,15 +65,11 @@ obc_error_code_t initLightService(void) {
                 lightserviceQueue = xQueueCreate(LIGHT_SERVICE_SIZE, LIGHT_QUEUE_SIZE);
 
                 if (lightserviceQueue == NULL) {
-                     sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
+                     return OBC_ERR_CODE_QUEUE_FULL;
                 }
         }
-    return 1;
-=======
-    // Create the task and queue here. Return error code if task/queue was not created successfully.
-
+    return 1;                            
     /* USER CODE END */
->>>>>>> e95293f2e8ddbf374c16667cc3619425316cd73d
 }
 
 static void lightServiceTask(void * pvParameters) {
@@ -94,7 +88,7 @@ static void lightServiceTask(void * pvParameters) {
 
                 char str[32];
                     snprintf(str, 32, "The ambient light is %d", adcData.value);
-                    sciPrintText(scilinREG, (unsigned char *) str, strlen(str));
+                    sciPrintText((unsigned char *) str, strlen(str));
                 }
 
                 
@@ -105,13 +99,10 @@ static void lightServiceTask(void * pvParameters) {
 
 obc_error_code_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
-<<<<<<< HEAD
-     xQueueSend(lightserviceQueue, event, portMAX_DELAY);
-
-    
-=======
-    // Send the event to the queue. Return error code if event was not sent successfully.
->>>>>>> e95293f2e8ddbf374c16667cc3619425316cd73d
-    
+    BaseType_t xReturned = pdFAIL;
+    if(lightserviceQueue != NULL){
+        xReturned = xQueueSend(lightserviceQueue, event, portMAX_DELAY);
+    }
+    return xReturned;
     /* USER CODE END */
 }

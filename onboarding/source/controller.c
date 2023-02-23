@@ -27,7 +27,9 @@
 
 /* USER CODE BEGIN */
 // define config for the light timer
-
+#define LIGHT_CONTROLLER_NAME         "light timer" 
+#define LIGHT_CONTROLLER_PERIOD        pdMS_TO_TICKS(1000)
+#define LIGHT_CONTROLLER_AUTORELOAD    pdTRUE 
 /* USER CODE END */
 
 /* Declare handlers and buffers for tasks and timers */
@@ -60,27 +62,15 @@ static void ledTimerCallback(TimerHandle_t xTimer);
 obc_error_code_t initController(void) {
     if (controllerTaskHandle == NULL) {
         // Create controller task
-<<<<<<< HEAD
-        xReturned = xTaskCreate(controllerTask,             /* Function that implements the task. */
+        controllerTaskHandle = xTaskCreateStatic(controllerTask,             /* Function that implements the task. */
                                 CONTROLLER_NAME,            /* Text name for the task. */
                                 CONTROLLER_STACK_SIZE,      /* Stack size in words, not bytes. */
                                 NULL,                       /* Parameter passed into the task. */
                                 CONTROLLER_PRIORITY,        /* Priority at which the task is created. */
-                                &controllerTaskHandle);     /* Used to pass out the created task's handle. */
-        if (xReturned == pdFAIL) {
-                printf("\ncontrollerTask not created...\n");
-            }
+                                controllerTaskStack,        /* Array to use as the task's stack. */
+                                &controllerTaskBuffer);     /* Used to pass out the created task's handle. */
+
         }
-=======
-        controllerTaskHandle = xTaskCreateStatic(   controllerTask,             /* Function that implements the task. */
-                                                    CONTROLLER_NAME,            /* Text name for the task. */
-                                                    CONTROLLER_STACK_SIZE,      /* Stack size in words, not bytes. */
-                                                    NULL,                       /* Parameter passed into the task. */
-                                                    CONTROLLER_PRIORITY,        /* Priority at which the task is created. */
-                                                    controllerTaskStack,        /* Array to use as the task's stack. */
-                                                    &controllerTaskBuffer);     /* Used to hold the task's data structure */
-    }
->>>>>>> e95293f2e8ddbf374c16667cc3619425316cd73d
 
     if (controllerTaskHandle == NULL)
         return OBC_ERR_CODE_TASK_CREATION_FAILED;
@@ -99,28 +89,24 @@ obc_error_code_t initController(void) {
         return OBC_ERR_CODE_TIMER_CREATION_FAILED;
 
     /* USER CODE BEGIN */
-<<<<<<< HEAD
-   if (lightTimerHandle == NULL) {
-    // Create light timer
-       lightTimerHandle = xTimerCreate(LIGHT_CONTROLLER_NAME,
-                                    LIGHT_CONTROLLER_PERIOD, 
-                                    LIGHT_CONTROLLER_AUTORELOAD,
-                                    (void *) 0,
-                                    lightTimerCallback);
-                                    
-         if(lightTimerHandle == NULL || xReturned == pdFAIL) {
-            sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
-        }
+    if (lightTimerHandle == NULL) {
+        // Create light timer
+        lightTimerHandle = xTimerCreateStatic(LIGHT_CONTROLLER_NAME,
+                                        LIGHT_CONTROLLER_PERIOD, 
+                                        LIGHT_CONTROLLER_AUTORELOAD,
+                                        (void *) 0,
+                                        lightTimerCallback,
+                                        &lightTimerBuffer);
     }
+                                        
+    if (lightTimerHandle == NULL) 
+            return OBC_ERR_CODE_TIMER_CREATION_FAILED;
+            
+        
 
-    /* USER CODE END */
+        /* USER CODE END */
 
-        return 1;
-=======
-    // Create light timer and check if it was created successfully
-
-    /* USER CODE END */
->>>>>>> e95293f2e8ddbf374c16667cc3619425316cd73d
+            return 1;
 }
 
 static void controllerTask(void * pvParameters) {
@@ -130,26 +116,24 @@ static void controllerTask(void * pvParameters) {
     obc_error_code_t lightServiceStatus = initLightService();
     if (lightServiceStatus != OBC_ERR_CODE_SUCCESS) {
         /* USER CODE BEGIN */
-        sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
+        char str[] = "Error: Light service was not properly initialized";
+        sciPrintText((unsigned char *) str, strlen(str));
 
     } else { 
         /* USER CODE END 
  
-        /* Light service task and queue created successfully */
+        Light service task and queue created successfully */
         BaseType_t xReturned; 
         xReturned = xTimerStart(ledTimerHandle, 0);
         
         /* USER CODE BEGIN */
-<<<<<<< HEAD
         xReturned = xTimerStart(lightTimerHandle, 0);
 
         if (xReturned == pdFAIL) {
-            sciPrintText(scilinREG, (unsigned char *) ERROR_MESSAGE, sizeof(ERROR_MESSAGE));
+             char str[] = "Error: Light Timer was not properly initialized";
+             sciPrintText((unsigned char *) str, strlen(str));
         }
             
-=======
-        // Start light timer and check if both timers were started successfully
->>>>>>> e95293f2e8ddbf374c16667cc3619425316cd73d
 
         /* USER CODE END */
     }
