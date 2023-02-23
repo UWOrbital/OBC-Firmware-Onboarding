@@ -1,7 +1,8 @@
 #ifndef COMMON_INCLUDE_OBC_ERRORS_H_
 #define COMMON_INCLUDE_OBC_ERRORS_H_
 
-typedef enum {
+typedef enum
+{
     /* Common Errors 0 - 99 */
     OBC_ERR_CODE_SUCCESS = 0,
     OBC_ERR_CODE_UNKNOWN = 1,
@@ -14,6 +15,7 @@ typedef enum {
     OBC_ERR_CODE_TASK_CREATION_FAILED = 102,
     OBC_ERR_CODE_TIMER_CREATION_FAILED = 103,
     OBC_ERR_CODE_MUTEX_CREATION_FAILED = 104,
+    OBC_ERR_CODE_QUEUE_CREATION_FAILED = 105,
 
     /* Driver Errors 200 - 299 */
     OBC_ERR_CODE_GENERAL_SCI_FAILED = 200,

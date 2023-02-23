@@ -19,7 +19,8 @@
 
 /* USER CODE BEGIN */
 // Add a static assertion to ensure that UART_PRINT_REG is defined as either scilinREG or sciREG
-
+STATIC_ASSERT_EQ(UART_PRINT_REG, sciREG);
+STATIC_ASSERT_EQ(UART_PRINT_REG, sciLinREG);
 /* USER CODE END */
 STATIC_ASSERT(MAX_PRINTF_SIZE > 0, "MAX_PRINTF_SIZE must be greater than 0");
 
@@ -49,8 +50,6 @@ void sciMutexInit(void)
     /* USER CODE BEGIN */
     // Create mutex to protect SCI2/SCILin module here.
     sciLinMutex = xSemaphoreCreateMutexStatic(&sciLinMutexBuffer);
-
-    STATIC_ASSERT_EQ(UART_PRINT_REG, sciREG);
 
     /* USER CODE END */
 
