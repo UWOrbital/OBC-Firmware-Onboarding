@@ -34,7 +34,7 @@ static StackType_t lightServiceTaskStack[LIGHT_SERVICE_STACK_SIZE];
 
 static QueueHandle_t QueueHandle;
 static StaticQueue_t QueueBuffer;
-// unit8_t ucQueueStorageArea[QUEUE_LENGTH * ITEM_SIZE];
+uint8_t ucQueueStorageArea[QUEUE_LENGTH * ITEM_SIZE];
 /* USER CODE END */
 
 /**
@@ -65,10 +65,11 @@ obc_error_code_t initLightService(void)
 
     if (QueueHandle == NULL)
     {
-        // QueueHandle = xQueueCreateStatic(QUEUE_LENGTH,
-        //                                  ITEM_SIZE,
-        //                                  ucQueueStorageArea,
-        //                                  &QueueBuffer);
+        QueueHandle = xQueueCreateStatic(QUEUE_LENGTH,
+                                         ITEM_SIZE,
+                                         ucQueueStorageArea,
+                                         &QueueBuffer);
+        configASSERT(QueueHandle);
     }
 
     if (QueueHandle == NULL)
@@ -82,6 +83,14 @@ static void lightServiceTask(void *pvParameters)
 {
     /* USER CODE BEGIN */
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
+    if (QueueHandle != NULL)
+    {
+        if (xQueueReceive(QueueHandle, &QueueBuffer, (TickType_t)0) == pdPASS)
+        {
+            // question!
+            sciPrintf(&QueueBuffer);
+        }
+    }
 
     /* USER CODE END */
 }
@@ -90,6 +99,13 @@ obc_error_code_t sendToLightServiceQueue(light_event_t *event)
 {
     /* USER CODE BEGIN */
     // Send the event to the queue. Return error code if event was not sent successfully.
-
+    if (QueueHandle != NULL)
+    {
+        if (xQueueSend(QueueHandle, event, (TickType_t)0) == pdFAIL)
+        {
+            // Are there any other issue that may cause queuesend fail?
+            return OBC_ERR_CODE_QUEUE_FULL;
+        }
+    }
     /* USER CODE END */
 }
