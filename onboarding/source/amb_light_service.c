@@ -28,12 +28,12 @@
 
 /* USER CODE BEGIN */
 // Declare any global variables here
-static TaskHandle_t lightServiceTaskHandle;
+static TaskHandle_t lightServiceTaskHandle = NULL;
 static StaticTask_t lightServiceTaskBuffer;
 static StackType_t lightServiceTaskStack[LIGHT_SERVICE_STACK_SIZE];
 
-static QueueHandle_t QueueHandle;
-static StaticQueue_t QueueBuffer;
+static QueueHandle_t queueHandle = NULL;
+static StaticQueue_t queueBuffer;
 uint8_t ucQueueStorageArea[QUEUE_LENGTH * ITEM_SIZE];
 /* USER CODE END */
 
@@ -68,14 +68,15 @@ obc_error_code_t initLightService(void)
         QueueHandle = xQueueCreateStatic(QUEUE_LENGTH,
                                          ITEM_SIZE,
                                          ucQueueStorageArea,
-                                         &QueueBuffer);
-        configASSERT(QueueHandle);
+                                         &queueBuffer);
     }
 
     if (QueueHandle == NULL)
     {
         return OBC_ERR_CODE_QUEUE_CREATION_FAILED;
     }
+
+    return OBC_ERR_CODE_SUCCESS;
     /* USER CODE END */
 }
 
@@ -85,13 +86,26 @@ static void lightServiceTask(void *pvParameters)
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
     if (QueueHandle != NULL)
     {
-        if (xQueueReceive(QueueHandle, &QueueBuffer, (TickType_t)0) == pdPASS)
+        while (1)
         {
-            // question!
-            sciPrintf(&QueueBuffer);
+            // queueBuffer has different type with event, will it convert automatically?
+            if (xQueueReceive(QueueHandle, &queueBuffer, (TickType_t)0) == pdTRUE)
+            {
+                if (queueBuffer == MEASURE_LIGHT)
+                {
+                    // question!
+                    sciPrintf(&queueBuffer);
+                }
 
-            adcInit();
-            adcStartConversion(adcREG1, );
+                adcData_t adc_data;
+
+                adcInit();
+                adcStartConversion(adcREG1, adcGROUP1);
+                while (!adcIsConversionComplete(adcREG1, adcGROUP1))
+                    ;
+                adcGetData(adcREG1, adcGROUP1, &adc_data);
+                sciPrintf(adc_data);
+            }
         }
     }
 
@@ -104,11 +118,13 @@ obc_error_code_t sendToLightServiceQueue(light_event_t *event)
     // Send the event to the queue. Return error code if event was not sent successfully.
     if (QueueHandle != NULL)
     {
-        if (xQueueSend(QueueHandle, event, (TickType_t)0) == pdFAIL)
+        if (xQueueSend(QueueHandle, event, (TickType_t)0) == pdTRUE)
         {
             // Are there any other issue that may cause queuesend fail?
-            return OBC_ERR_CODE_QUEUE_FULL;
+            // should I check if the queue is full?
+            return OBC_ERR_CODE_SUCCESS;
         }
     }
+    return OBC_ERR_CODE_QUEUE_SEND_FAILED;
     /* USER CODE END */
 }

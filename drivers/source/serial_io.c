@@ -19,17 +19,16 @@
 
 /* USER CODE BEGIN */
 // Add a static assertion to ensure that UART_PRINT_REG is defined as either scilinREG or sciREG
-STATIC_ASSERT_EQ(UART_PRINT_REG, sciREG);
-STATIC_ASSERT_EQ(UART_PRINT_REG, sciLinREG);
+STATIC_ASSERT(UART_PRINT_REG, sciREG || scilinREG);
 /* USER CODE END */
 STATIC_ASSERT(MAX_PRINTF_SIZE > 0, "MAX_PRINTF_SIZE must be greater than 0");
 
 /* GLOBAL VARIABLES */
-static SemaphoreHandle_t sciMutex;       // Protects SCI1/SCI module
-static StaticSemaphore_t sciMutexBuffer; // Buffer for SCI mutex
+static SemaphoreHandle_t sciMutex = NULL; // Protects SCI1/SCI module
+static StaticSemaphore_t sciMutexBuffer;  // Buffer for SCI mutex
 
-static SemaphoreHandle_t sciLinMutex;       // Protects SCI2/SCILin module
-static StaticSemaphore_t sciLinMutexBuffer; // Buffer for SCI2 mutex
+static SemaphoreHandle_t sciLinMutex = NULL; // Protects SCI2/SCILin module
+static StaticSemaphore_t sciLinMutexBuffer;  // Buffer for SCI2 mutex
 
 /**
  * @brief Iterate through an array of bytes and transmit them via UART_PRINT_REG.
@@ -49,7 +48,10 @@ void sciMutexInit(void)
 
     /* USER CODE BEGIN */
     // Create mutex to protect SCI2/SCILin module here.
-    sciLinMutex = xSemaphoreCreateMutexStatic(&sciLinMutexBuffer);
+    if (sciLinMutex == NULL)
+    {
+        sciLinMutex = xSemaphoreCreateMutexStatic(&sciLinMutexBuffer);
+    }
 
     /* USER CODE END */
 
@@ -69,12 +71,19 @@ obc_error_code_t sciPrintText(unsigned char *text, uint32_t length)
 
     /* USER CODE BEGIN */
     // Print text to the serial port using sciSendBytes. Use the mutex to protect the SCI module.
-    if (xSemaphoreTake(sciLinMutex, UART_MUTEX_BLOCK_TIME) == pdTRUE)
+    if (UART_PRINT_REG == scilinREG)
     {
-        sciSendBytes(UART_PRINT_REG, MAX_PRINTF_SIZE);
-        xSemaphoreGive(sciLinMutex);
+        if (sciLinMutex != NULL)
+        {
+            if (xSemaphoreTake(sciLinMutex, UART_MUTEX_BLOCK_TIME) == pdTRUE)
+            {
+                sciSendBytes(text, length);
+                xSemaphoreGive(sciLinMutex);
+            }
+            return OBC_ERR_CODE_SUCCESS;
+        }
     }
-
+    return 0;
     /* USER CODE END */
 }
 

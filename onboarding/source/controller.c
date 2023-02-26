@@ -33,14 +33,14 @@
 /* USER CODE END */
 
 /* Declare handlers and buffers for tasks and timers */
-static TaskHandle_t controllerTaskHandle;
+static TaskHandle_t controllerTaskHandle = NULL;
 static StaticTask_t controllerTaskBuffer;
 static StackType_t controllerTaskStack[CONTROLLER_STACK_SIZE];
 
-static TimerHandle_t lightTimerHandle;
+static TimerHandle_t lightTimerHandle = NULL;
 static StaticTimer_t lightTimerBuffer;
 
-static TimerHandle_t ledTimerHandle;
+static TimerHandle_t ledTimerHandle = NULL;
 static StaticTimer_t ledTimerBuffer;
 
 /**
@@ -101,6 +101,11 @@ obc_error_code_t initController(void)
                                               lightTimerCallback,
                                               &lightTimerBuffer);
     }
+
+    if (lightTimerHandle == NULL)
+        return OBC_ERR_CODE_TIMER_CREATION_FAILED;
+
+    return OBC_ERR_CODE_SUCCESS;
     /* USER CODE END */
 }
 
@@ -125,8 +130,12 @@ static void controllerTask(void *pvParameters)
 
         /* USER CODE BEGIN */
         // Start light timer and check if both timers were started successfully
-        BaseType_t lightReturned;
-        lightReturned = xTimerStart(lightTimerHandle, 0);
+        xReturned = xTimerStart(lightTimerHandle, 0);
+
+        if (xReturned == pdFALSE)
+        {
+            return OBC_ERR_CODE_TIMER_START_FAILED;
+        }
         /* USER CODE END */
     }
 
@@ -145,5 +154,7 @@ static void lightTimerCallback(TimerHandle_t xTimer)
     /* USER CODE BEGIN */
     // Send light event to light service queue
     ASSERT(xTimer != NULL);
+    light_event_t lightEvent = MEASURE_LIGHT;
+    sendToLightServiceQueue(&lightEvent);
     /* USER CODE END */
 }
