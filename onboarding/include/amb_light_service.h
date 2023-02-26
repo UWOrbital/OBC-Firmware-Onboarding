@@ -16,6 +16,15 @@ typedef enum {
 obc_error_code_t initLightService(void);
 
 /**
+ * @brief get data from ADC
+ *
+ * @param void
+ * @note use in lightServiceTask(void *pvParameters)
+ * @return uint32, return data value from sensor
+ */
+uint32_t getLightSensorData(void);
+
+/**
  * @brief Send an event to the light service queue.
  * 
  * @param event The event to send to the queue.

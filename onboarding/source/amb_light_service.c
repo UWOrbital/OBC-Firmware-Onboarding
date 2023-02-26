@@ -63,15 +63,15 @@ obc_error_code_t initLightService(void)
         return OBC_ERR_CODE_TASK_CREATION_FAILED;
     }
 
-    if (QueueHandle == NULL)
+    if (queueHandle == NULL)
     {
-        QueueHandle = xQueueCreateStatic(QUEUE_LENGTH,
+        queueHandle = xQueueCreateStatic(QUEUE_LENGTH,
                                          ITEM_SIZE,
                                          ucQueueStorageArea,
                                          &queueBuffer);
     }
 
-    if (QueueHandle == NULL)
+    if (queueHandle == NULL)
     {
         return OBC_ERR_CODE_QUEUE_CREATION_FAILED;
     }
@@ -80,31 +80,48 @@ obc_error_code_t initLightService(void)
     /* USER CODE END */
 }
 
+uint32_t getLightSensorData(void)
+{
+    adcData_t adc_data;
+
+    /** - Start Group1 ADC Conversion
+     *     Select Channel 6 - Light Sensor for Conversion
+     */
+    adcInit();
+
+    /** - Wait for ADC Group1 conversion to complete */
+
+    adcStartConversion(adcREG1, adcGROUP1);
+    /** - Read the conversion result
+     *     The data contains the Light sensor data
+     */
+    while (!adcIsConversionComplete(adcREG1, adcGROUP1))
+        ;
+
+    /** - Transmit the Conversion data to PC using SCI
+     */
+    adcGetData(adcREG1, adcGROUP1, &adc_data);
+    return adc_data.value;
+}
+
 static void lightServiceTask(void *pvParameters)
 {
     /* USER CODE BEGIN */
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
-    if (QueueHandle != NULL)
+    if (queueHandle != NULL)
     {
+        light_event_t lightEvent;
         while (1)
         {
             // queueBuffer has different type with event, will it convert automatically?
-            if (xQueueReceive(QueueHandle, &queueBuffer, (TickType_t)0) == pdTRUE)
+            if (xQueueReceive(queueHandle, &lightEvent, (TickType_t)0) == pdTRUE)
             {
-                if (queueBuffer == MEASURE_LIGHT)
+                if (lightEvent == MEASURE_LIGHT)
                 {
-                    // question!
-                    sciPrintf(&queueBuffer);
-                }
-
-                adcData_t adc_data;
-
-                adcInit();
-                adcStartConversion(adcREG1, adcGROUP1);
-                while (!adcIsConversionComplete(adcREG1, adcGROUP1))
-                    ;
-                adcGetData(adcREG1, adcGROUP1, &adc_data);
-                sciPrintf(adc_data);
+                    uint32_t lightData = getLightSensorData();
+                    // not sure about "..." for param of sciPrintf
+                    sciPrintf(&lightData);
+                };
             }
         }
     }
