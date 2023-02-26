@@ -89,6 +89,9 @@ static void lightServiceTask(void *pvParameters)
         {
             // question!
             sciPrintf(&QueueBuffer);
+
+            adcInit();
+            adcStartConversion(adcREG1, );
         }
     }
 
