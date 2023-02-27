@@ -2,6 +2,7 @@
 #define ONBOARDING_INCLUDE_AMB_LIGHT_SERVICE_H_
 
 #include "obc_errors.h"
+#include <stdint.h>
 
 /* Event types to be sent to light service queue */
 typedef enum {

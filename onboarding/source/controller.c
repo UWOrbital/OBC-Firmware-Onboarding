@@ -119,7 +119,8 @@ static void controllerTask(void *pvParameters)
     {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
-        return OBC_ERR_CODE_TASK_CREATION_FAILED;
+        char *message = "Initializing light service task failed";
+        sciPrintText((unsigned char *)message, sizeof(message));
         /* USER CODE END */
     }
     else
@@ -134,7 +135,8 @@ static void controllerTask(void *pvParameters)
 
         if (xReturned == pdFALSE)
         {
-            return OBC_ERR_CODE_TIMER_START_FAILED;
+            char *message = "Timer start failed";
+            sciPrintText((unsigned char *)message, sizeof(message));
         }
         /* USER CODE END */
     }

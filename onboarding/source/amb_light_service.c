@@ -119,8 +119,7 @@ static void lightServiceTask(void *pvParameters)
                 if (lightEvent == MEASURE_LIGHT)
                 {
                     uint32_t lightData = getLightSensorData();
-                    // not sure about "..." for param of sciPrintf
-                    sciPrintf(&lightData);
+                    sciPrintf("%u\n", lightData);
                 };
             }
         }
@@ -133,9 +132,9 @@ obc_error_code_t sendToLightServiceQueue(light_event_t *event)
 {
     /* USER CODE BEGIN */
     // Send the event to the queue. Return error code if event was not sent successfully.
-    if (QueueHandle != NULL)
+    if (queueHandle != NULL)
     {
-        if (xQueueSend(QueueHandle, event, (TickType_t)0) == pdTRUE)
+        if (xQueueSend(queueHandle, event, (TickType_t)0) == pdTRUE)
         {
             // Are there any other issue that may cause queuesend fail?
             // should I check if the queue is full?
