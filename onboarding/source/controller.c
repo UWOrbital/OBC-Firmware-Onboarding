@@ -27,9 +27,9 @@
 
 /* USER CODE BEGIN */
 // define config for the light timer
-#define LIGHT_CONTROLLER_NAME         "light timer" 
-#define LIGHT_CONTROLLER_PERIOD        pdMS_TO_TICKS(1000)
-#define LIGHT_CONTROLLER_AUTORELOAD    pdTRUE 
+#define LIGHT_TIMER_NAME         "light timer" 
+#define LIGHT_TIMER_PERIOD        pdMS_TO_TICKS(1000)
+#define LIGHT_TIMER_AUTORELOAD    pdTRUE 
 /* USER CODE END */
 
 /* Declare handlers and buffers for tasks and timers */
@@ -91,22 +91,22 @@ obc_error_code_t initController(void) {
     /* USER CODE BEGIN */
     if (lightTimerHandle == NULL) {
         // Create light timer
-        lightTimerHandle = xTimerCreateStatic(LIGHT_CONTROLLER_NAME,
-                                        LIGHT_CONTROLLER_PERIOD, 
-                                        LIGHT_CONTROLLER_AUTORELOAD,
+        lightTimerHandle = xTimerCreateStatic(LIGHT_TIMER_NAME,
+                                        LIGHT_TIMER_PERIOD, 
+                                        LIGHT_TIMER_AUTORELOAD,
                                         (void *) 0,
                                         lightTimerCallback,
                                         &lightTimerBuffer);
     }
                                         
     if (lightTimerHandle == NULL) 
-            return OBC_ERR_CODE_TIMER_CREATION_FAILED;
+        return OBC_ERR_CODE_TIMER_CREATION_FAILED;
             
         
 
         /* USER CODE END */
 
-            return 1;
+    return OBC_ERR_CODE_SUCCESS;
 }
 
 static void controllerTask(void * pvParameters) {
@@ -117,7 +117,7 @@ static void controllerTask(void * pvParameters) {
     if (lightServiceStatus != OBC_ERR_CODE_SUCCESS) {
         /* USER CODE BEGIN */
         char str[] = "Error: Light service was not properly initialized";
-        sciPrintText((unsigned char *) str, strlen(str));
+        sciPrintf("%s\n",str);
 
     } else { 
         /* USER CODE END 
@@ -125,13 +125,18 @@ static void controllerTask(void * pvParameters) {
         Light service task and queue created successfully */
         BaseType_t xReturned; 
         xReturned = xTimerStart(ledTimerHandle, 0);
+
+        if (xReturned == pdFAIL) {
+             char str[] = "Error: LED Timer was not properly initialized";
+             sciPrintf("%s\n",str);
+        }
         
         /* USER CODE BEGIN */
         xReturned = xTimerStart(lightTimerHandle, 0);
 
         if (xReturned == pdFAIL) {
              char str[] = "Error: Light Timer was not properly initialized";
-             sciPrintText((unsigned char *) str, strlen(str));
+             sciPrintf("%s\n",str);
         }
             
 

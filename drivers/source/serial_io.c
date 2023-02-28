@@ -19,7 +19,7 @@
 
 /* USER CODE BEGIN */
 // Add a static assertion to ensure that UART_PRINT_REG is defined as either scilinREG or sciREG
-STATIC_ASSERT(UART_PRINT_REG == scilinREG, "UART_PRINT_REG does not equal scilinREG");
+STATIC_ASSERT(UART_PRINT_REG == scilinREG||UART_PRINT_REG == sciREG, "UART_PRINT_REG does not equal scilinREG");
 /* USER CODE END */
 STATIC_ASSERT(MAX_PRINTF_SIZE > 0, "MAX_PRINTF_SIZE must be greater than 0");
 
@@ -66,26 +66,20 @@ obc_error_code_t sciPrintText(unsigned char *text, uint32_t length) {
 
     /* USER CODE BEGIN */
     // Print text to the serial port using sciSendBytes. Use the mutex to protect the SCI module.
-    ASSERT(sciMutex != NULL);
+    
         
 
-    if (sciMutex != NULL) {
-        if (xSemaphoreTake(sciMutex, UART_MUTEX_BLOCK_TIME) == pdTRUE) {
-            sciSendBytes(text, length);
-            xSemaphoreGive(sciMutex);
-            return 1;
-        }
+    if (xSemaphoreTake(mutex, UART_MUTEX_BLOCK_TIME) == pdTRUE) {
+        sciSendBytes(text, length);
+        xSemaphoreGive(mutex);
+    } else {
+        return OBC_ERR_CODE_MUTEX_CREATION_FAILED;
     }
-    ASSERT(sciLinMutex != NULL);
-        
-    if (sciLinMutex != NULL) {
-        if (xSemaphoreTake(sciLinMutex, UART_MUTEX_BLOCK_TIME) == pdTRUE) {
-            sciSendBytes(text, length);
-            xSemaphoreGive(sciLinMutex);
-            return 1;
-        }
-    }
-    return 0;    
+    
+    
+
+
+    return OBC_ERR_CODE_SUCCESS;    
     /* USER CODE END */
     }
 
