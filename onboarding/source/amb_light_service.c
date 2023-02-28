@@ -80,7 +80,7 @@ obc_error_code_t initLightService(void)
     /* USER CODE END */
 }
 
-uint16_t getLightSensorData(void *pvParameters)
+uint16_t getLightSensorData(void)
 {
     adcData_t adc_data;
 

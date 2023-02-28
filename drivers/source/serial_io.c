@@ -73,15 +73,20 @@ obc_error_code_t sciPrintText(unsigned char *text, uint32_t length)
     /* USER CODE BEGIN */
     // Print text to the serial port using sciSendBytes. Use the mutex to protect the SCI module.
 
-    if (xSemaphoreTake(mutex, UART_MUTEX_BLOCK_TIME) == pdTRUE)
+    if (xSemaphoreTake(mutex, UART_MUTEX_BLOCK_TIME) == pdFALSE)
+    {
+        return OBC_ERR_CODE_MUTEX_TAKE_FAILED;
+    }
+    else
     {
         sciSendBytes(text, length);
         xSemaphoreGive(sciLinMutex);
         return OBC_ERR_CODE_SUCCESS;
     }
+
+    return OBC_ERR_CODE_MUTEX_TIMEOUT;
 }
 
-return OBC_ERR_CODE_SCI_SEND_FAILED;
 /* USER CODE END */
 
 obc_error_code_t sciPrintf(const char *s, ...)

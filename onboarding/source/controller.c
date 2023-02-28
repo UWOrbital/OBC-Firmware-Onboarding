@@ -132,7 +132,7 @@ static void controllerTask(void *pvParameters)
         if (xReturned == pdFALSE)
         {
             char *message = "LED timer start failed";
-            sciPrintText((unsigned char *)message, sizeof(message))
+            sciPrintText((unsigned char *)message, sizeof(message));
         }
         /* USER CODE BEGIN */
         // Start light timer and check if both timers were started successfully
