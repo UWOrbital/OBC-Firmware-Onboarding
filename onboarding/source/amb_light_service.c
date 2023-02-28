@@ -22,7 +22,7 @@
 /* USER CODE BEGIN */
 // Define light service queue config here
 #define QUEUE_LENGTH 10
-#define ITEM_SIZE sizeof(uint64_t)
+#define ITEM_SIZE sizeof(light_event_t)
 
 /* USER CODE END */
 
@@ -80,14 +80,9 @@ obc_error_code_t initLightService(void)
     /* USER CODE END */
 }
 
-uint32_t getLightSensorData(void)
+uint16_t getLightSensorData(void *pvParameters)
 {
     adcData_t adc_data;
-
-    /** - Start Group1 ADC Conversion
-     *     Select Channel 6 - Light Sensor for Conversion
-     */
-    adcInit();
 
     /** - Wait for ADC Group1 conversion to complete */
 
@@ -97,9 +92,6 @@ uint32_t getLightSensorData(void)
      */
     while (!adcIsConversionComplete(adcREG1, adcGROUP1))
         ;
-
-    /** - Transmit the Conversion data to PC using SCI
-     */
     adcGetData(adcREG1, adcGROUP1, &adc_data);
     return adc_data.value;
 }
@@ -118,7 +110,8 @@ static void lightServiceTask(void *pvParameters)
             {
                 if (lightEvent == MEASURE_LIGHT)
                 {
-                    uint32_t lightData = getLightSensorData();
+                    uint16_t lightData = getLightSensorData();
+                    // use %lu if uint32_t (long unsigned int)
                     sciPrintf("%u\n", lightData);
                 };
             }

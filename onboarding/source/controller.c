@@ -129,13 +129,18 @@ static void controllerTask(void *pvParameters)
         BaseType_t xReturned;
         xReturned = xTimerStart(ledTimerHandle, 0);
 
+        if (xReturned == pdFALSE)
+        {
+            char *message = "LED timer start failed";
+            sciPrintText((unsigned char *)message, sizeof(message))
+        }
         /* USER CODE BEGIN */
         // Start light timer and check if both timers were started successfully
         xReturned = xTimerStart(lightTimerHandle, 0);
 
         if (xReturned == pdFALSE)
         {
-            char *message = "Timer start failed";
+            char *message = "Light timer start failed";
             sciPrintText((unsigned char *)message, sizeof(message));
         }
         /* USER CODE END */
