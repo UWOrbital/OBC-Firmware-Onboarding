@@ -12,6 +12,7 @@
 #include <FreeRTOS.h>
 #include <os_task.h>
 #include <os_queue.h>
+#include <stdint.h>
 
 
 // Include any additional headers here
