@@ -75,7 +75,7 @@ obc_error_code_t sciPrintText(unsigned char *text, uint32_t length)
 
     if (xSemaphoreTake(mutex, UART_MUTEX_BLOCK_TIME) == pdFALSE)
     {
-        return OBC_ERR_CODE_MUTEX_TAKE_FAILED;
+        return OBC_ERR_CODE_MUTEX_TIMEOUT;
     }
     else
     {

@@ -125,15 +125,17 @@ obc_error_code_t sendToLightServiceQueue(light_event_t *event)
 {
     /* USER CODE BEGIN */
     // Send the event to the queue. Return error code if event was not sent successfully.
-    if (queueHandle != NULL)
+    if (queueHandle == NULL)
     {
-        if (xQueueSend(queueHandle, event, (TickType_t)0) == pdTRUE)
-        {
-            // Are there any other issue that may cause queuesend fail?
-            // should I check if the queue is full?
-            return OBC_ERR_CODE_SUCCESS;
-        }
+        return OBC_ERR_CODE_INVALID_STATE;
     }
-    return OBC_ERR_CODE_QUEUE_SEND_FAILED;
+
+    if (xQueueSend(queueHandle, event, (TickType_t)0) == pdTRUE)
+    {
+        // Are there any other issue that may cause queuesend fail?
+        // should I check if the queue is full?
+        return OBC_ERR_CODE_SUCCESS;
+    }
+    return OBC_ERR_CODE_QUEUE_FULL;
     /* USER CODE END */
 }
