@@ -26,18 +26,20 @@
 
 /* USER CODE BEGIN */
 // define config for the light timer
-
+#define LIGHT_TIMER_NAME          "light_timer"
+#define LIGHT_TIMER_PERIOD        pdMS_TO_TICKS(1000)
+#define LIGHT_TIMER_AUTORELOAD    pdTRUE
 /* USER CODE END */
 
 /* Declare handlers and buffers for tasks and timers */
-static TaskHandle_t controllerTaskHandle;
+static TaskHandle_t controllerTaskHandle = NULL;
 static StaticTask_t controllerTaskBuffer;
 static StackType_t controllerTaskStack[CONTROLLER_STACK_SIZE];
 
-static TimerHandle_t lightTimerHandle;
+static TimerHandle_t lightTimerHandle = NULL;
 static StaticTimer_t lightTimerBuffer;
 
-static TimerHandle_t ledTimerHandle;
+static TimerHandle_t ledTimerHandle = NULL;
 static StaticTimer_t ledTimerBuffer;
 
 /**
@@ -56,8 +58,10 @@ static void lightTimerCallback(TimerHandle_t xTimer);
  */
 static void ledTimerCallback(TimerHandle_t xTimer);
 
-obc_error_code_t initController(void) {
-    if (controllerTaskHandle == NULL) {
+obc_error_code_t initController(void) 
+{
+    if (controllerTaskHandle == NULL) 
+    {
         // Create controller task
         controllerTaskHandle = xTaskCreateStatic(   controllerTask,             /* Function that implements the task. */
                                                     CONTROLLER_NAME,            /* Text name for the task. */
@@ -71,7 +75,8 @@ obc_error_code_t initController(void) {
     if (controllerTaskHandle == NULL)
         return OBC_ERR_CODE_TASK_CREATION_FAILED;
 
-    if (ledTimerHandle == NULL) {
+    if (ledTimerHandle == NULL) 
+    {
         // Create led timer
         ledTimerHandle = xTimerCreateStatic(LED_TIMER_NAME,
                                             LED_TIMER_PERIOD,
@@ -86,43 +91,69 @@ obc_error_code_t initController(void) {
 
     /* USER CODE BEGIN */
     // Create light timer and check if it was created successfully
+    if (lightTimerHandle == NULL) 
+    {
+        // Create light timer
+        lightTimerHandle = xTimerCreateStatic(LIGHT_TIMER_NAME,
+                                              LIGHT_TIMER_PERIOD,
+                                              LIGHT_TIMER_AUTORELOAD,
+                                              (void *) 0,
+                                              lightTimerCallback,
+                                              &lightTimerBuffer);
+    }
 
+    if (lightTimerHandle == NULL)
+        return OBC_ERR_CODE_TIMER_CREATION_FAILED;
+
+    return OBC_ERR_CODE_SUCCESS;
     /* USER CODE END */
 }
 
-static void controllerTask(void * pvParameters) {
+static void controllerTask(void * pvParameters) 
+{
     ASSERT(controllerTaskHandle != NULL);
     ASSERT(ledTimerHandle != NULL);
 
     obc_error_code_t lightServiceStatus = initLightService();
-    if (lightServiceStatus != OBC_ERR_CODE_SUCCESS) {
+    if (lightServiceStatus != OBC_ERR_CODE_SUCCESS) 
+    {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
-
+        sciPrintf("Failed initializing light service task and/or queue");
         /* USER CODE END */
-    } else { 
+    } 
+    else 
+    { 
         /* Light service task and queue created successfully */
-        BaseType_t xReturned; 
-        xReturned = xTimerStart(ledTimerHandle, 0);
+        BaseType_t xReturnedLED; 
+        xReturnedLED = xTimerStart(ledTimerHandle, 0);
         
         /* USER CODE BEGIN */
         // Start light timer and check if both timers were started successfully
-
+        BaseType_t xReturnedLight; 
+        xReturnedLight = xTimerStart(ledTimerHandle, 0);
+        if (xReturnedLED == pdFAIL || xReturnedLight == pdFAIL) {
+            sciPrintf("Light or LED Timer failed to start");
+        }
         /* USER CODE END */
     }
 
     while (1);
 }
 
-static void ledTimerCallback(TimerHandle_t xTimer) {
+static void ledTimerCallback(TimerHandle_t xTimer) 
+{
     ASSERT(xTimer != NULL);
     gioToggleBit(gioPORTB, 1);
 }
 
-static void lightTimerCallback(TimerHandle_t xTimer) {
+static void lightTimerCallback(TimerHandle_t xTimer) 
+{
     /* USER CODE BEGIN */
     // Send light event to light service queue
-
+    ASSERT(xTimer != NULL);
+    light_event_t measureLight = MEASURE_LIGHT;
+    sendToLightServiceQueue(&measureLight);
     /* USER CODE END */
 }
 
