@@ -2258,9 +2258,6 @@ eSleepModeStatus eTaskConfirmSleepModeStatus( void ) PRIVILEGED_FUNCTION;
  */
 void *pvTaskIncrementMutexHeldCount( void ) PRIVILEGED_FUNCTION;
 
-void vApplicationGetIdleTaskMemory ( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, 
-                                    uint32_t *pulIdleTaskStackSize ) PRIVILEGED_FUNCTION;
-
 #ifdef __cplusplus
 }
 #endif
