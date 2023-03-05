@@ -88,14 +88,11 @@ static void lightServiceTask(void * pvParameters) {
                                 ( TickType_t) 0) == pdTRUE)
             {
                 adcStartConversion(adcREG1, adcGROUP1);
-                while(1)
+                if (adcIsConversionComplete(adcREG1, adcGROUP1) == 8) 
                 {
-                    if (adcIsConversionComplete(adcREG1, adcGROUP1) == 8) 
-                    {
-                        adcData_t data;
-                        adcGetData(adcREG1, adcGROUP1, &data);
-                        sciPrintf("The light service data id: %lu, data: %u", data.id, data.value);
-                    }
+                    adcData_t data;
+                    adcGetData(adcREG1, adcGROUP1, &data);
+                    sciPrintf("The light service data id: %lu, data: %u", data.id, data.value);
                 }
             }
 
