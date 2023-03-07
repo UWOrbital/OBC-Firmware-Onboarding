@@ -39,7 +39,7 @@ int q2Array[Q2_ARRAY_SIZE];
 //          The function should return 0b0001001101100101
 //-------------------------------------------------------------------------
 uint16_t q3(uint8_t x, uint8_t y) {
-    uint8_t flip_bit_map = (1 << 7) | (1);
+    uint8_t flip_bit_map = 0b10000001;
     int16_t result = x;
 
     result ^= flip_bit_map;
