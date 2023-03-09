@@ -85,7 +85,7 @@ static void lightServiceTask(void * pvParameters) {
         {
             if (xQueueReceive (lightServiceQueueHandle, 
                                 &event,
-                                ( TickType_t) 0) == pdTRUE)
+                                ( TickType_t) 0) == pdTRUE && event == MEASURE_LIGHT)
             {
                 adcStartConversion(adcREG1, adcGROUP1);
                 if (adcIsConversionComplete(adcREG1, adcGROUP1) == 8) 
