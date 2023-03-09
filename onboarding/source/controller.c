@@ -117,7 +117,7 @@ static void controllerTask(void * pvParameters) {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
 
-        sciPrintf("ERROR: Failed to initialize light service task and/or queue");
+        sciPrintf("ERROR: Failed to initialize light service task and/or queue\n");
         
         /* USER CODE END */
     } else { 
@@ -131,7 +131,7 @@ static void controllerTask(void * pvParameters) {
         BaseType_t xReturnedLight = xTimerStart(lightTimerHandle, 0);
 
         if (xReturned == pdFAIL || xReturnedLight == pdFAIL) {
-            sciPrintf("ERROR: Failed to start LED timer and/or light timer");
+            sciPrintf("ERROR: Failed to start LED timer and/or light timer\n");
         }
 
         /* USER CODE END */

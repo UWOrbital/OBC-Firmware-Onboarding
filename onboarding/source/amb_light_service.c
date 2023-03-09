@@ -79,7 +79,7 @@ obc_error_code_t initLightService(void) {
     /* USER CODE END */
 }
 
-uint32_t getLightSensorData(void) {
+static uint16_t getLightSensorData(void) {
     // TAKEN FROM https://git.ti.com/cgit/hercules_examples/hercules_examples/tree/Launchpad/RM/RM46L8/Project_1/demoapp/source/adc_demos.c
 
     adcData_t lightData;
@@ -111,9 +111,9 @@ static void lightServiceTask(void * pvParameters) {
     if (lightServiceQueueHandle != NULL) {
         if (xQueueReceive(lightServiceQueueHandle, &lightEvent, (TickType_t) 10) == pdPASS) {
             if (lightEvent == MEASURE_LIGHT) {
-                    uint32_t lightSensorData = getLightSensorData();
+                    uint16_t lightSensorData = getLightSensorData();
 
-                    sciPrintf("Ambient light value measured: %u", lightSensorData);
+                    sciPrintf("Ambient light value measured: \n%u", lightSensorData);
             }
         }
     }
@@ -123,11 +123,12 @@ static void lightServiceTask(void * pvParameters) {
 obc_error_code_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue. Return error code if event was not sent successfully.
-    
-    if (xQueueSend(lightServiceQueueHandle, event, (TickType_t) 10) == pdPASS) {
-        return OBC_ERR_CODE_SUCCESS;
+    if (event != NULL) {
+        if (xQueueSend(lightServiceQueueHandle, event, (TickType_t) 10) == pdPASS) {
+            return OBC_ERR_CODE_SUCCESS;
+        }
     }
 
-    return OBC_ERR_CODE_SCI_SEND_FAILED;
+    return OBC_ERR_CODE_QUEUE_FULL;
     /* USER CODE END */
 }
