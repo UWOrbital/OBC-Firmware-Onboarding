@@ -116,8 +116,7 @@ static void controllerTask(void * pvParameters) {
     obc_error_code_t lightServiceStatus = initLightService();
     if (lightServiceStatus != OBC_ERR_CODE_SUCCESS) {
         /* USER CODE BEGIN */
-        char str[] = "Error: Light service was not properly initialized";
-        sciPrintf("%s\n",str);
+        sciPrintf("%s\n","Error: Light service was not properly initialized");
 
     } else { 
         /* USER CODE END 
@@ -127,8 +126,7 @@ static void controllerTask(void * pvParameters) {
         xReturned = xTimerStart(ledTimerHandle, 0);
 
         if (xReturned == pdFAIL) {
-             char str[] = "Error: LED Timer was not properly initialized";
-             sciPrintf("%s\n",str);
+             sciPrintf("%s\n","Error: LED Timer was not properly initialized");
         }
         
         /* USER CODE BEGIN */

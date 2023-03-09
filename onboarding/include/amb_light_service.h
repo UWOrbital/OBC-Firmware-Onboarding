@@ -23,7 +23,7 @@ obc_error_code_t initLightService(void);
  * @note use in lightServiceTask(void *pvParameters)
  * @return uint32, return data value from sensor
  */
-uint32_t getLightSensorData(void);
+uint16_t getLightSensorData(void);
 
 /**
  * @brief Send an event to the light service queue.

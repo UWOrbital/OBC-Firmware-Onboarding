@@ -73,7 +73,7 @@ obc_error_code_t sciPrintText(unsigned char *text, uint32_t length) {
         sciSendBytes(text, length);
         xSemaphoreGive(mutex);
     } else {
-        return OBC_ERR_CODE_MUTEX_CREATION_FAILED;
+        return OBC_ERR_CODE_MUTEX_TIMEOUT;
     }
     
     

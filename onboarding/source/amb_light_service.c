@@ -27,8 +27,8 @@
 /* USER CODE BEGIN */
 // Define light service queue config here
 #define LIGHT_QUEUE_LENGTH 10
-#define LIGHT_QUEUE_SIZE sizeof(light_event_t)
-#define TEXT_SIZE sizeof( uint64_t )
+#define LIGHT_QUEUE_ITEM_SIZE sizeof(light_event_t)
+#define LIGHT_QUEUE_SIZE sizeof( uint64_t )
 /* USER CODE END */
 
 /* USER CODE BEGIN */
@@ -41,7 +41,7 @@ static StackType_t lightServiceStack[LIGHT_SERVICE_STACK_SIZE];
 
 static QueueHandle_t lightserviceQueue;
 static StaticQueue_t xlightStaticQueue;
-uint8_t uclightQueueStorageArea[LIGHT_QUEUE_LENGTH * TEXT_SIZE];
+uint8_t uclightQueueStorageArea[LIGHT_QUEUE_LENGTH * LIGHT_QUEUE_SIZE];
 
 /* USER CODE END */
 
@@ -69,16 +69,17 @@ obc_error_code_t initLightService(void) {
 
     if (lightserviceQueue == NULL) {
         lightserviceQueue = xQueueCreateStatic(LIGHT_QUEUE_LENGTH, LIGHT_QUEUE_SIZE,uclightQueueStorageArea, &xlightStaticQueue);
-
-    if (lightserviceQueue == NULL) {
-        return OBC_ERR_CODE_INVALID_ARG;
     }
-    }
-return OBC_ERR_CODE_SUCCESS;                           
+    if (lightserviceQueue == NULL) 
+        return OBC_ERR_CODE_QUEUE_CREATION_FAILED;
+    
+    
+return OBC_ERR_CODE_SUCCESS;     
+}                      
 /* USER CODE END */
-}
 
-uint32_t getLightSensorData(void)
+
+uint16_t getLightSensorData(void)
 {
 	adcData_t adcData;
 	
@@ -110,11 +111,9 @@ static void lightServiceTask(void * pvParameters) {
             if (eventReceived == MEASURE_LIGHT) {
                 
 
-                char str[32];
                 uint16_t lightdata = getLightSensorData();
-                    snprintf(str, 32, "The ambient light is %u", lightdata);
                     /** - Transmit the Conversion data to PC using SCI*/
-                    sciPrintf("%u\n", str);
+                    sciPrintf("The ambient light is %u\n", lightdata);
              }
 
                 
@@ -126,10 +125,10 @@ static void lightServiceTask(void * pvParameters) {
 obc_error_code_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     if(lightserviceQueue != NULL){
-        if(xQueueSend(lightserviceQueue, event, portMAX_DELAY != pdTRUE)){
-            return OBC_ERR_CODE_QUEUE_FULL;
+        if(xQueueSend(lightserviceQueue, event, portMAX_DELAY == pdTRUE)){
+            return OBC_ERR_CODE_SUCCESS;
         }
     }
-    return OBC_ERR_CODE_SUCCESS;
+    return OBC_ERR_CODE_INVALID_STATE;
     /* USER CODE END */
 }
