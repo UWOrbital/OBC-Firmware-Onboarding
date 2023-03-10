@@ -24,4 +24,13 @@ obc_error_code_t initLightService(void);
  */
 obc_error_code_t sendToLightServiceQueue(light_event_t *event);
 
+/**
+ * @brief Read a register value and print to the serial port.
+ * 
+ * @param regNum register number.
+ * @param groupNum group number for the register.
+ * @note This function is a helper function for lightServiceTask function .
+ */
+void adcReadandPrintData(unsigned int regNum, unsigned int groupNum)
+
 #endif /* ONBOARDING_INCLUDE_AMB_LIGHT_SERVICE_H_ */

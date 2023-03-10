@@ -33,6 +33,7 @@ static StackType_t lightServiceTaskStack[LIGHT_SERVICE_STACK_SIZE];
 uint8_t lightServiceQueueStorage[ QUEUE_LENGTH * ITEM_SIZE ];
 static StaticQueue_t lightServiceQueue;
 static QueueHandle_t lightServiceQueueHandle = NULL;
+extern void adcReadandPrintData(unsigned int regNum, unsigned int groupNum);
 /* USER CODE END */
 
 /**
@@ -101,7 +102,7 @@ static void lightServiceTask(void * pvParameters) {
 
 /* USER CODE BEGIN */
 // Read and print the register value to the serial port
-static void adcReadandPrintData(unsigned int regNum, unsigned int groupNum) {
+void adcReadandPrintData(unsigned int regNum, unsigned int groupNum) {
     adcStartConversion(regNum, groupNum);
     if (adcIsConversionComplete(regNum, groupNum) == ADC_CONVERSION_IS_FINISHED) 
     {
