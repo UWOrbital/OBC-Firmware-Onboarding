@@ -28,7 +28,6 @@
 // Define light service queue config here
 #define LIGHT_QUEUE_LENGTH 10
 #define LIGHT_QUEUE_ITEM_SIZE sizeof(light_event_t)
-#define LIGHT_QUEUE_SIZE sizeof( uint64_t )
 /* USER CODE END */
 
 /* USER CODE BEGIN */
@@ -41,7 +40,7 @@ static StackType_t lightServiceStack[LIGHT_SERVICE_STACK_SIZE];
 
 static QueueHandle_t lightserviceQueue;
 static StaticQueue_t xlightStaticQueue;
-uint8_t uclightQueueStorageArea[LIGHT_QUEUE_LENGTH * LIGHT_QUEUE_SIZE];
+uint8_t uclightQueueStorageArea[LIGHT_QUEUE_LENGTH * LIGHT_QUEUE_ITEM_SIZE];
 
 /* USER CODE END */
 
@@ -68,7 +67,7 @@ obc_error_code_t initLightService(void) {
     }
 
     if (lightserviceQueue == NULL) {
-        lightserviceQueue = xQueueCreateStatic(LIGHT_QUEUE_LENGTH, LIGHT_QUEUE_SIZE,uclightQueueStorageArea, &xlightStaticQueue);
+        lightserviceQueue = xQueueCreateStatic(LIGHT_QUEUE_LENGTH, LIGHT_QUEUE_ITEM_SIZE,uclightQueueStorageArea, &xlightStaticQueue);
     }
     if (lightserviceQueue == NULL) 
         return OBC_ERR_CODE_QUEUE_CREATION_FAILED;
@@ -128,6 +127,7 @@ obc_error_code_t sendToLightServiceQueue(light_event_t *event) {
         if(xQueueSend(lightserviceQueue, event, portMAX_DELAY == pdTRUE)){
             return OBC_ERR_CODE_SUCCESS;
         }
+        return OBC_ERR_CODE_QUEUE_FULL;
     }
     return OBC_ERR_CODE_INVALID_STATE;
     /* USER CODE END */
