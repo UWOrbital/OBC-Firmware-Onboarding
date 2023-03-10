@@ -7,6 +7,7 @@ typedef enum {
     OBC_ERR_CODE_UNKNOWN = 1,
     OBC_ERR_CODE_INVALID_ARG = 2,
     OBC_ERR_CODE_BUFF_TOO_SMALL = 3,
+    OBC_ERR_CODE_INVALID_STATE = 4,
 
     /* FreeRTOS Errors 100 - 199 */
     OBC_ERR_CODE_QUEUE_FULL = 100,

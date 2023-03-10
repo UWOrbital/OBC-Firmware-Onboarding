@@ -85,14 +85,11 @@ static void lightServiceTask(void * pvParameters) {
         {
             if (xQueueReceive (lightServiceQueueHandle, 
                                 &event,
-                                ( TickType_t) 0) == pdTRUE && event == MEASURE_LIGHT)
+                                ( TickType_t) 0) == pdTRUE)
             {
-                adcStartConversion(adcREG1, adcGROUP1);
-                if (adcIsConversionComplete(adcREG1, adcGROUP1) == 8) 
+                if (event == MEASURE_LIGHT)
                 {
-                    adcData_t data;
-                    adcGetData(adcREG1, adcGROUP1, &data);
-                    sciPrintf("The light service data id: %lu, data: %u", data.id, data.value);
+                    adcReadandPrintData(adcREG1, adcGROUP1);
                 }
             }
 
@@ -102,9 +99,29 @@ static void lightServiceTask(void * pvParameters) {
     /* USER CODE END */
 }
 
+staic void adcReadandPrintData(unsigned int regNum, unsigned int groupNum) {
+    adcStartConversion(regNum, groupNum);
+    if (adcIsConversionComplete(regNum, groupNum) == ADC_CONVERSION_IS_FINISHED) 
+    {
+        adcData_t data;
+        adcGetData(regNum, groupNum, &data);
+        sciPrintf("The light service data id: %lu, data: %u", data.id, data.value);
+    }
+}
+
 obc_error_code_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue. Return error code if event was not sent successfully.
+    if (event == NULL)
+    {
+        return OBC_ERR_CODE_INVALID_ARG;
+    }
+
+    if (lightServiceQueueHandle == NULL)
+    {
+        return OBC_ERR_CODE_INVALID_STATE;
+    }
+
     if (lightServiceQueueHandle != NULL) 
     {
         if (xQueueSend( lightServiceQueueHandle,
@@ -115,7 +132,6 @@ obc_error_code_t sendToLightServiceQueue(light_event_t *event) {
         } 
         return OBC_ERR_CODE_SUCCESS;
     }
-    return OBC_ERR_CODE_INVALID_ARG;
     
     /* USER CODE END */
 }
