@@ -123,10 +123,12 @@ static void lightServiceTask(void * pvParameters) {
 obc_error_code_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue. Return error code if event was not sent successfully.
-    if (event != NULL) {
-        if (xQueueSend(lightServiceQueueHandle, event, (TickType_t) 10) == pdPASS) {
-            return OBC_ERR_CODE_SUCCESS;
-        }
+    if (event == NULL) {
+        return OBC_ERR_CODE_INVALID_ARG;
+    }
+
+    if (xQueueSend(lightServiceQueueHandle, event, (TickType_t) 10) == pdPASS) {
+        return OBC_ERR_CODE_SUCCESS;
     }
 
     return OBC_ERR_CODE_QUEUE_FULL;
