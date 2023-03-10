@@ -99,7 +99,9 @@ static void lightServiceTask(void * pvParameters) {
     /* USER CODE END */
 }
 
-staic void adcReadandPrintData(unsigned int regNum, unsigned int groupNum) {
+/* USER CODE BEGIN */
+// Read and print the register value to the serial port
+static void adcReadandPrintData(unsigned int regNum, unsigned int groupNum) {
     adcStartConversion(regNum, groupNum);
     if (adcIsConversionComplete(regNum, groupNum) == ADC_CONVERSION_IS_FINISHED) 
     {
@@ -108,6 +110,7 @@ staic void adcReadandPrintData(unsigned int regNum, unsigned int groupNum) {
         sciPrintf("The light service data id: %lu, data: %u", data.id, data.value);
     }
 }
+/* USER CODE END */
 
 obc_error_code_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
