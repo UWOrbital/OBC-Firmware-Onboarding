@@ -121,11 +121,6 @@ obc_error_code_t sendToLightServiceQueue(light_event_t *event) {
         return OBC_ERR_CODE_INVALID_ARG;
     }
 
-    if (lightServiceQueueHandle == NULL)
-    {
-        return OBC_ERR_CODE_INVALID_STATE;
-    }
-
     if (lightServiceQueueHandle != NULL) 
     {
         if (xQueueSend( lightServiceQueueHandle,
@@ -136,6 +131,6 @@ obc_error_code_t sendToLightServiceQueue(light_event_t *event) {
         } 
         return OBC_ERR_CODE_SUCCESS;
     }
-    
+    return OBC_ERR_CODE_INVALID_STATE;
     /* USER CODE END */
 }
