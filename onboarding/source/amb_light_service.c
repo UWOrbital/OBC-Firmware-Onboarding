@@ -33,7 +33,7 @@ static StackType_t lightServiceTaskStack[LIGHT_SERVICE_STACK_SIZE];
 uint8_t lightServiceQueueStorage[ QUEUE_LENGTH * ITEM_SIZE ];
 static StaticQueue_t lightServiceQueue;
 static QueueHandle_t lightServiceQueueHandle = NULL;
-extern void adcReadandPrintData(unsigned int regNum, unsigned int groupNum);
+void adcReadandPrintData(unsigned int regNum, unsigned int groupNum);
 /* USER CODE END */
 
 /**
