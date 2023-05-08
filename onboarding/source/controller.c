@@ -26,7 +26,9 @@
 
 /* USER CODE BEGIN */
 // define config for the light timer
-
+#define LIGHT_TIMER_NAME        "light_timer"
+#define LIGHT_TIMER_PERIOD      pdMS_TO_TICKS(1000)
+#define LIGHT_TIMER_AUTORELOAD  pdTRUE
 /* USER CODE END */
 
 /* Declare handlers and buffers for tasks and timers */
@@ -86,7 +88,20 @@ obc_error_code_t initController(void) {
 
     /* USER CODE BEGIN */
     // Create light timer and check if it was created successfully
+    if (lightTimerHandle == NULL){
+        //Create light timer
+        lightTimerHandle = xTimerCreateStatic(LIGHT_TIMER_NAME,
+                                              LIGHT_TIMER_PERIOD,
+                                              LIGHT_TIMER_AUTORELOAD,
+                                              NULL,
+                                              lightTimerCallback,
+                                              &lightTimerBuffer);
+    }
 
+    if(lightTimerHandle == NULL){
+        return OBC_ERR_CODE_TIMER_CREATION_FAILED;
+    }
+    return OBC_ERR_CODE_SUCCESS;
     /* USER CODE END */
 }
 
@@ -98,7 +113,7 @@ static void controllerTask(void * pvParameters) {
     if (lightServiceStatus != OBC_ERR_CODE_SUCCESS) {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
-
+        sciPrintf("Light service initialization failed");
         /* USER CODE END */
     } else { 
         /* Light service task and queue created successfully */
@@ -107,7 +122,10 @@ static void controllerTask(void * pvParameters) {
         
         /* USER CODE BEGIN */
         // Start light timer and check if both timers were started successfully
-
+        BaseType_t xLightTimer = xTimerStart(lightTimerHandle, 0);
+        if (xReturned == pdFAIL || xLightTimer == pdFAIL){
+            sciPrintf("Light timer/LED timer initialization failed");
+        }
         /* USER CODE END */
     }
 
@@ -122,7 +140,9 @@ static void ledTimerCallback(TimerHandle_t xTimer) {
 static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
-
+    ASSERT(xTimer != NULL);
+    light_event_t lightEvent = MEASURE_LIGHT;
+    sendToLightServiceQueue(&lightEvent);
     /* USER CODE END */
 }
 

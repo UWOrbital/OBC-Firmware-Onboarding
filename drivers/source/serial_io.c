@@ -19,8 +19,9 @@
 
 /* USER CODE BEGIN */
 // Add a static assertion to ensure that UART_PRINT_REG is defined as either scilinREG or sciREG
-
+STATIC_ASSERT_OR_EQ(UART_PRINT_REG, scilinREG, sciREG);
 /* USER CODE END */
+
 STATIC_ASSERT(MAX_PRINTF_SIZE > 0, "MAX_PRINTF_SIZE must be greater than 0");
 
 /* GLOBAL VARIABLES */
@@ -46,7 +47,9 @@ void sciMutexInit(void) {
     
     /* USER CODE BEGIN */
     // Create mutex to protect SCI2/SCILin module here.
-    
+    if (sciLinMutex == NULL){
+        sciLinMutex = xSemaphoreCreateMutexStatic(&sciLinMutexBuffer);
+    }
     /* USER CODE END */
 
     // Static allocation of mutexes can only fail if the buffer is NULL
@@ -64,7 +67,15 @@ obc_error_code_t sciPrintText(unsigned char *text, uint32_t length) {
 
     /* USER CODE BEGIN */
     // Print text to the serial port using sciSendBytes. Use the mutex to protect the SCI module.
-
+    
+    if (xSemaphoreTake(mutex, (TickType_t)UART_MUTEX_BLOCK_TIME) == pdTRUE){
+        sciSendBytes(text, length);
+        xSemaphoreGive(mutex);
+        return OBC_ERR_CODE_SUCCESS;
+    }
+    else{
+        return OBC_ERR_CODE_SCI_RECEIVE_FAILED;
+    }
     /* USER CODE END */
 }
 
