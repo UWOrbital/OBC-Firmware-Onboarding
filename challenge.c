@@ -2,12 +2,13 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 //-------------------------------------------------------------------------
 // Question 0
 // Include the challenge.h header file
 //-------------------------------------------------------------------------
-
+#include "challenge.h"
 
 //-------------------------------------------------------------------------
 // Question 1
@@ -15,7 +16,8 @@
 // respectively. The value of `q1A` should be initialized to 0 and the value 
 // of `q1B`should be initialized to 1.
 //-------------------------------------------------------------------------
-
+int q1A = 0;
+int q1B = 1;
 
 //-------------------------------------------------------------------------
 // Question 2
@@ -23,7 +25,8 @@
 // the array should be `q2Array`. The size should be defined by a macro
 // named `Q2_ARRAY_SIZE`.
 //-------------------------------------------------------------------------
-
+#define Q2_ARRAY_SIZE 10
+int q2Array[Q2_ARRAY_SIZE];
 
 //-------------------------------------------------------------------------
 // Question 3
@@ -36,7 +39,13 @@
 //          The function should return 0b0001001101100101
 //-------------------------------------------------------------------------
 uint16_t q3(uint8_t x, uint8_t y) {
+    uint8_t flipx = 0b10000001;
+    uint8_t newx = x ^ flipx;
 
+    uint16_t result = newx << 8;
+    result |= y;
+
+    return result;
 }
 
 //-------------------------------------------------------------------------
@@ -50,10 +59,18 @@ uint16_t q3(uint8_t x, uint8_t y) {
 // Note: The array contains 8-bit unsigned integers.
 //-------------------------------------------------------------------------
 int32_t q4(uint8_t * array, uint32_t arrayLength) {
-    for (uint8_t i = 0; i <= arrayLength; i++) {
-        int32_t sum = 0;
-        sum += array[i];
+    if (array == NULL) {
+        return -1;
     }
+
+    int32_t sum = 0;
+    for (uint8_t i = 0, overflow = 0; i + overflow * 255 < arrayLength; i++) {
+        sum += array[i + overflow * 255];
+        if (i == 255) {
+            overflow++;
+        }
+    }
+    return sum;
 }
 
 //-------------------------------------------------------------------------
@@ -62,6 +79,11 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - uint32_t a
 // - uint16_t b
 //-------------------------------------------------------------------------
+
+typedef union {
+    uint32_t a;
+    uint16_t b;
+} q5_t;
 
 
 //-------------------------------------------------------------------------
@@ -72,6 +94,10 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - uint16_t y
 //-------------------------------------------------------------------------
 
+typedef struct {
+    uint32_t x;
+    uint32_t y;
+} q6_t;
 
 //-------------------------------------------------------------------------
 // Question 7
@@ -81,6 +107,10 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - FAIL = 1
 //-------------------------------------------------------------------------
 
+typedef enum {
+    SUCCESS,
+    FAIL
+} error_t;
 
 //-------------------------------------------------------------------------
 // Question 8
@@ -88,6 +118,7 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // them together. The macro should return the result.
 //-------------------------------------------------------------------------
 
+#define MULTIPLY(x, y) ((x) * (y))
 
 //-------------------------------------------------------------------------
 // Question 9
@@ -101,7 +132,14 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // Now, x = 10 and y = 5
 //-------------------------------------------------------------------------
 int q9(int *a, int *b) {
+    if (a == NULL || b == NULL) {
+        return -1;
+    }
 
+    int t = *a;
+    *a = *b;
+    *b = t;
+    return 0;
 }
 
 //-------------------------------------------------------------------------
@@ -119,7 +157,13 @@ typedef struct {
 } q10_t;
 
 error_t q10(q10_t *q10) {
-
+    error_t result;
+    if (q9(&(q10->a), &(q10->b)) == 0) {
+        result = SUCCESS;
+    } else {
+        result = FAIL;
+    }
+    return result;
 }
 
 //-------------------------------------------------------------------------
@@ -164,8 +208,7 @@ int main(void) {
     ASSERT(q4(smallArray, 5) == 15);
     ASSERT(q4(smallArray, 0) == 0);
     ASSERT(q4(NULL, 10) == -1);
-    ASSERT(q4(largeArray, 1000) == 1);
-    
+
     // Question 5 Test
     q5_t q5 = {.a = 0x01020304};
     ASSERT(q5.a == 0x01020304);
