@@ -64,7 +64,7 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
     }
 
     int32_t sum = 0;
-    for (uint8_t i = 0, overflow = 0; i + overflow * 255 < arrayLength; i++) {
+    for (uint8_t i = 0, overflow = 0; (uint32_t)i + overflow * 255 < arrayLength; i++) {
         sum += array[i + overflow * 255];
         if (i == 255) {
             overflow++;
@@ -208,6 +208,7 @@ int main(void) {
     ASSERT(q4(smallArray, 5) == 15);
     ASSERT(q4(smallArray, 0) == 0);
     ASSERT(q4(NULL, 10) == -1);
+    ASSERT(q4(largeArray, 1000) == 1);
 
     // Question 5 Test
     q5_t q5 = {.a = 0x01020304};
