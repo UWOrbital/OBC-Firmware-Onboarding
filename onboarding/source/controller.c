@@ -25,7 +25,10 @@
 #define LED_TIMER_AUTORELOAD    pdTRUE
 
 /* USER CODE BEGIN */
-// define config for the light timer
+/* Light Measure timer config*/
+#define LIGHT_TIMER_NAME        "light_timer"
+#define LIGHT_TIMER_PERIOD      pdMS_TO_TICKS(1000)
+#define LIGHT_TIMER_AUTORELOAD  pdTRUE
 
 /* USER CODE END */
 
@@ -85,8 +88,20 @@ obc_error_code_t initController(void) {
         return OBC_ERR_CODE_TIMER_CREATION_FAILED;
 
     /* USER CODE BEGIN */
-    // Create light timer and check if it was created successfully
+    if (lightTimerHandle == NULL) {
+        // Create light timer
+        lightTimerHandle = xTimerCreateStatic(  LIGHT_TIMER_NAME,
+                                                LIGHT_TIMER_PERIOD,
+                                                LIGHT_TIMER_AUTORELOAD,
+                                                (void *) 0,
+                                                lightTimerCallback,
+                                                &lightTimerBuffer);
+    }
 
+    if (lightTimerHandle == NULL)
+        return OBC_ERR_CODE_TIMER_CREATION_FAILED;
+
+    return OBC_ERR_CODE_SUCCESS;
     /* USER CODE END */
 }
 
@@ -98,7 +113,7 @@ static void controllerTask(void * pvParameters) {
     if (lightServiceStatus != OBC_ERR_CODE_SUCCESS) {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
-
+        sciPrintf("%d\n", (int)lightServiceStatus);
         /* USER CODE END */
     } else { 
         /* Light service task and queue created successfully */
@@ -107,6 +122,12 @@ static void controllerTask(void * pvParameters) {
         
         /* USER CODE BEGIN */
         // Start light timer and check if both timers were started successfully
+        BaseType_t xLightTimerReturn;
+        xLightTimerReturn = xTimerStart(lightTimerHandle, 0);
+
+        if (xReturned == pdFAIL || xLightTimerReturn == pdFAIL) {
+            sciPrintf("%d\n", (int)OBC_ERR_CODE_TIMER_CREATION_FAILED);
+        }
 
         /* USER CODE END */
     }
@@ -122,6 +143,13 @@ static void ledTimerCallback(TimerHandle_t xTimer) {
 static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
+    ASSERT(xTimer != NULL);
+    light_event_t * measureLightPtr = MEASURE_LIGHT;
+    obc_error_code_t lightTimerReturn = sendToLightServiceQueue(measureLightPtr);
+
+    if (lightTimerReturn != OBC_ERR_CODE_SUCCESS) {
+        sciPrintf("%d\n", (int)lightTimerReturn);
+    }
 
     /* USER CODE END */
 }
