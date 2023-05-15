@@ -2,7 +2,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
-//#include <inttypes.h>
 
 //-------------------------------------------------------------------------
 // Question 0
@@ -64,11 +63,8 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
     }
 
     int32_t sum = 0;
-    for (uint8_t i = 0, overflow = 0; (uint32_t)i + overflow * 255 < arrayLength; i++) {
-        sum += array[i + overflow * 255];
-        if (i == 255) {
-            overflow++;
-        }
+    for (uint32_t i = 0; i < arrayLength; i++) {
+        sum += array[i];
     }
     return sum;
 }
@@ -158,11 +154,7 @@ typedef struct {
 
 error_t q10(q10_t *q10) {
     error_t result;
-    if (q9(&(q10->a), &(q10->b)) == 0) {
-        result = SUCCESS;
-    } else {
-        result = FAIL;
-    }
+    result = (q9(&(q10->a), &(q10->b)) == 0) ? SUCCESS : FAIL;
     return result;
 }
 
