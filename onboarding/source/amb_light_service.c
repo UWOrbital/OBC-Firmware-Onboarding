@@ -96,7 +96,7 @@ uint16_t getLightSensorData(void)
 	
 	/** - Transmit the Conversion data to PC using SCI
     */
-	return ((&adcData)->value);
+	return (adcData.value);
 }
 
 static void lightServiceTask(void * pvParameters) {
