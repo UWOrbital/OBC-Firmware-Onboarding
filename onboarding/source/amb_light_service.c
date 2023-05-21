@@ -71,16 +71,15 @@ obc_error_code_t initLightService(void) {
     if(lightServiceQueueHandle == NULL)
         return OBC_ERR_CODE_QUEUE_CREATION_FAILED;
 
-    return OBC_ERR_CODE_TASK_CREATION_FAILED;
+    return OBC_ERR_CODE_SUCCESS;
     /* USER CODE END */
 }
 
 
-uint16_t Get_Light_Sensor_data(void)
+uint16_t getLightSensorData(void)
 {
     //Function taken from https://git.ti.com/cgit/hercules_examples/hercules_examples/tree/Launchpad/RM/RM46L8/Project_1/demoapp/source/adc_demos.c
-	adcData_t adc_data;
-	adcData_t *adc_data_ptr = &adc_data;
+	adcData_t adcData;
 
  	/** - Start Group1 ADC Conversion 
  	*     Select Channel 6 - Light Sensor for Conversion
@@ -93,20 +92,22 @@ uint16_t Get_Light_Sensor_data(void)
 	/** - Read the conversion result
 	*     The data contains the Light sensor data
     */
-	adcGetData(adcREG1, adcGROUP1, adc_data_ptr);
+	adcGetData(adcREG1, adcGROUP1, &adcData);
 	
 	/** - Transmit the Conversion data to PC using SCI
     */
-	return (adc_data_ptr->value);
+	return (adcDataPtr->value);
 }
 
 static void lightServiceTask(void * pvParameters) {
     /* USER CODE BEGIN */
     // Wait for MEASURE_LIGHT event in the queue and then print the ambient light value to the serial port.
-    light_event_t LightEvent;
-    uint16_t lightdata = Get_Light_Sensor_data();
-    if (xQueueReceive(lightServiceQueueHandle, &LightEvent, 10) == pdPASS && LightEvent == MEASURE_LIGHT){
-        sciPrintf("Ambient light value: ", lightdata);
+    light_event_t lightEvent;
+    uint16_t lightData = getLightSensorData();
+    if (xQueueReceive(lightServiceQueueHandle, &lightEvent, 10) == pdPASS){
+        if (lightEvent == MEASURE_LIGHT){
+            sciPrintf("Ambient light value: ", lightData);
+        }
     }
     /* USER CODE END */
 }
@@ -114,12 +115,12 @@ static void lightServiceTask(void * pvParameters) {
 obc_error_code_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue. Return error code if event was not sent successfully.
-    if (xQueueSend(lightServiceQueueHandle, event, 10)==pdPASS){
-        return OBC_ERR_CODE_SUCCESS;
-    }
-
     if (event == NULL){
         return OBC_ERR_CODE_INVALID_ARG;
+    }
+
+    if (xQueueSend(lightServiceQueueHandle, event, 10)==pdPASS){
+        return OBC_ERR_CODE_SUCCESS;
     }
 
     return OBC_ERR_CODE_QUEUE_FULL;
