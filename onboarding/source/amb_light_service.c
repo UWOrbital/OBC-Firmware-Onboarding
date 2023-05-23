@@ -93,7 +93,7 @@ static void lightServiceTask(void * pvParameters) {
             // Read conversion result data into adcData
             adcGetData(adcREG1, adcGROUP1, &adcData);
 
-            sciPrintf("%d\n", adcDataPtr->value);
+            sciPrintf("%d\n", adcData.value);
         }
     }
 
