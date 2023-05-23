@@ -144,8 +144,8 @@ static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
     ASSERT(xTimer != NULL);
-    light_event_t * measureLightPtr = MEASURE_LIGHT;
-    obc_error_code_t lightTimerReturn = sendToLightServiceQueue(measureLightPtr);
+    light_event_t measureLightPtr = MEASURE_LIGHT;
+    obc_error_code_t lightTimerReturn = sendToLightServiceQueue(&measureLightPtr);
 
     if (lightTimerReturn != OBC_ERR_CODE_SUCCESS) {
         sciPrintf("%d\n", (int)lightTimerReturn);

@@ -74,10 +74,8 @@ obc_error_code_t sciPrintText(unsigned char *text, uint32_t length) {
             return OBC_ERR_CODE_QUEUE_FULL;
 
         return result;
-    } else {
-        return OBC_ERR_CODE_MUTEX_TIMEOUT;
     }
-
+    return OBC_ERR_CODE_MUTEX_TIMEOUT;
     /* USER CODE END */
 }
 

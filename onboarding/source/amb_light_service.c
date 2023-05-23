@@ -79,25 +79,22 @@ static void lightServiceTask(void * pvParameters) {
     BaseType_t xCheckEventReturned = xQueueReceive( eventQueueHandle, 
                                                     &lightEventBuffer, 
                                                     0);
+    while (1) {
+        if (xCheckEventReturned == pdTRUE) {
+            // Measure the light and print the result
+            adcData_t adcData;
 
-    if (xCheckEventReturned == pdTRUE) {
-        // Measure the light and print the result
-        adcData_t adcData;
-        adcData_t *adcDataPtr = &adcData;
+            // Start ADC1 Group 1 conversion
+            adcStartConversion(adcREG1, adcGROUP1);
 
-        // Initialize ADC drivers
-        adcInit();
+            // Wait for conversion to complete
+            while (!adcIsConversionComplete(adcREG1, adcGROUP1));
 
-        // Start ADC1 Group 1 conversion
-        adcStartConversion(adcREG1, adcGROUP1);
+            // Read conversion result data into adcData
+            adcGetData(adcREG1, adcGROUP1, &adcData);
 
-        // Wait for conversion to complete
-        while (!adcIsConversionComplete(adcREG1, adcGROUP1));
-
-        // Read conversion result data into adcData
-        adcGetData(adcREG1, adcGROUP1, adcDataPtr);
-
-        sciPrintf("%d\n", adcDataPtr->value);
+            sciPrintf("%d\n", adcDataPtr->value);
+        }
     }
 
     /* USER CODE END */
@@ -105,6 +102,10 @@ static void lightServiceTask(void * pvParameters) {
 
 obc_error_code_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
+    if (event == NULL) {
+        return OBC_ERR_CODE_INVALID_ARG;
+    }
+
     // Send the event to the queue. Return error code if event was not sent successfully.
     BaseType_t xSendEventRetVal = xQueueSend(eventQueueHandle, event, 0);
 
