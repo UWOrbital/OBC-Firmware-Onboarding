@@ -26,7 +26,9 @@
 
 /* USER CODE BEGIN */
 // define config for the light timer
-
+#define LIGHT_TIMER_NAME        "light_timer"   
+#define LIGHT_TIMER_PERIOD      pdMS_TO_TICKS(1000)
+#define LIGHT_TIMER_AUTORELOAD  pdTRUE
 /* USER CODE END */
 
 /* Declare handlers and buffers for tasks and timers */
@@ -86,7 +88,19 @@ obc_error_code_t initController(void) {
 
     /* USER CODE BEGIN */
     // Create light timer and check if it was created successfully
+    if (lightTimerHandle == NULL){
+        lightTimerHandle = xTimerCreateStatic(LIGHT_TIMER_NAME,
+                                              LIGHT_TIMER_PERIOD,
+                                              LIGHT_TIMER_AUTORELOAD,
+                                              (void *) 0, 
+                                              lightTimerCallback,
+                                              &lightTimerBuffer);
+        
+    }
 
+    if (lightTimerHandle == NULL){
+        return OBC_ERR_CODE_TIMER_CREATION_FAILED;
+    }
     /* USER CODE END */
 }
 
