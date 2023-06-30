@@ -87,6 +87,8 @@ static void lightServiceTask(void * pvParameters) {
             sciPrintf("%d\n", adcData);
         }
     }
+
+    while(1); // i
     /* USER CODE END */
 }
 
