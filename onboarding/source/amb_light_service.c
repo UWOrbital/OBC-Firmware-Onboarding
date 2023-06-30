@@ -7,8 +7,8 @@
 
 /* USER CODE BEGIN */
 // Include any additional headers here
-#include <os_task.h>
 #include <FreeRTOS.h>
+#include <os_task.h>
 #include <os_queue.h>
 /* USER CODE END */
 
