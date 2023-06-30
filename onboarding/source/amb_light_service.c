@@ -98,7 +98,7 @@ obc_error_code_t sendToLightServiceQueue(light_event_t *event) {
     // Send the event to the queue. Return error code if event was not sent successfully.
     BaseType_t messageStatus;
     
-    messageStatus = (eventQueueHandle, event,portMAX_DELAY);
+    messageStatus = xQueueSend(eventQueueHandle,event,portMAX_DELAY);
 
     if (messageStatus){
         return OBC_ERR_CODE_SUCCESS;
