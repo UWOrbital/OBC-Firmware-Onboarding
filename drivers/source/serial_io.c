@@ -75,6 +75,8 @@ obc_error_code_t sciPrintText(unsigned char *text, uint32_t length) {
 
             return serialOutput;
         }
+
+        return OBC_ERR_CODE_MUTEX_TIMEOUT;
     }
     // execute code
     // lock mutex
