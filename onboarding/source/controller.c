@@ -124,7 +124,7 @@ static void controllerTask(void * pvParameters) {
         BaseType_t xReturnedLight;
         xReturnedLight = xTimerStart(lightTimerHandle, 0);
 
-        if (xReturnedLight == NULL){
+        if (xReturnedLight == pdFAIL){
             sciPrintf("%d/n", (int)(OBC_ERR_CODE_TIMER_CREATION_FAILED));
         }
         /* USER CODE END */
