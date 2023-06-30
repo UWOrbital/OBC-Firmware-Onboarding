@@ -101,6 +101,8 @@ obc_error_code_t initController(void) {
     if (lightTimerHandle == NULL){
         return OBC_ERR_CODE_TIMER_CREATION_FAILED;
     }
+
+    return OBC_ERR_CODE_SUCCESS;
     /* USER CODE END */
 }
 
