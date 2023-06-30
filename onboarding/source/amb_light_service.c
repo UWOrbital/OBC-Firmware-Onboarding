@@ -67,6 +67,7 @@ obc_error_code_t initLightService(void) {
         return OBC_ERR_CODE_QUEUE_CREATION_FAILED;
     }
 
+    return OBC_ERR_CODE_SUCCESS;
     /* USER CODE END */
 }
 
@@ -95,6 +96,14 @@ static void lightServiceTask(void * pvParameters) {
 obc_error_code_t sendToLightServiceQueue(light_event_t *event) {
     /* USER CODE BEGIN */
     // Send the event to the queue. Return error code if event was not sent successfully.
-    xQueueSend(eventQueueHandle, event,portMAX_DELAY);
+    BaseType_t messageStatus;
+    
+    messageStatus = (eventQueueHandle, event,portMAX_DELAY);
+
+    if (messageStatus){
+        return OBC_ERR_CODE_SUCCESS;
+    }
+
+    return OBC_ERR_CODE_QUEUE_FULL;
     /* USER CODE END */
 }
