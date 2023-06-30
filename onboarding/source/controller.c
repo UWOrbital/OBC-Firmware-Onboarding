@@ -112,7 +112,7 @@ static void controllerTask(void * pvParameters) {
     if (lightServiceStatus != OBC_ERR_CODE_SUCCESS) {
         /* USER CODE BEGIN */
         // Deal with error when initializing light service task and/or queue
-
+        sciPrintf("%d/n", (lightServiceStatus));
         /* USER CODE END */
     } else { 
         /* Light service task and queue created successfully */
@@ -121,7 +121,12 @@ static void controllerTask(void * pvParameters) {
         
         /* USER CODE BEGIN */
         // Start light timer and check if both timers were started successfully
+        BaseType_t xReturnedLight;
+        xReturnedLight = xTimerStart(lightTimerHandle, 0);
 
+        if (xReturnedLight == NULL){
+            sciPrintf("%d/n", (int)(OBC_ERR_CODE_TIMER_CREATION_FAILED));
+        }
         /* USER CODE END */
     }
 
@@ -136,7 +141,8 @@ static void ledTimerCallback(TimerHandle_t xTimer) {
 static void lightTimerCallback(TimerHandle_t xTimer) {
     /* USER CODE BEGIN */
     // Send light event to light service queue
-
+    light_event_t eventValue = MEASURE_LIGHT;
+    sendToLightServiceQueue(&eventValue);
     /* USER CODE END */
 }
 
