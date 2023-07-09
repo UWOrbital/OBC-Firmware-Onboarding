@@ -1,30 +1,23 @@
-name: build
-on: 
-  pull_request:
-    branches:
-      - level2
-env:
-  ARM_NONE_EABI_GCC_PATH: none
+name: Build
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install arm-none-eabi-gcc
-      uses: carlosperate/arm-none-eabi-gcc-action@v1
-      with:
-        release: '11.2-2022.02'
-        path-env-var: ARM_NONE_EABI_GCC_PATH
-
-    - name: Make envfile
+    - name: Setup
       run: |
-        touch .env
-        echo CC_FOLDER_ROOT="${ARM_NONE_EABI_GCC_PATH::-4}" >> .env
-        cat .env
-        
+        sudo apt-get -y install build-essential cmake
+
+    - name: Create binary directory
+      run: |
+        mkdir build
+        cd build
+
     - name: Build
-      run: make
+      run: |
+        cd build
+        cmake ..
+        make

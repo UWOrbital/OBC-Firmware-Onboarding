@@ -55,5 +55,7 @@ dkms.conf
 .vscode/
 .idea/
 
-.env
-build/
+.venv/
+venv/
+
+build*

@@ -1,32 +1,22 @@
-#include "serial_io.h"
-#include "controller.h"
-#include "obc_errors.h"
+#include "console.h"
 
 #include <FreeRTOS.h>
 #include <os_task.h>
 
-#include <adc.h>
-#include <gio.h>
-#include <sci.h>
-#include <sys_common.h>
-
-int main(void)
-{
-    /* Initialize hardware modules */
-    gioInit();
-    sciInit();
-    adcInit();                 
-    
-    /* Initialize mutex that protects sci module */
-    sciMutexInit();
-    
-    /* Create controller task and related timers */
-    if (initController() != OBC_ERR_CODE_SUCCESS) {
-        sciPrintf("Failed to create controller task and timers\r\n");
-        while (1);
-    }
-    
-    /* Start FreeRTOS scheduler */
-    vTaskStartScheduler();
+void sampleTask(void *arg) {
+  while (1) {
+    printConsole("Hello, world! %d\n", 4);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
 }
 
+int main(void) {
+  initConsole();
+
+  TaskHandle_t taskHandle = {0};
+  xTaskCreate(sampleTask, "Sample Task", 1024, NULL, 1, &taskHandle);
+  
+  vTaskStartScheduler();
+
+  return 0;
+}
