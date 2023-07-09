@@ -12,6 +12,11 @@ find_package(Threads REQUIRED)
 set(SOURCES
     main.c
     sys/console_io/console.c
+    sys/i2c/i2c_io.c
+    services/controller/controller.c
+    
+    lm75bd/lm75bd.c
+    services/thermal_mgr/thermal_mgr.c
 )
 
 add_executable(onboarding ${SOURCES})
@@ -23,6 +28,8 @@ target_include_directories(onboarding PRIVATE
     sys/i2c
     sys/console_io
     lm75bd
+    services/controller
+    services/thermal_mgr
 )
 
 target_link_libraries(onboarding PRIVATE
