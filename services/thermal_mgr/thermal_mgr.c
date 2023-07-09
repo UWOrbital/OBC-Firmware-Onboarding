@@ -61,7 +61,8 @@ static void thermalMgr(void *pvParameters) {
 
         switch (event.type) {
             case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD: {
-                float tempC = 0.0f;
+                float tempC;
+                readTempLM75BD(config.devAddr, &tempC);
                 printConsole("Measured temperature: %f\n", tempC);
                 break;
             }
