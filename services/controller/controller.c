@@ -48,6 +48,9 @@ static void controller(void *pvParameters) {
   initThermalSystemManager(&config);
 
   while (1) {
+    thermal_mgr_event_t event;
+    event.type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;
+    thermalMgrSendEvent(&event);
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }

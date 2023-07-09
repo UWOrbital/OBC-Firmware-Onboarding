@@ -11,5 +11,5 @@ typedef enum {
     
     /* FreeRTOS errors */
     ERR_CODE_MUTEX_TIMEOUT = 100,
-
+    ERR_CODE_QUEUE_FULL = 101,
 } error_code_t;
