@@ -26,6 +26,7 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
+  /* Implement this driver function */
   *temp = 25.0f;
   return ERR_CODE_SUCCESS;
 }

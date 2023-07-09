@@ -6,6 +6,7 @@
 
 #include <FreeRTOS.h>
 #include <os_task.h>
+#include <os_timer.h>
 
 #include <stdint.h>
 #include <string.h>
@@ -16,7 +17,13 @@ static TaskHandle_t controllerTaskHandle;
 static StaticTask_t controllerTaskBuffer;
 static StackType_t controllerTaskStack[CONTROLLER_STACK_SIZE];
 
+#define OVERTEMP_INT_PERIOD pdMS_TO_TICKS(3000)
+
+static TimerHandle_t controllerTimerHandle;
+static StaticTimer_t controllerTimerBuffer;
+
 static void controller(void *pvParameters);
+static void controllerTimerCallback(TimerHandle_t xTimer);
 
 void initController(void) {
   memset(&controllerTaskBuffer, 0, sizeof(controllerTaskBuffer));
@@ -25,6 +32,12 @@ void initController(void) {
   controllerTaskHandle = xTaskCreateStatic(
     controller, "controller", CONTROLLER_STACK_SIZE,
     NULL, 1, controllerTaskStack, &controllerTaskBuffer);   
+
+  memset(&controllerTimerBuffer, 0, sizeof(controllerTimerBuffer));
+  
+  controllerTimerHandle = xTimerCreateStatic(
+    "controllerTimer", OVERTEMP_INT_PERIOD, pdTRUE, NULL, controllerTimerCallback,
+    &controllerTimerBuffer); 
 }
 
 static void controller(void *pvParameters) {
@@ -42,15 +55,24 @@ static void controller(void *pvParameters) {
   config.overTempThresholdCelsius = 75.0f;
   config.hysteresisThresholdCelsius = 80.0f;
 
+  // Initialize peripherals before other tasks are created
   lm75bdInit(&config);
 
   // Create thermal management task and pass it the sensor config
   initThermalSystemManager(&config);
 
+  xTimerStart(controllerTimerHandle, OVERTEMP_INT_PERIOD);
+
   while (1) {
     thermal_mgr_event_t event;
     event.type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;
     thermalMgrSendEvent(&event);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(5000));
   }
+}
+
+static void controllerTimerCallback(TimerHandle_t xTimer) {
+  thermal_mgr_event_t event;
+  event.type = THERMAL_MGR_EVENT_OVERTEMP_INT_DETECTED;
+  thermalMgrSendEvent(&event);
 }

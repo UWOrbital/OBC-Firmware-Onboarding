@@ -45,7 +45,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
     if (thermalMgrQueueHandle == NULL) return ERR_CODE_INVALID_STATE;
     if (event == NULL) return ERR_CODE_INVALID_ARG;
     
-    if (xQueueSend(thermalMgrQueueHandle, event, 0) != pdPASS) {
+    if (xQueueSendToFront(thermalMgrQueueHandle, event, 0) != pdPASS) {
         return ERR_CODE_QUEUE_FULL;
     }
     
@@ -66,7 +66,7 @@ static void thermalMgr(void *pvParameters) {
                 printConsole("Measured temperature: %f\n", tempC);
                 break;
             }
-            case THERMAL_MGR_EVENT_OVERTEMP_DETECTED:
+            case THERMAL_MGR_EVENT_OVERTEMP_INT_DETECTED:
                 // Check if we've entered or exited overtemperature state
                 printConsole("Overtemperature detected!\n");
                 break;
