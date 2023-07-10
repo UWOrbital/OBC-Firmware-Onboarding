@@ -4,6 +4,8 @@
 #include <FreeRTOS.h>
 #include <os_semphr.h>
 
+/* DO NOT MODIFY ANYTHING IN THIS FILE */
+
 SemaphoreHandle_t xStdioMutex;
 
 void initConsole(void) { xStdioMutex = xSemaphoreCreateMutex(); }

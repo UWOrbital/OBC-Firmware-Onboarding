@@ -1,7 +1,5 @@
 #include "i2c_io.h"
 #include "errors.h"
-#include "console.h"
-#include "lm75bd.h"
 
 #include <FreeRTOS.h>
 #include <os_portmacro.h>
@@ -41,24 +39,6 @@ error_code_t i2cSendTo(uint8_t sAddr, uint8_t *buf, uint16_t numBytes) {
     return ERR_CODE_MUTEX_TIMEOUT;
   }
 
-  if (sAddr != LM75BD_OBC_I2C_ADDR) {
-    xSemaphoreGive(i2cMutex);
-    return ERR_CODE_I2C_TRANSFER_TIMEOUT;
-  }
-
-  uint8_t reg = buf[0];
-  switch (reg) {
-    case 0:
-      // To Do
-      break;
-    case 1:
-      // To Do
-      break;
-    default:
-      xSemaphoreGive(i2cMutex);
-      return ERR_CODE_I2C_TRANSFER_TIMEOUT;
-  }
-
   lastTxBuff[0] = buf[0];
 
   if (numBytes > 1) {
@@ -66,6 +46,7 @@ error_code_t i2cSendTo(uint8_t sAddr, uint8_t *buf, uint16_t numBytes) {
   }
 
   xSemaphoreGive(i2cMutex);  // Won't fail because the mutex is taken correctly
+
   return ERR_CODE_SUCCESS;
 }
 
@@ -78,16 +59,9 @@ error_code_t i2cReceiveFrom(uint8_t sAddr, uint8_t *buf, uint16_t numBytes) {
     return ERR_CODE_MUTEX_TIMEOUT;
   }
 
-  if (sAddr != LM75BD_OBC_I2C_ADDR) {
-    xSemaphoreGive(i2cMutex);
-    return ERR_CODE_I2C_TRANSFER_TIMEOUT;
-  }
-
-  uint8_t reg = lastTxBuff[0];
-
   uint16_t nextTemp = getLm75bdNextTempRegVal();
 
-  switch (reg) {
+  switch (lastTxBuff[0]) {
     case 0:
       buf[0] = (nextTemp >> 8) & 0xFF;
       buf[1] = nextTemp & 0xFF;
@@ -98,7 +72,7 @@ error_code_t i2cReceiveFrom(uint8_t sAddr, uint8_t *buf, uint16_t numBytes) {
       }
   }
 
-  isOsActive = 0;
+  setOsActive(0);
 
   xSemaphoreGive(i2cMutex);  // Won't fail because the mutex is taken correctly
   return ERR_CODE_SUCCESS;

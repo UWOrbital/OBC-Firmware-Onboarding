@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 /* LM75BD I2C Device Address */
-#define LM75BD_OBC_I2C_ADDR 0x4FU
+#define LM75BD_OBC_I2C_ADDR /* Define the address here */
 
 /* LM75BD Configuration Values */
 #define LM75BD_DEV_OP_MODE_NORMAL 0x00U
@@ -76,7 +76,7 @@ error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_
  *
  * @param devAddr I2C address of the LM75BD
  */
-error_code_t osHandlerLM75BD(uint8_t devAddr);
+void osHandlerLM75BD(uint8_t devAddr);
 
 #ifdef __cplusplus
 }

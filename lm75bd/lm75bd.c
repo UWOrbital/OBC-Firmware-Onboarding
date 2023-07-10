@@ -7,7 +7,6 @@
 #include <math.h>
 
 /* LM75BD Registers (p.8) */
-#define LM75BD_REG_TEMP 0x00U  /* Temperature Register (R) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
@@ -20,27 +19,15 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
   
   if (errCode != ERR_CODE_SUCCESS) return errCode;
 
-  // Assume default overtemperature and hysteresis thresholds
+  // Assume that the overtemperature and hysteresis thresholds are already set
+  // Hysteresis: 75 degrees Celsius
+  // Overtemperature: 80 degrees Celsius
 
   return ERR_CODE_SUCCESS;
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
-  uint8_t txBuff[1] = {LM75BD_REG_TEMP};
-  uint8_t rxBuff[2] = {0};
-
-  i2cSendTo(devAddr, txBuff, 1);
-  i2cReceiveFrom(devAddr, rxBuff, 2);
-
-  uint16_t regVal = (rxBuff[0] << 8) | rxBuff[1];
-  int16_t sRegVal = regVal >> 5;
-      
-  if (sRegVal & (1 << 10)) {
-    sRegVal |= (0x3F << 11); // Set bits 11-15 to 1 if negative      
-  }
-  
-  *temp = sRegVal * 0.125f;
   
   return ERR_CODE_SUCCESS;
 }
