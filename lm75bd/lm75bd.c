@@ -75,13 +75,7 @@ error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_
 }
 
 error_code_t osHandlerLM75BD(uint8_t devAddr) {
-  if (devAddr == LM75BD_OBC_I2C_ADDR) {
-    /*
-        Deal with OS interrupt.
-        In OS comparator mode, the OS output will be deactivated automatically if T < Thys.
-        In OS interrupt mode, the OS output will be deactivated only if we read from a register.
-        Note that we only have to deal with the OS interrupt in OS interrupt mode.
-     */
-    // TODO: Implement OS interrupt handler
-  }
+  /* Implement this driver function */
+
+  return ERR_CODE_SUCCESS;
 }

@@ -66,10 +66,6 @@ static void thermalMgr(void *pvParameters) {
                 printConsole("Measured temperature: %f\n", tempC);
                 break;
             }
-            case THERMAL_MGR_EVENT_OVERTEMP_INT_DETECTED:
-                // Check if we've entered or exited overtemperature state
-                printConsole("Overtemperature detected!\n");
-                break;
             default:
                 printConsole("Invalid event type received!\n");
                 break;

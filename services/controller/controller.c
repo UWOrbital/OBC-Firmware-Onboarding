@@ -71,8 +71,10 @@ static void controller(void *pvParameters) {
   }
 }
 
+// For automated testing; defined in sys\i2c\i2c_io.c
+extern void setLm75bdNextTempRegVal(uint16_t val);
+
 static void controllerTimerCallback(TimerHandle_t xTimer) {
-  thermal_mgr_event_t event;
-  event.type = THERMAL_MGR_EVENT_OVERTEMP_INT_DETECTED;
-  thermalMgrSendEvent(&event);
+  setLm75bdNextTempRegVal(0x0000); // TODO: Set this to a value that tests the overtemperature handling
+  osHandlerLM75BD(LM75BD_OBC_I2C_ADDR);
 }
