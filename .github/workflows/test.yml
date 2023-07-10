@@ -6,26 +6,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout onboarding code
-      uses: actions/checkout@v3
-    
-    - name: Checkout test code
-      uses: actions/checkout@v3
-      with:
-        repository: UWOrbital/onboarding-tests
-        token: ${{ secrets.TEST_REPO_ACCESS_TOKEN }}
-    
+    - uses: actions/checkout@v3
     - name: Configure CMake
       run: |
         mkdir build
         cd build
         cmake .. -DCMAKE_BUILD_TYPE=Test
-    
     - name: Build
       run: |
         cd build
         cmake --build .
-    
     - name: Run Tests
       run: |
         cd build
