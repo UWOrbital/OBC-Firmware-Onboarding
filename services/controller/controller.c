@@ -7,10 +7,15 @@
 
 #include <FreeRTOS.h>
 #include <os_task.h>
-#include <os_timer.h>
 
 #include <stdint.h>
 #include <string.h>
+#include <math.h>
+
+/* DO NOT MODIFY ANYTHING IN THIS FILE */
+
+// This file contains the task that controls the test environment
+// It handles the temperature sensor simulation.
 
 #define CONTROLLER_STACK_SIZE 256U
 
@@ -18,13 +23,7 @@ static TaskHandle_t controllerTaskHandle;
 static StaticTask_t controllerTaskBuffer;
 static StackType_t controllerTaskStack[CONTROLLER_STACK_SIZE];
 
-#define OVERTEMP_INT_PERIOD pdMS_TO_TICKS(3000)
-
-static TimerHandle_t controllerTimerHandle;
-static StaticTimer_t controllerTimerBuffer;
-
 static void controller(void *pvParameters);
-static void controllerTimerCallback(TimerHandle_t xTimer);
 
 void initController(void) {
   memset(&controllerTaskBuffer, 0, sizeof(controllerTaskBuffer));
@@ -32,13 +31,7 @@ void initController(void) {
 
   controllerTaskHandle = xTaskCreateStatic(
     controller, "controller", CONTROLLER_STACK_SIZE,
-    NULL, 1, controllerTaskStack, &controllerTaskBuffer);   
-
-  memset(&controllerTimerBuffer, 0, sizeof(controllerTimerBuffer));
-  
-  controllerTimerHandle = xTimerCreateStatic(
-    "controllerTimer", OVERTEMP_INT_PERIOD, pdTRUE, NULL, controllerTimerCallback,
-    &controllerTimerBuffer); 
+    NULL, 1, controllerTaskStack, &controllerTaskBuffer);
 }
 
 static void controller(void *pvParameters) {
@@ -54,29 +47,54 @@ static void controller(void *pvParameters) {
   config.devOperationMode = LM75BD_DEV_OP_MODE_NORMAL;
 
   // Use the sensor's default overtemperature and hysteresis thresholds
-  config.overTempThresholdCelsius = 75.0f;
-  config.hysteresisThresholdCelsius = 80.0f;
+  config.overTempThresholdCelsius = 80.0f;
+  config.hysteresisThresholdCelsius = 75.0f;
+
+  const uint16_t overTempThresholdRegVal = (uint16_t)(config.overTempThresholdCelsius / 0.125f) << 5;
+  const uint16_t hysteresisThresholdRegVal = (uint16_t)(config.hysteresisThresholdCelsius / 0.125f) << 5;
 
   // Initialize peripherals before other tasks are created
   lm75bdInit(&config);
 
+  const uint16_t testTempRegSeq[] = {16000, 17000, 18944, 19000, 19500, 19700, 20000, 20736, 21000, 21500};
+  const uint8_t tempRegSeqSize = sizeof(testTempRegSeq) / sizeof(testTempRegSeq[0]);
+  uint8_t nextValIndex = 0;
+  int seqDir = 1;
+
+  setLm75bdNextTempRegVal(testTempRegSeq[0]);
+  nextValIndex = 1;
+
   // Create thermal management task and pass it the sensor config
   initThermalSystemManager(&config);
 
-  xTimerStart(controllerTimerHandle, OVERTEMP_INT_PERIOD);
-
+  uint8_t overTempThreshExceeded = 0;
   while (1) {
     thermal_mgr_event_t event;
-    event.type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;
+
+    if (testTempRegSeq[nextValIndex] >= overTempThresholdRegVal && seqDir == 1 && !getOsActive() && !overTempThreshExceeded) {
+      event.type = THERMAL_MGR_EVENT_OS_INT_DETECTED;
+      overTempThreshExceeded = 1;
+      setOsActive(1);
+    } else if (testTempRegSeq[nextValIndex] <= hysteresisThresholdRegVal && seqDir == -1 && !getOsActive() && overTempThreshExceeded) {
+      event.type = THERMAL_MGR_EVENT_OS_INT_DETECTED;
+      overTempThreshExceeded = 0;
+      setOsActive(1);
+    } else {
+      event.type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;
+    }
+
+    setLm75bdNextTempRegVal(testTempRegSeq[nextValIndex]);
+
     thermalMgrSendEvent(&event);
-    vTaskDelay(pdMS_TO_TICKS(5000));
+
+    if (nextValIndex == 0) {
+      seqDir = 1;
+    } else if (nextValIndex == tempRegSeqSize - 1) {
+      seqDir = -1;
+    }
+
+    nextValIndex = (nextValIndex + seqDir) % tempRegSeqSize;
+
+    vTaskDelay(pdMS_TO_TICKS(500));
   }
-}
-
-// For automated testing; defined in sys\i2c\i2c_io.c
-extern void setLm75bdNextTempRegVal(uint16_t val);
-
-static void controllerTimerCallback(TimerHandle_t xTimer) {
-  setLm75bdNextTempRegVal(0x0000); // TODO: Set this to a value that tests the overtemperature handling
-  osHandlerLM75BD(LM75BD_OBC_I2C_ADDR);
 }

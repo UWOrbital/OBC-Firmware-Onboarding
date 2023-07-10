@@ -12,37 +12,25 @@
 #include <stdint.h>
 #include <string.h>
 
+/* DO NOT MODIFY ANYTHING IN THIS FILE */
+
 // The mutex timeout for the I2C bus
 #define I2C_MUTEX_TIMEOUT pdMS_TO_TICKS(500)
-
-#define temp_reg 0U
-#define config_reg 1U
 
 static SemaphoreHandle_t i2cMutex;
 static StaticSemaphore_t i2cMutexBuffer;
 
-// For automated testing
-static uint16_t lm75bdNextTempRegVal;
-static uint16_t I2CSentData;
-
-void setLm75bdNextTempRegVal(uint16_t val) {
-  // This function is only called from the test suite (controller task)
-  portENTER_CRITICAL();
-  lm75bdNextTempRegVal = val;
-  portEXIT_CRITICAL();
-}
-
-static uint16_t getLm75bdNextTempRegVal(void) {
-  portENTER_CRITICAL();
-  uint16_t val = lm75bdNextTempRegVal;
-  portEXIT_CRITICAL();
-  return val;
-}
+// Test environment variables
+static uint16_t lm75bdNextTempRegVal = 0;
+static uint8_t lastTxBuff[2] = {0};
+static uint8_t isOsActive = 0;
 
 void initI2C(void) {
   memset(&i2cMutexBuffer, 0, sizeof(i2cMutexBuffer));
   i2cMutex = xSemaphoreCreateMutexStatic(&i2cMutexBuffer);
 }
+
+/* MOCKED I2C Functions. DO NOT MODIFY */
 
 error_code_t i2cSendTo(uint8_t sAddr, uint8_t *buf, uint16_t numBytes) {
   if (buf == NULL || numBytes < 1) return ERR_CODE_INVALID_ARG;
@@ -53,30 +41,30 @@ error_code_t i2cSendTo(uint8_t sAddr, uint8_t *buf, uint16_t numBytes) {
     return ERR_CODE_MUTEX_TIMEOUT;
   }
 
-  /* Mock the transmit */
-  if(sAddr == LM75BD_OBC_I2C_ADDR){
-    uint8_t reg = buf[0];
-    switch (reg) {
-    case temp_reg:
+  if (sAddr != LM75BD_OBC_I2C_ADDR) {
+    xSemaphoreGive(i2cMutex);
+    return ERR_CODE_I2C_TRANSFER_TIMEOUT;
+  }
+
+  uint8_t reg = buf[0];
+  switch (reg) {
+    case 0:
       // To Do
       break;
-    case config_reg:
+    case 1:
       // To Do
       break;
     default:
       xSemaphoreGive(i2cMutex);
-      printConsole("Unknown register sent\n");
-      return ERR_CODE_LM75BD_INVALID_REG;
-      break;
-    }
-    memcpy(&I2CSentData, buf, sizeof(I2CSentData));
-    if(numBytes>sizeof(I2CSentData)){
-      printConsole("Buffer too large!\n");
-    }
-  } else {
-    xSemaphoreGive(i2cMutex);
-    return ERR_CODE_I2C_TRANSFER_TIMEOUT;
+      return ERR_CODE_I2C_TRANSFER_TIMEOUT;
   }
+
+  lastTxBuff[0] = buf[0];
+
+  if (numBytes > 1) {
+    lastTxBuff[1] = buf[1];
+  }
+
   xSemaphoreGive(i2cMutex);  // Won't fail because the mutex is taken correctly
   return ERR_CODE_SUCCESS;
 }
@@ -90,35 +78,56 @@ error_code_t i2cReceiveFrom(uint8_t sAddr, uint8_t *buf, uint16_t numBytes) {
     return ERR_CODE_MUTEX_TIMEOUT;
   }
 
-  /* Mock the receive using getLm75bdNextTempRegVal() */
-  if(sAddr == LM75BD_OBC_I2C_ADDR){
-    uint8_t reg = I2CSentData >> 8;
-    uint16_t recv_buff;
-    
-    switch(reg){
-    case temp_reg:
-      recv_buff = getLm75bdNextTempRegVal();
-      recv_buff = (recv_buff >> 8) | (recv_buff << 8);
-      break;
-    case config_reg:
-      // do something
-      break;
-    default:
-      recv_buff = 0U;
-    }
-
-    memset(buf, 0, numBytes);
-    if(numBytes <= sizeof(recv_buff)){
-      memcpy(buf, &recv_buff, numBytes);
-    } 
-    else {
-      memcpy(buf, &recv_buff, sizeof(recv_buff));
-      printConsole("Buffer too large!\n");
-    }
-  } else {
+  if (sAddr != LM75BD_OBC_I2C_ADDR) {
     xSemaphoreGive(i2cMutex);
     return ERR_CODE_I2C_TRANSFER_TIMEOUT;
   }
+
+  uint8_t reg = lastTxBuff[0];
+
+  uint16_t nextTemp = getLm75bdNextTempRegVal();
+
+  switch (reg) {
+    case 0:
+      buf[0] = (nextTemp >> 8) & 0xFF;
+      buf[1] = nextTemp & 0xFF;
+      break;
+    default:
+      for (int i = 0; i < numBytes; i++) {
+        buf[i] = 0;
+      }
+  }
+
+  isOsActive = 0;
+
   xSemaphoreGive(i2cMutex);  // Won't fail because the mutex is taken correctly
   return ERR_CODE_SUCCESS;
+}
+
+/* TEST ENVIRONMENT FUNCTIONS */
+void setOsActive(uint8_t val) {
+  portENTER_CRITICAL();
+  isOsActive = val;
+  portEXIT_CRITICAL();
+}
+
+uint8_t getOsActive(void) {
+  portENTER_CRITICAL();
+  uint8_t isActive = isOsActive;
+  portENTER_CRITICAL();
+  return isActive;
+}
+
+void setLm75bdNextTempRegVal(uint16_t val) {
+  // This function is only called from the test suite (controller task)
+  portENTER_CRITICAL();
+  lm75bdNextTempRegVal = val;
+  portEXIT_CRITICAL();
+}
+
+uint16_t getLm75bdNextTempRegVal(void) {
+  portENTER_CRITICAL();
+  uint16_t val = lm75bdNextTempRegVal;
+  portEXIT_CRITICAL();
+  return val;
 }

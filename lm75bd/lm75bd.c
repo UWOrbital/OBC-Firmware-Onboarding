@@ -85,9 +85,3 @@ error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_
 
   return ERR_CODE_SUCCESS;
 }
-
-error_code_t osHandlerLM75BD(uint8_t devAddr) {
-  /* Implement this driver function */
-
-  return ERR_CODE_SUCCESS;
-}

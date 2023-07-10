@@ -1,0 +1,28 @@
+name: Simulated Test Run
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup
+      run: |
+        sudo apt-get -y install build-essential cmake
+
+    - name: Create binary directory
+      run: |
+        mkdir build
+        cd build
+
+    - name: Build
+      run: |
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=FW
+        make
+
+    - name: Test Run
+      run: |
+        cd build
+        timeout 15s ./onboarding
