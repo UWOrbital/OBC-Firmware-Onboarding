@@ -1,5 +1,6 @@
 #include "i2c_io.h"
 #include "errors.h"
+#include "console.h"
 #include "lm75bd.h"
 
 #include <FreeRTOS.h>
