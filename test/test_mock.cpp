@@ -3,6 +3,7 @@
 
 #include <gtest/gtest.h>
 
-TEST(TestI2c, ValidI2cCall) {
+TEST(TestMock, uselessTest) {
+  // TODO: add acutal tests in future PR
   EXPECT_EQ(0,0);
 }
