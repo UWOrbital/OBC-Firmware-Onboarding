@@ -25,4 +25,4 @@ jobs:
     - name: Test Run
       run: |
         cd build
-        unbuffer timeout 15s ./onboarding || true
+        unbuffer timeout 30s ./onboarding

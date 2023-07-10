@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 #include <math.h>
 
 /* DO NOT MODIFY ANYTHING IN THIS FILE */
@@ -68,7 +69,18 @@ static void controller(void *pvParameters) {
   initThermalSystemManager(&config);
 
   uint8_t overTempThreshExceeded = 0;
+
+  const uint16_t testRunLimit = 4 * tempRegSeqSize;
+  uint16_t testRunCount = 0;
+  
   while (1) {
+
+    if (testRunCount >= testRunLimit) {
+      // We don't want the test environment to run forever
+      printConsole("Exiting the test environment. Examine the output to determine if your implementation is correct.\n");
+      exit(0);
+    }
+
     thermal_mgr_event_t event;
 
     if (testTempRegSeq[nextValIndex] >= overTempThresholdRegVal && seqDir == 1 && !getOsActive() && !overTempThreshExceeded) {
@@ -94,6 +106,8 @@ static void controller(void *pvParameters) {
     }
 
     nextValIndex = (nextValIndex + seqDir) % tempRegSeqSize;
+
+    testRunCount++;
 
     vTaskDelay(pdMS_TO_TICKS(500));
   }
