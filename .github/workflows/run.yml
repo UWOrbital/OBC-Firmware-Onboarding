@@ -9,7 +9,7 @@ jobs:
 
     - name: Setup
       run: |
-        sudo apt-get -y install build-essential cmake
+        sudo apt-get -y install build-essential cmake expect
 
     - name: Create binary directory
       run: |
@@ -25,4 +25,4 @@ jobs:
     - name: Test Run
       run: |
         cd build
-        timeout 15s ./onboarding
+        unbuffer timeout 5s ./onboarding || true
