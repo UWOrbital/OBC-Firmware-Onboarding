@@ -98,6 +98,7 @@ error_code_t i2cReceiveFrom(uint8_t sAddr, uint8_t *buf, uint16_t numBytes) {
     switch(reg){
     case temp_reg:
       recv_buff = getLm75bdNextTempRegVal();
+      recv_buff = (recv_buff >> 8) | (recv_buff << 8);
       break;
     case config_reg:
       // do something
