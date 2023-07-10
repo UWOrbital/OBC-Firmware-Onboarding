@@ -3,6 +3,7 @@
 #include "thermal_mgr.h"
 #include "lm75bd.h"
 #include "errors.h"
+#include "i2c_io.h"
 
 #include <FreeRTOS.h>
 #include <os_task.h>
@@ -43,6 +44,7 @@ void initController(void) {
 static void controller(void *pvParameters) {
   // Initialize the mutex that protects the console output
   initConsole();
+  initI2C();
 
   static lm75bd_config_t config = {0};
   config.devAddr = LM75BD_OBC_I2C_ADDR;
