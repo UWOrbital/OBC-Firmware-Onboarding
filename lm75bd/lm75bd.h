@@ -17,6 +17,10 @@
 #define LM75BD_OS_OP_MODE_COMP 0x00U
 #define LM75BD_OS_OP_MODE_INT 0x01U
 
+// Default temperature thresholds
+#define LM75BD_DEFAULT_OT_THRESH 80.0f
+#define LM75BD_DEFAULT_HYST_THRESH 75.0f
+
 /**
  * @struct Configuration struct for LM75BD,118 temperature sensor
  *
@@ -73,10 +77,8 @@ error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_
 
 /**
  * @brief Handle an OS interrupt from the LM75BD
- *
- * @param devAddr I2C address of the LM75BD
  */
-void osHandlerLM75BD(uint8_t devAddr);
+void osHandlerLM75BD(void);
 
 #ifdef __cplusplus
 }

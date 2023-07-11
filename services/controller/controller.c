@@ -84,15 +84,13 @@ static void controller(void *pvParameters) {
     thermal_mgr_event_t event;
 
     if (testTempRegSeq[nextValIndex] >= overTempThresholdRegVal && seqDir == 1 && !getOsActive() && !overTempThreshExceeded) {
-      event.type = THERMAL_MGR_EVENT_OS_INT_DETECTED;
       overTempThreshExceeded = 1;
       setOsActive(1);
-      osHandlerLM75BD(config.devAddr);
+      osHandlerLM75BD();
     } else if (testTempRegSeq[nextValIndex] <= hysteresisThresholdRegVal && seqDir == -1 && !getOsActive() && overTempThreshExceeded) {
-      event.type = THERMAL_MGR_EVENT_OS_INT_DETECTED;
       overTempThreshExceeded = 0;
       setOsActive(1);
-      osHandlerLM75BD(config.devAddr);
+      osHandlerLM75BD();
     } else {
       event.type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;
       thermalMgrSendEvent(&event);

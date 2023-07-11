@@ -47,7 +47,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   return ERR_CODE_SUCCESS;
 }
 
-void osHandlerLM75BD(uint8_t devAddr) {
+void osHandlerLM75BD(void) {
   /* Implement this function */
 }
 
