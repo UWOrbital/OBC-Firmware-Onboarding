@@ -1,4 +1,4 @@
-name: Build
+name: Simulated Test Run
 on: [push, pull_request]
 
 jobs:
@@ -9,7 +9,7 @@ jobs:
 
     - name: Setup
       run: |
-        sudo apt-get -y install build-essential cmake
+        sudo apt-get -y install build-essential cmake expect
 
     - name: Create binary directory
       run: |
@@ -21,3 +21,8 @@ jobs:
         cd build
         cmake .. -DCMAKE_BUILD_TYPE=FW
         make
+
+    - name: Test Run
+      run: |
+        cd build
+        unbuffer timeout 30s ./onboarding
