@@ -7,15 +7,16 @@
 // Question 0
 // Include the challenge.h header file
 //-------------------------------------------------------------------------
-
+#include <challenge.h>
 
 //-------------------------------------------------------------------------
 // Question 1
-// Declare two global variables. Both are integers named `q1A` and `q1B`, 
-// respectively. The value of `q1A` should be initialized to 0 and the value 
+// Declare two global variables. Both are integers named `q1A` and `q1B`,
+// respectively. The value of `q1A` should be initialized to 0 and the value
 // of `q1B`should be initialized to 1.
 //-------------------------------------------------------------------------
-
+int q1A = 0;
+int q1B = 1;
 
 //-------------------------------------------------------------------------
 // Question 2
@@ -23,37 +24,47 @@
 // the array should be `q2Array`. The size should be defined by a macro
 // named `Q2_ARRAY_SIZE`.
 //-------------------------------------------------------------------------
-
+int q2Array[Q2_ARRAY_SIZE];
 
 //-------------------------------------------------------------------------
 // Question 3
-// Complete the following function. The function should flip the most 
+// Complete the following function. The function should flip the most
 // significant bit and the least significant bit of the input byte `x`.
 // The function should then return the y value appended to the new x value.
-// 
+//
 // Example: x = 0b10010010, y = 0b01100101
 //          x becomes 0b00010011
 //          The function should return 0b0001001101100101
 //-------------------------------------------------------------------------
-uint16_t q3(uint8_t x, uint8_t y) {
+uint16_t q3(uint8_t x, uint8_t y)
+{
 
+    x ^= 0x80;
+    x = x ^ 0x01;
+    return (((uint16_t)x << 8) | y)
 }
 
 //-------------------------------------------------------------------------
 // Question 4
 // Fix all the issues with the following function, `q4`.
-// The function should return the sum of all the elements in the array 
+// The function should return the sum of all the elements in the array
 // pointed to by `array`. The length of the array is given by the parameter
-// `arrayLength`. Deal with all possible errors. It should return -1 if any 
+// `arrayLength`. Deal with all possible errors. It should return -1 if any
 // errors occur.
 //
 // Note: The array contains 8-bit unsigned integers.
 //-------------------------------------------------------------------------
-int32_t q4(uint8_t * array, uint32_t arrayLength) {
-    for (uint8_t i = 0; i <= arrayLength; i++) {
-        int32_t sum = 0;
+int32_t q4(uint8_t *array, uint32_t arrayLength)
+{
+    if (array == NULL)
+        return -1;
+
+    int32_t sum = 0;
+    for (uint8_t i = 0; i <= arrayLength; i++)
+    {
         sum += array[i];
     }
+    return sum;
 }
 
 //-------------------------------------------------------------------------
@@ -63,6 +74,11 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - uint16_t b
 //-------------------------------------------------------------------------
 
+typedef union
+{
+    uint32_t a;
+    uint16_t b;
+} _q5_t;
 
 //-------------------------------------------------------------------------
 // Question 6
@@ -71,7 +87,11 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - uint32_t x
 // - uint16_t y
 //-------------------------------------------------------------------------
-
+typedef struct
+{
+    uint32_t x;
+    uint16_t y;
+} q6_t;
 
 //-------------------------------------------------------------------------
 // Question 7
@@ -80,53 +100,69 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - SUCCESS = 0
 // - FAIL = 1
 //-------------------------------------------------------------------------
-
-
+typedef enum
+{
+    SUCCESS = 0,
+    FAIL = 1
+} error_t;
 //-------------------------------------------------------------------------
 // Question 8
 // Define a macro called `MULTIPLY` that takes two parameters and multiplies
 // them together. The macro should return the result.
 //-------------------------------------------------------------------------
-
+#define MULTIPLY(a, b) ((a) * (b))
 
 //-------------------------------------------------------------------------
 // Question 9
-// Complete the following function. The function swaps the values of two 
-// integers pointed to by `a` and `b`. The function should return 0 if the 
+// Complete the following function. The function swaps the values of two
+// integers pointed to by `a` and `b`. The function should return 0 if the
 // swap was successful and -1 if the swap failed.
-// 
-// Example: 
+//
+// Example:
 // int x = 5, y = 10;
 // q9(&x, &y); // returns 0
 // Now, x = 10 and y = 5
 //-------------------------------------------------------------------------
-int q9(int *a, int *b) {
+int q9(int *a, int *b)
+{
+    if (a == NULL || b == NULL)
+        return -1;
 
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+    return 0;
 }
 
 //-------------------------------------------------------------------------
 // Question 10
 // Complete the following function. The function should swap the values of
-// the `a` and `b` members in the `q10_t` structure pointed to by `q10`. Use 
-// the `q9` function you created. The `q10` function should return SUCCESS 
+// the `a` and `b` members in the `q10_t` structure pointed to by `q10`. Use
+// the `q9` function you created. The `q10` function should return SUCCESS
 // if the swap was successful, and FAIL if the swap failed.
-// 
+//
 // Note: The error_t type is defined in question 7.
 //-------------------------------------------------------------------------
-typedef struct {
+typedef struct
+{
     int a;
     int b;
 } q10_t;
 
-error_t q10(q10_t *q10) {
-
+error_t q10(q10_t *q10)
+{
+    if (q10 == NULL)
+        return FAIL;
+    int swapResult = q9(&q10->a, &q10->b);
+    return (swapResult == 0) ? SUCCESS : FAIL;
 }
 
 //-------------------------------------------------------------------------
-// The following function is used to test your code. Do not remove any 
+// The following function is used to test your code. Do not remove any
 // existing code. You may add additional tests if you wish.
 //-------------------------------------------------------------------------
-int main(void) {
+int main(void)
+{
     // Question 0 Test
     ASSERT(0 == 0);
 
@@ -165,7 +201,7 @@ int main(void) {
     ASSERT(q4(smallArray, 0) == 0);
     ASSERT(q4(NULL, 10) == -1);
     ASSERT(q4(largeArray, 1000) == 1);
-    
+
     // Question 5 Test
     q5_t q5 = {.a = 0x01020304};
     ASSERT(q5.a == 0x01020304);
@@ -210,3 +246,115 @@ int main(void) {
 
     return 0;
 }
+
+/*
+#include <stdint.h>
+
+
+#define Q2_ARRAY_SIZE 10
+
+
+int q2Array[Q2_ARRAY_SIZE];
+
+
+uint16_t q3(uint8_t x, uint8_t y)
+{
+    x ^= 0x80; // Flipping the most significant bit of x
+    x ^= 0x01; // Flipping the least significant bit of x
+    return ((uint16_t)x << 8) | y;
+}
+
+/////////////////////////////////////////////////////////////////////
+int32_t q4(uint8_t *array, uint32_t arrayLength)
+{
+    if (array == NULL)
+        return -1;
+
+
+    int32_t sum = 0;
+    for (uint32_t i = 0; i < arrayLength; i++)
+    {
+        sum += array[i];
+    }
+    return sum;
+}
+/////////////////////////////////////////////////////////////////////
+typedef union
+{
+    uint32_t a;
+    uint16_t b;
+} q5_t;
+
+/////////////////////////////////////////////////////////////////////
+
+typedef struct
+{
+    uint32_t x;
+    uint16_t y;
+} q6_t;
+
+/////////////////////////////////////////////////////////////////////
+
+typedef enum
+{
+    SUCCESS = 0,
+    FAIL = 1
+} error_t;
+
+/////////////////////////////////////////////////////////////////////
+
+#define MULTIPLY(a, b) ((a) * (b))
+
+
+int q9(int *a, int *b)
+{
+    if (a == NULL || b == NULL)
+        return -1;
+
+
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+    return 0;
+}
+
+
+error_t q10(q10_t *q10)
+{
+    if (q10 == NULL)
+        return FAIL;
+
+
+    int swapResult = q9(&q10->a, &q10->b);
+    return (swapResult == 0) ? SUCCESS : FAIL;
+}
+
+
+In question 3, we are given an input byte x and a separate byte y. We need to flip the most significant bit
+(MSB) and the least significant bit (LSB) of x and then combine the modified x with y to form a 16-bit value.
+
+
+To flip the bits, we can use the bitwise XOR (^) operator with a mask that has the bit positions we want to flip set to 1.
+
+
+Here's the step-by-step process for flipping the bits:
+
+
+Flipping the LSB of x:
+We use the XOR operator with a mask of 1 (binary: 00000001).
+XORing x with 1 will toggle the LSB, resulting in a flipped value.
+
+Flipping the MSB of x:
+We use the XOR operator with a mask of 0x80 (binary: 10000000).
+XORing x with 0x80 will toggle the MSB, resulting in a flipped value.
+Combining the modified x and y:
+We shift the modified x value to the left by 8 bits (x << 8) to make room for the y value.
+We use the bitwise OR (|) operator to combine the shifted x value with y.
+The result is a 16-bit value where the MSB and LSB of x are flipped and combined with y.
+Finally, we return the resulting 16-bit value.
+
+
+Note: The provided example in the question demonstrates this process, showing the intermediate steps of flipping the bits and combining the values.
+
+
+*/
