@@ -158,7 +158,7 @@ error_t q11(q11_a_t *a, q11_b_t *b){
 // the minimum of the addresses pointed to by ptr1 and ptr 2 incremented 
 // by 5, so if ptr1 was pointing to 0x00000004 and ptr2 was pointing to 
 // 0x00000006 the function should return a void pointer pointing to 
-// 0x00000009 or -1 if there is an error. Use the MIN macro defined in q12
+// 0x00000009 or -1 if there is an error.
 //-------------------------------------------------------------------------
 
 void *q13(uint32_t *ptr1, uint16_t *ptr2){
