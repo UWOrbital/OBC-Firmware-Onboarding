@@ -263,6 +263,7 @@ int main(void) {
     ASSERT(MIN(2, 4) == 2);
     ASSERT(MIN(2.1, 2.2) == 2.1);
     ASSERT(MIN(52, 2) == 2);
+    ASSERT(MIN(5, 5) == 5);
 
     uint32_t *ptr1 = (uint32_t *) 0x10;
     uint16_t *ptr2 = (uint16_t *) 0x12;
