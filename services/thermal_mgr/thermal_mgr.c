@@ -44,6 +44,7 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
 
+
   return ERR_CODE_SUCCESS;
 }
 
@@ -54,7 +55,7 @@ void osHandlerLM75BD(void) {
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   while (1) {
-    
+
   }
 }
 
