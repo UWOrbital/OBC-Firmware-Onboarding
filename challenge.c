@@ -204,9 +204,11 @@ error_t q11(q11_a_t *a, q11_b_t *b) {
 //-------------------------------------------------------------------------
 
 void *q13(uint32_t *ptr1, uint16_t *ptr2) {
-    if (!ptr1 || !ptr2) return (void *) -1;
-    void *min = ((uintptr_t) ptr1 - (uintptr_t) ptr2 > 0) ? (void *) ptr2 : (void *) ptr1;
-    return (void *) ((uintptr_t) min + 5);
+    if (ptr1 == NULL || ptr2 == NULL) {
+        return (void *)-1;
+    }
+    void *min_ptr = MIN((void*)ptr1, (void*)ptr2);
+    return min_ptr + 5;
 }
 
 
