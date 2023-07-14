@@ -25,6 +25,7 @@ int q1B = 1;
 // the array should be `q2Array`. The size should be defined by a macro
 // named `Q2_ARRAY_SIZE`.
 //-------------------------------------------------------------------------
+#define Q2_ARRAY_SIZE 10
 int q2Array[Q2_ARRAY_SIZE];
 
 //-------------------------------------------------------------------------
