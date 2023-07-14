@@ -195,7 +195,7 @@ error_t q11(q11_a_t *a, q11_b_t *b)
 // Define a macro called `MIN` that takes two parameters and finds the
 // lesser value of the 2. The macro should return the result.
 //-------------------------------------------------------------------------
-
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 //-------------------------------------------------------------------------
 // Question 13
 // Complete the following function. The function should return
@@ -207,6 +207,15 @@ error_t q11(q11_a_t *a, q11_b_t *b)
 
 void *q13(uint32_t *ptr1, uint16_t *ptr2)
 {
+    if (ptr1 == NULL || ptr2 == NULL)
+    {
+        return (void *)-1;
+    }
+
+    uint32_t *minAdress = (uint32_t *)((uintptr_t)ptr1 < (uintptr_t)ptr2 ? (uintptr_t)ptr1 : (uintptr_t)ptr2);
+    minAdress += 5;
+
+    return (void *)minAdress;
 }
 //-------------------------------------------------------------------------
 // The following function is used to test your code. Do not remove any
