@@ -3,19 +3,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
 //-------------------------------------------------------------------------
 // Question 0
 // Include the challenge.h header file
 //-------------------------------------------------------------------------
-
+#include "challenge.h"
 
 //-------------------------------------------------------------------------
 // Question 1
-// Declare two global variables. Both are integers named `q1A` and `q1B`, 
-// respectively. The value of `q1A` should be initialized to 0 and the value 
+// Declare two global variables. Both are integers named `q1A` and `q1B`,
+// respectively. The value of `q1A` should be initialized to 0 and the value
 // of `q1B`should be initialized to 1.
 //-------------------------------------------------------------------------
-
+int q1A =0;
+int q1B = 01;
 
 //-------------------------------------------------------------------------
 // Question 2
@@ -23,37 +25,48 @@
 // the array should be `q2Array`. The size should be defined by a macro
 // named `Q2_ARRAY_SIZE`.
 //-------------------------------------------------------------------------
-
+#define  Q2_ARRAY_SIZE 10;
+int q2Array[Q2_ARRAY_SIZE];
 
 //-------------------------------------------------------------------------
 // Question 3
-// Complete the following function. The function should flip the most 
+// Complete the following function. The function should flip the most
 // significant bit and the least significant bit of the input byte `x`.
 // The function should then return the y value appended to the new x value.
-// 
+//
 // Example: x = 0b10010010, y = 0b01100101
 //          x becomes 0b00010011
 //          The function should return 0b0001001101100101
 //-------------------------------------------------------------------------
 uint16_t q3(uint8_t x, uint8_t y) {
-
+ x ^= (1 << 7);
+    x ^= 1;
+    // Append y to the new x value.
+    return (x << 8) | y;
 }
 
 //-------------------------------------------------------------------------
 // Question 4
 // Fix all the issues with the following function, `q4`.
-// The function should return the sum of all the elements in the array 
+// The function should return the sum of all the elements in the array
 // pointed to by `array`. The length of the array is given by the parameter
-// `arrayLength`. Deal with all possible errors. It should return -1 if any 
+// `arrayLength`. Deal with all possible errors. It should return -1 if any
 // errors occur.
 //
 // Note: The array contains 8-bit unsigned integers.
 //-------------------------------------------------------------------------
 int32_t q4(uint8_t * array, uint32_t arrayLength) {
-    for (uint8_t i = 0; i <= arrayLength; i++) {
-        int32_t sum = 0;
+
+  if (array == NULL || arrayLength == 0) { //put as == instead of <= since unsigned int cannot be negative
+        return -1;
+    }
+
+   int32_t sum = 0; //placed outside of loop
+
+    for (uint32_t i = 0; i <= arrayLength; i++) {
         sum += array[i];
     }
+    return sum;
 }
 
 //-------------------------------------------------------------------------
@@ -62,7 +75,10 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - uint32_t a
 // - uint16_t b
 //-------------------------------------------------------------------------
-
+typedef union {
+    uint32_t a;
+    uint16_t b;
+} q5_t;
 
 //-------------------------------------------------------------------------
 // Question 6
@@ -73,6 +89,11 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 //-------------------------------------------------------------------------
 
 
+typedef struct{
+    uint32_t x;
+    uint16_t y;
+}q6_t;
+
 //-------------------------------------------------------------------------
 // Question 7
 // Define a type called `error_t` that is an enum with the following
@@ -80,6 +101,10 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - SUCCESS = 0
 // - FAIL = 1
 //-------------------------------------------------------------------------
+typedef enum {
+    SUCCESS = 0,
+    FAIL = 1
+} error_t;
 
 
 //-------------------------------------------------------------------------
@@ -87,7 +112,7 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // Define a macro called `MULTIPLY` that takes two parameters and multiplies
 // them together. The macro should return the result.
 //-------------------------------------------------------------------------
-
+#define MULTIPLY(a, b) ((a) * (b))
 
 //-------------------------------------------------------------------------
 // Question 9
@@ -101,7 +126,13 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // Now, x = 10 and y = 5
 //-------------------------------------------------------------------------
 int q9(int *a, int *b) {
-
+    if (a == NULL || b == NULL) {
+        return -1;
+    }
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+    return 0;
 }
 
 //-------------------------------------------------------------------------
@@ -119,7 +150,15 @@ typedef struct {
 } q10_t;
 
 error_t q10(q10_t *q10) {
-
+    if (q10 == NULL) {
+        return FAIL;
+    }
+    int result = q9(&q10->a, &q10->b);
+    if (result == 0) {
+        return SUCCESS;
+    } else {
+        return FAIL;
+    }
 }
 
 //-------------------------------------------------------------------------
