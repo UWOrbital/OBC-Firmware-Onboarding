@@ -41,8 +41,7 @@ int q2Array[Q2_ARRAY_SIZE];
 uint16_t q3(uint8_t x, uint8_t y)
 {
 
-    x ^= 0x80;
-    x = x ^ 0x01;
+    x ^= 0x81;
     return (((uint16_t)x << 8) | y);
 }
 
@@ -62,7 +61,7 @@ int32_t q4(uint8_t *array, uint32_t arrayLength)
         return -1;
 
     int32_t sum = 0;
-    for (uint8_t i = 0; i <= arrayLength; i++)
+    for (uint32_t i = 0; i < arrayLength; i++)
     {
         sum += array[i];
     }
@@ -182,6 +181,13 @@ typedef struct
 
 error_t q11(q11_a_t *a, q11_b_t *b)
 {
+    if (a == NULL || b == NULL)
+    {
+        return FAIL;
+    }
+
+    memcpy(&b->array[1], &a->array[0], sizeof(a->array));
+    return SUCCESS;
 }
 
 //-------------------------------------------------------------------------
