@@ -121,7 +121,7 @@ typedef enum
 // Example:
 // int x = 5, y = 10;
 // q9(&x, &y); // returns 0
-// Now, x = 10 and y = 5
+// Now, x = 10 and y = 5 trial
 //-------------------------------------------------------------------------
 int q9(int *a, int *b)
 {
