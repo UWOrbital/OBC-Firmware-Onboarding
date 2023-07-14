@@ -3,10 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-<<<<<<< HEAD
 
-=======
->>>>>>> upstream/level1
 
 //-------------------------------------------------------------------------
 // Question 0
@@ -21,7 +18,7 @@
 // of `q1B`should be initialized to 1.
 //-------------------------------------------------------------------------
 int q1A =0;
-int q1B = 01;
+int q1B = 1;
 
 //-------------------------------------------------------------------------
 // Question 2
@@ -43,7 +40,7 @@ int q2Array[Q2_ARRAY_SIZE];
 //          The function should return 0b0001001101100101
 //-------------------------------------------------------------------------
 uint16_t q3(uint8_t x, uint8_t y) {
- x ^= (1 << 7);
+    x ^= (1 << 7);
     x ^= 1;
     // Append y to the new x value.
     return (x << 8) | y;
@@ -61,11 +58,11 @@ uint16_t q3(uint8_t x, uint8_t y) {
 //-------------------------------------------------------------------------
 int32_t q4(uint8_t * array, uint32_t arrayLength) {
 
-  if (array == NULL || arrayLength == 0) { //put as == instead of <= since unsigned int cannot be negative
+    if (array == NULL || arrayLength == 0) { //put as == instead of <= since unsigned int cannot be negative
         return -1;
     }
 
-   int32_t sum = 0; //placed outside of loop
+    int32_t sum = 0; //placed outside of loop
 
     for (uint32_t i = 0; i <= arrayLength; i++) {
         sum += array[i];
@@ -192,37 +189,10 @@ error_t q11(q11_a_t *a, q11_b_t *b) {
 
 
 //-------------------------------------------------------------------------
-<<<<<<< HEAD
-=======
-// Question 11
-// Complete the following function. The function should copy over the values
-// in the array of struct a into struct b at an offset of 1, so the value stored
-// at index 0 in the array of struct a should be copied into index 1 of the 
-// array in struct b and so on. This should be done without a loop. The `q11` 
-// function should return SUCCESS if the copy was successful, and FAIL if 
-// the copy failed.
-// 
-// Note: The error_t type is defined in question 7.
-//-------------------------------------------------------------------------
-typedef struct {
-    uint16_t array[50];
-} q11_a_t;
-
-typedef struct {
-    uint16_t array[51];
-} q11_b_t;
-
-error_t q11(q11_a_t *a, q11_b_t *b){
-
-}
-
-//-------------------------------------------------------------------------
->>>>>>> upstream/level1
 // Question 12
 // Define a macro called `MIN` that takes two parameters and finds the
 // lesser value of the 2. The macro should return the result.
 //-------------------------------------------------------------------------
-<<<<<<< HEAD
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 //-------------------------------------------------------------------------
 // Question 13
@@ -244,23 +214,6 @@ void *q13(uint32_t *ptr1, uint16_t *ptr2) {
 
 //-------------------------------------------------------------------------
 // The following function is used to test your code. Do not remove any
-=======
-
-//-------------------------------------------------------------------------
-// Question 13
-// Complete the following function. The function should return
-// the minimum of the addresses pointed to by ptr1 and ptr 2 incremented 
-// by 5, so if ptr1 was pointing to 0x00000004 and ptr2 was pointing to 
-// 0x00000006 the function should return a void pointer pointing to 
-// 0x00000009 or -1 if there is an error.
-//-------------------------------------------------------------------------
-
-void *q13(uint32_t *ptr1, uint16_t *ptr2){
-
-}
-//-------------------------------------------------------------------------
-// The following function is used to test your code. Do not remove any 
->>>>>>> upstream/level1
 // existing code. You may add additional tests if you wish.
 //-------------------------------------------------------------------------
 int main(void) {
@@ -354,19 +307,6 @@ int main(void) {
     ASSERT(q11(&a, NULL) == FAIL);
     ASSERT(q11(NULL, &b));
 
-<<<<<<< HEAD
-=======
-    q11_a_t a;
-    q11_b_t b;
-    for(uint8_t i = 0; i < 50; ++i){
-        a.array[i] = i;
-    }
-    ASSERT(q11(&a, &b) == SUCCESS);
-    ASSERT(memcmp(a.array, b.array + 1, 50) == 0);
-    ASSERT(q11(&a, NULL) == FAIL);
-    ASSERT(q11(NULL, &b));
-
->>>>>>> upstream/level1
     ASSERT(MIN(2, 4) == 2);
     ASSERT(MIN(2.1, 2.2) == 2.1);
     ASSERT(MIN(52, 2) == 2);
@@ -378,9 +318,5 @@ int main(void) {
     ptr1 = (uint32_t *) 0x3129;
     ptr2 = (uint16_t *) 0x3124;
     ASSERT(q13(ptr1, ptr2) == (void *)0x3129);
-<<<<<<< HEAD
-=======
-
->>>>>>> upstream/level1
     return 0;
 }
