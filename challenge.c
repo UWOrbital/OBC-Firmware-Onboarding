@@ -212,10 +212,8 @@ void *q13(uint32_t *ptr1, uint16_t *ptr2)
         return (void *)-1;
     }
 
-    uintptr_t minAddress = (uintptr_t)ptr1 < (uintptr_t)ptr2 ? (uintptr_t)ptr1 : (uintptr_t)ptr2;
-    minAddress += 5 * sizeof(uint16_t);
-
-    return (void *)minAddress;
+    void *minAddress = MIN((void *)ptr1, (void *)ptr2);
+    return minAddress + 5;
 }
 //-------------------------------------------------------------------------
 // The following function is used to test your code. Do not remove any
