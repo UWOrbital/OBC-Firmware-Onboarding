@@ -203,17 +203,12 @@ error_t q11(q11_a_t *a, q11_b_t *b) {
 // 0x00000009 or -1 if there is an error.
 //-------------------------------------------------------------------------
 
-void *q13(uint32_t *ptr1, uint16_t *ptr2)
-{
-    if (ptr1 == NULL || ptr2 == NULL)
-    {
+void *q13(uint32_t *ptr1, uint16_t *ptr2) {
+    if (ptr1 == NULL || ptr2 == NULL) {
         return (void *)-1;
     }
-
-    uint32_t *minAdress = (uint32_t *)((uintptr_t)ptr1 < (uintptr_t)ptr2 ? (uintptr_t)ptr1 : (uintptr_t)ptr2);
-    minAdress += 5;
-
-    return (void *)minAdress;
+    void *min_ptr = MIN((void*)ptr1, (void*)ptr2);
+    return min_ptr + 5;
 }
 
 
