@@ -212,7 +212,7 @@ void *q13(uint32_t *ptr1, uint16_t *ptr2)
         return (void *)-1;
     }
 
-    uint32_t *minAdress = ((uintptr_t)ptr1 < (uintptr_t)ptr2 ? (uintptr_t)ptr1 : (uintptr_t)ptr2);
+    uint32_t *minAdress = (uint32_t *)((uintptr_t)ptr1 < (uintptr_t)ptr2 ? (uintptr_t)ptr1 : (uintptr_t)ptr2);
     minAdress += 5 * sizeof(uint32_t);
 
     return (void *)minAdress;
