@@ -8,6 +8,8 @@
 #include <os_queue.h>
 
 #include <string.h>
+#include <stdio.h>
+
 
 #define THERMAL_MGR_STACK_SIZE 256U
 
@@ -43,19 +45,40 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-
-
+  xQueueSend(thermalMgrQueueHandle, (void *)event, (TickType_t) 0);
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
-  /* Implement this function */
+  thermal_mgr_event_t interrupt_event;
+  interrupt_event.type = THERMAL_MGR_EVENT_INTERRUPT;
+  thermalMgrSendEvent(&interrupt_event);
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
-  while (1) {
-
+  thermal_mgr_event_t *received_data;
+    float curr_temp = 0;
+    while (1) {
+      if (xQueueReceive(thermalMgrQueueHandle, received_data, portMAX_DELAY) == pdTRUE){
+          switch (received_data->type){
+              case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
+                  readTempLM75BD(LM75BD_OBC_I2C_ADDR, &curr_temp);
+                  addTemperatureTelemetry(curr_temp);
+                  break;
+              case THERMAL_MGR_EVENT_INTERRUPT:
+                  readTempLM75BD(LM75BD_OBC_I2C_ADDR, &curr_temp);
+                  if(curr_temp >= 80) {
+                      overTemperatureDetected();
+                  }
+                  else {
+                      safeOperatingConditions();
+                  }
+                  break;
+              default:
+                  break;
+          }
+      }
   }
 }
 
