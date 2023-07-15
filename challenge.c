@@ -4,19 +4,21 @@
 #include <stdio.h>
 #include <string.h>
 
+
 //-------------------------------------------------------------------------
 // Question 0
 // Include the challenge.h header file
 //-------------------------------------------------------------------------
-
+#include "challenge.h"
 
 //-------------------------------------------------------------------------
 // Question 1
-// Declare two global variables. Both are integers named `q1A` and `q1B`, 
-// respectively. The value of `q1A` should be initialized to 0 and the value 
+// Declare two global variables. Both are integers named `q1A` and `q1B`,
+// respectively. The value of `q1A` should be initialized to 0 and the value
 // of `q1B`should be initialized to 1.
 //-------------------------------------------------------------------------
-
+int q1A =0;
+int q1B = 1;
 
 //-------------------------------------------------------------------------
 // Question 2
@@ -24,37 +26,48 @@
 // the array should be `q2Array`. The size should be defined by a macro
 // named `Q2_ARRAY_SIZE`.
 //-------------------------------------------------------------------------
-
+#define  Q2_ARRAY_SIZE 10
+int q2Array[Q2_ARRAY_SIZE];
 
 //-------------------------------------------------------------------------
 // Question 3
-// Complete the following function. The function should flip the most 
+// Complete the following function. The function should flip the most
 // significant bit and the least significant bit of the input byte `x`.
 // The function should then return the y value appended to the new x value.
-// 
+//
 // Example: x = 0b10010010, y = 0b01100101
 //          x becomes 0b00010011
 //          The function should return 0b0001001101100101
 //-------------------------------------------------------------------------
 uint16_t q3(uint8_t x, uint8_t y) {
-
+    x ^= (1 << 7);
+    x ^= 1;
+    // Append y to the new x value.
+    return (x << 8) | y;
 }
 
 //-------------------------------------------------------------------------
 // Question 4
 // Fix all the issues with the following function, `q4`.
-// The function should return the sum of all the elements in the array 
+// The function should return the sum of all the elements in the array
 // pointed to by `array`. The length of the array is given by the parameter
-// `arrayLength`. Deal with all possible errors. It should return -1 if any 
+// `arrayLength`. Deal with all possible errors. It should return -1 if any
 // errors occur.
 //
 // Note: The array contains 8-bit unsigned integers.
 //-------------------------------------------------------------------------
 int32_t q4(uint8_t * array, uint32_t arrayLength) {
-    for (uint8_t i = 0; i <= arrayLength; i++) {
-        int32_t sum = 0;
+
+    if (array == NULL || arrayLength == 0) { //put as == instead of <= since unsigned int cannot be negative
+        return -1;
+    }
+
+    int32_t sum = 0; //placed outside of loop
+
+    for (uint32_t i = 0; i <= arrayLength; i++) {
         sum += array[i];
     }
+    return sum;
 }
 
 //-------------------------------------------------------------------------
@@ -63,7 +76,10 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - uint32_t a
 // - uint16_t b
 //-------------------------------------------------------------------------
-
+typedef union {
+    uint32_t a;
+    uint16_t b;
+} q5_t;
 
 //-------------------------------------------------------------------------
 // Question 6
@@ -74,6 +90,11 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 //-------------------------------------------------------------------------
 
 
+typedef struct{
+    uint32_t x;
+    uint16_t y;
+}q6_t;
+
 //-------------------------------------------------------------------------
 // Question 7
 // Define a type called `error_t` that is an enum with the following
@@ -81,6 +102,10 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - SUCCESS = 0
 // - FAIL = 1
 //-------------------------------------------------------------------------
+typedef enum {
+    SUCCESS = 0,
+    FAIL = 1
+} error_t;
 
 
 //-------------------------------------------------------------------------
@@ -88,30 +113,36 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // Define a macro called `MULTIPLY` that takes two parameters and multiplies
 // them together. The macro should return the result.
 //-------------------------------------------------------------------------
-
+#define MULTIPLY(a, b) ((a) * (b))
 
 //-------------------------------------------------------------------------
 // Question 9
-// Complete the following function. The function swaps the values of two 
-// integers pointed to by `a` and `b`. The function should return 0 if the 
+// Complete the following function. The function swaps the values of two
+// integers pointed to by `a` and `b`. The function should return 0 if the
 // swap was successful and -1 if the swap failed.
-// 
-// Example: 
+//
+// Example:
 // int x = 5, y = 10;
 // q9(&x, &y); // returns 0
 // Now, x = 10 and y = 5
 //-------------------------------------------------------------------------
 int q9(int *a, int *b) {
-
+    if (a == NULL || b == NULL) {
+        return -1;
+    }
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+    return 0;
 }
 
 //-------------------------------------------------------------------------
 // Question 10
 // Complete the following function. The function should swap the values of
-// the `a` and `b` members in the `q10_t` structure pointed to by `q10`. Use 
-// the `q9` function you created. The `q10` function should return SUCCESS 
+// the `a` and `b` members in the `q10_t` structure pointed to by `q10`. Use
+// the `q9` function you created. The `q10` function should return SUCCESS
 // if the swap was successful, and FAIL if the swap failed.
-// 
+//
 // Note: The error_t type is defined in question 7.
 //-------------------------------------------------------------------------
 typedef struct {
@@ -120,20 +151,26 @@ typedef struct {
 } q10_t;
 
 error_t q10(q10_t *q10) {
-
+    if (q10 == NULL) {
+        return FAIL;
+    }
+    int result = q9(&q10->a, &q10->b);
+    if (result == 0) {
+        return SUCCESS;
+    } else {
+        return FAIL;
+    }
 }
-
-//-------------------------------------------------------------------------
 // Question 11
 // Complete the following function. The function should copy over the values
 // in the array of struct a into struct b at an offset of 1, so the value stored
-// at index 0 in the array of struct a should be copied into index 1 of the 
-// array in struct b and so on. This should be done without a loop. The `q11` 
-// function should return SUCCESS if the copy was successful, and FAIL if 
+// at index 0 in the array of struct a should be copied into index 1 of the
+// array in struct b and so on. This should be done without a loop. The `q11`
+// function should return SUCCESS if the copy was successful, and FAIL if
 // the copy failed.
-// 
+//
 // Note: The error_t type is defined in question 7.
-//-------------------------------------------------------------------------
+
 typedef struct {
     uint16_t array[50];
 } q11_a_t;
@@ -142,30 +179,41 @@ typedef struct {
     uint16_t array[51];
 } q11_b_t;
 
-error_t q11(q11_a_t *a, q11_b_t *b){
-
+error_t q11(q11_a_t *a, q11_b_t *b) {
+    if (a == NULL || b == NULL) {
+        return FAIL;
+    }
+    memcpy(b->array + 1, a->array, sizeof(a->array));
+    return SUCCESS;
 }
+
 
 //-------------------------------------------------------------------------
 // Question 12
 // Define a macro called `MIN` that takes two parameters and finds the
 // lesser value of the 2. The macro should return the result.
 //-------------------------------------------------------------------------
-
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 //-------------------------------------------------------------------------
 // Question 13
 // Complete the following function. The function should return
-// the minimum of the addresses pointed to by ptr1 and ptr 2 incremented 
-// by 5, so if ptr1 was pointing to 0x00000004 and ptr2 was pointing to 
-// 0x00000006 the function should return a void pointer pointing to 
+// the minimum of the addresses pointed to by ptr1 and ptr 2 incremented
+// by 5, so if ptr1 was pointing to 0x00000004 and ptr2 was pointing to
+// 0x00000006 the function should return a void pointer pointing to
 // 0x00000009 or -1 if there is an error.
 //-------------------------------------------------------------------------
 
-void *q13(uint32_t *ptr1, uint16_t *ptr2){
-
+void *q13(uint32_t *ptr1, uint16_t *ptr2) {
+    if (ptr1 == NULL || ptr2 == NULL) {
+        return (void *)-1;
+    }
+    void *min_ptr = MIN((void*)ptr1, (void*)ptr2);
+    return min_ptr + 5;
 }
+
+
 //-------------------------------------------------------------------------
-// The following function is used to test your code. Do not remove any 
+// The following function is used to test your code. Do not remove any
 // existing code. You may add additional tests if you wish.
 //-------------------------------------------------------------------------
 int main(void) {
@@ -207,7 +255,7 @@ int main(void) {
     ASSERT(q4(smallArray, 0) == 0);
     ASSERT(q4(NULL, 10) == -1);
     ASSERT(q4(largeArray, 1000) == 1);
-    
+
     // Question 5 Test
     q5_t q5 = {.a = 0x01020304};
     ASSERT(q5.a == 0x01020304);
@@ -249,7 +297,6 @@ int main(void) {
     ASSERT(q10Test.a == 10);
     ASSERT(q10Test.b == 5);
     ASSERT(q10(NULL) == FAIL);
-
     q11_a_t a;
     q11_b_t b;
     for(uint8_t i = 0; i < 50; ++i){
@@ -271,6 +318,5 @@ int main(void) {
     ptr1 = (uint32_t *) 0x3129;
     ptr2 = (uint16_t *) 0x3124;
     ASSERT(q13(ptr1, ptr2) == (void *)0x3129);
-
     return 0;
 }
