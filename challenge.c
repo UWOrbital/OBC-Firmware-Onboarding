@@ -3,12 +3,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <challenge.h>
-
 //-------------------------------------------------------------------------
 // Question 0
 // Include the challenge.h header file
 //-------------------------------------------------------------------------
+
+#include <challenge.h>
+
 
 
 //-------------------------------------------------------------------------
@@ -18,6 +19,9 @@
 // of `q1B`should be initialized to 1.
 //-------------------------------------------------------------------------
 
+int q1A = 0;
+int q1B = 1;
+
 
 //-------------------------------------------------------------------------
 // Question 2
@@ -26,6 +30,10 @@
 // named `Q2_ARRAY_SIZE`.
 //-------------------------------------------------------------------------
 
+#define Q2_ARRAY_SIZE 10
+
+int q2Array[Q2_ARRAY_SIZE];
+ 
 
 //-------------------------------------------------------------------------
 // Question 3
@@ -89,6 +97,8 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // Define a macro called `MULTIPLY` that takes two parameters and multiplies
 // them together. The macro should return the result.
 //-------------------------------------------------------------------------
+
+#define MULTIPLY(a,b) (a*b)
 
 
 //-------------------------------------------------------------------------
