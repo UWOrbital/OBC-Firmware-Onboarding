@@ -98,7 +98,7 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // them together. The macro should return the result.
 //-------------------------------------------------------------------------
 
-#define MULTIPLY(a,b) (a*b)
+#define MULTIPLY(a,b) ((a)*(b))
 
 
 //-------------------------------------------------------------------------
