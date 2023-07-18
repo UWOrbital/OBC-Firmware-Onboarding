@@ -3,6 +3,7 @@
 #include "lm75bd.h"
 #include "console.h"
 
+
 #include <FreeRTOS.h>
 #include <os_task.h>
 #include <os_queue.h>
@@ -45,23 +46,26 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-  xQueueSend(thermalMgrQueueHandle, (void *)event, (TickType_t) 0);
-  return ERR_CODE_SUCCESS;
+  if (event == NULL) return ERR_CODE_INVALID_QUEUE_MSG;
+  if (xQueueSend(thermalMgrQueueHandle, (void *)event, (TickType_t) 0) == pdTRUE){
+      return ERR_CODE_SUCCESS;
+  }
+  else return ERR_CODE_UNKNOWN;
 }
 
 void osHandlerLM75BD(void) {
-  thermal_mgr_event_t interrupt_event;
-  interrupt_event.type = THERMAL_MGR_EVENT_INTERRUPT;
-  thermalMgrSendEvent(&interrupt_event);
+  thermal_mgr_event_t interruptEvent;
+  interruptEvent.type = THERMAL_MGR_EVENT_INTERRUPT;
+  thermalMgrSendEvent(&interruptEvent);
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
-  thermal_mgr_event_t *received_data;
+  thermal_mgr_event_t receivedData;
     float curr_temp = 0;
     while (1) {
-      if (xQueueReceive(thermalMgrQueueHandle, received_data, portMAX_DELAY) == pdTRUE){
-          switch (received_data->type){
+      if (xQueueReceive(thermalMgrQueueHandle, &receivedData, portMAX_DELAY) == pdTRUE){
+          switch (receivedData.type){
               case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
                   readTempLM75BD(LM75BD_OBC_I2C_ADDR, &curr_temp);
                   addTemperatureTelemetry(curr_temp);
@@ -76,6 +80,7 @@ static void thermalMgr(void *pvParameters) {
                   }
                   break;
               default:
+                  printConsole("Queue data type is unsupported.");
                   break;
           }
       }
