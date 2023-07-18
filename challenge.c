@@ -74,6 +74,8 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 //-------------------------------------------------------------------------
 
 
+
+
 //-------------------------------------------------------------------------
 // Question 6
 // Define a type called `q6_t` that is a structure with the following
@@ -81,6 +83,14 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - uint32_t x
 // - uint16_t y
 //-------------------------------------------------------------------------
+
+struct q6_t {
+uint32_t x;
+uint16_t y;
+
+};
+
+
 
 
 //-------------------------------------------------------------------------
@@ -90,6 +100,14 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - SUCCESS = 0
 // - FAIL = 1
 //-------------------------------------------------------------------------
+
+
+enum error_t
+{
+   SUCCESS = 0,
+   FAIL = 1
+
+}
 
 
 //-------------------------------------------------------------------------
@@ -162,6 +180,9 @@ error_t q11(q11_a_t *a, q11_b_t *b){
 // Define a macro called `MIN` that takes two parameters and finds the
 // lesser value of the 2. The macro should return the result.
 //-------------------------------------------------------------------------
+
+#define MIN(a,b) ((a>b)?(a):(b))
+
 
 //-------------------------------------------------------------------------
 // Question 13
