@@ -37,7 +37,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     // Reading the temperature reg
 
     i2cReceiveFrom(devAddr, tempDataRead, 2);
-    int16_t tempRaw = (uint16_t)(tempDataRead[0] << 3) | (unit16_t)tempDataRead[1]>>5;
+    int16_t tempRaw = (uint16_t)(tempDataRead[0] << 3) | (uint16_t)tempDataRead[1]>>5;
 
 
     if ((tempDataRead[0] &( 1 << 7)) == 0) {
