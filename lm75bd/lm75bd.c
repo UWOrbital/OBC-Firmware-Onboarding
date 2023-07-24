@@ -45,8 +45,8 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
     } else {
         tempRaw = ~tempRaw + 1;
-       // int16_t mask = 0xF800;
-       // tempRaw = tempRaw ^ mask;
+        int16_t mask = 0xF800;
+        tempRaw = tempRaw ^ mask;
         *temp = -tempRaw * 0.125;
     }
 
