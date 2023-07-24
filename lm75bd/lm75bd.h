@@ -9,7 +9,7 @@
 
 // Temp register address decleration
 
-#define TEMP_REG 0x00 // since it's 000000003
+//#define TEMP_REG 0x00 // since it's 000000003
 
 /* LM75BD Configuration Values */
 #define LM75BD_DEV_OP_MODE_NORMAL 0x00U

@@ -29,20 +29,18 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
 
-    //selecting the temp reg
-    uint8_t tempReg = TEMP_REG;
-    i2cSendTo(devAddr, &tempReg, 1);
+    uint8_t reg = 0;
+    uint8_t tempDataRead[2];
+
+    i2cSendTo(devAddr, &reg, 1);
 
     // Reading the temperature reg
-    uint8_t tempDataRead[2];
+
     i2cReceiveFrom(devAddr, tempDataRead, 2);
-
-    // k so my thinking is, tempData[0] shifts value to left by 8 bits so the value of it is now the MSB
-    // then with the OR operation theyre both combined and tempdata[1] is the LSB
-    int16_t tempRaw = (tempDataRead[0] << 8) | tempDataRead[1];
+    int16_t tempRaw = (uint16_t)(tempDataRead[0] << 3) | (unit16_t)tempDataRead[1]>>5;
 
 
-    if ((tempDataRead[0] & 0x00) == 0) {    //performs AND operation with 0x00 to check if MSB is 0
+    if ((tempDataRead[0] &( 1 << 7)) == 0) {
         // from docs: If the Temp data MSByte bit D10 = 0, then the temperature is positive and Temp value
         //(C) = +(Temp data)  0.125 C
         *temp = tempRaw * 0.125;
