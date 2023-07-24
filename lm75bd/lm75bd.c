@@ -53,7 +53,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
     return ERR_CODE_SUCCESS;
 }
-E
+
 #define CONF_WRITE_BUFF_SIZE 2U
 error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_t osPolarity,
                                    uint8_t osOperationMode, uint8_t devOperationMode) {
