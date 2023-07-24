@@ -35,7 +35,6 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     i2cSendTo(devAddr, &reg, 1);
 
     // Reading the temperature reg
-
     i2cReceiveFrom(devAddr, tempDataRead, 2);
     int16_t tempRaw = (uint16_t)(tempDataRead[0] << 3) | (uint16_t)(tempDataRead[1]>>5);
 
@@ -46,8 +45,8 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
     } else {
         tempRaw = ~tempRaw + 1;
-        int16_t mask = 0xF800;
-        tempRaw = tempRaw ^ mask;
+       // int16_t mask = 0xF800;
+       // tempRaw = tempRaw ^ mask;
         *temp = -tempRaw * 0.125;
     }
 
