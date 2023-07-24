@@ -7,7 +7,7 @@ if (CMAKE_BUILD_TYPE MATCHES Test)
     enable_testing()
 endif()
 
-project(onboarding)
+project(onboarding C)
 
 if(CMAKE_BUILD_TYPE MATCHES Test)
     enable_language(C CXX)

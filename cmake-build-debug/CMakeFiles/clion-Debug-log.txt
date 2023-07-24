@@ -1,0 +1,8 @@
+C:\Users\maria\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\231.9161.40\bin\cmake\win\x64\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -S C:\Users\maria\Documents\OBC-Firmware-Onboarding -B C:\Users\maria\Documents\OBC-Firmware-Onboarding\cmake-build-debug
+-- Selecting Windows SDK version 10.0.22000.0 to target Windows 10.0.19045.
+CMake Error at CMakeLists.txt:46 (message):
+  Unknown build type: Debug
+
+
+-- Configuring incomplete, errors occurred!
+See also "C:/Users/maria/Documents/OBC-Firmware-Onboarding/cmake-build-debug/CMakeFiles/CMakeOutput.log".
