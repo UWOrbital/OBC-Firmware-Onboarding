@@ -29,7 +29,7 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
 
-    uint8_t reg = 0;
+    uint8_t reg = TEMP_REG;
     uint8_t tempDataRead[2];
 
     i2cSendTo(devAddr, &reg, 1);
@@ -37,8 +37,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     // Reading the temperature reg
 
     i2cReceiveFrom(devAddr, tempDataRead, 2);
-    int16_t tempRaw = (uint16_t)(tempDataRead[0] << 3) | (uint16_t)tempDataRead[1]>>5;
-
+    int16_t tempRaw = (uint16_t)(tempDataRead[0] << 3) | (uint16_t)(tempDataRead[1]>>5);
 
     if ((tempDataRead[0] &( 1 << 7)) == 0) {
         // from docs: If the Temp data MSByte bit D10 = 0, then the temperature is positive and Temp value
@@ -47,12 +46,14 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
     } else {
         tempRaw = ~tempRaw + 1;
+        int16_t mask = 0xF800;
+        tempRaw = tempRaw ^ mask;
         *temp = -tempRaw * 0.125;
     }
 
     return ERR_CODE_SUCCESS;
 }
-
+E
 #define CONF_WRITE_BUFF_SIZE 2U
 error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_t osPolarity,
                                    uint8_t osOperationMode, uint8_t devOperationMode) {
