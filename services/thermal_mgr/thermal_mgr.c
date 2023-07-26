@@ -67,12 +67,13 @@ static void thermalMgr(void *pvParameters) {
   /* Implement this task */
 
   while (1) {
+      thermal_mgr_event_t thermalReceivedData;
+      float currentTemperature;
       if (xQueueReceive( thermalMgrQueueHandle,
                          &thermalReceivedData,
                          portMAX_DELAY ) == pdPASS ) {
 
-          thermal_mgr_event_t thermalReceivedData;
-          float currentTemperature;
+
 
           switch(thermalReceivedData.type){
             case(THERMAL_MGR_EVENT_MEASURE_TEMP_CMD):
