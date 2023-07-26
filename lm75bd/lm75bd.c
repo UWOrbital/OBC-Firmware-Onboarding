@@ -28,6 +28,9 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+    if(temp == NULL){
+         return ERR_CODE_INVALID_ARG;
+    }
 
     uint8_t reg = TEMP_REG;
     uint8_t tempDataRead[2];
@@ -39,10 +42,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     int16_t tempRaw = (uint16_t)(tempDataRead[0] << 3) | (uint16_t)(tempDataRead[1]>>5);
 
     if ((tempDataRead[0] &( 1 << 7)) == 0) {
-        // from docs: If the Temp data MSByte bit D10 = 0, then the temperature is positive and Temp value
-        //(C) = +(Temp data)  0.125 C
         *temp = tempRaw * 0.125;
-
     } else {
         tempRaw = ~tempRaw + 1;
         int16_t mask = 0xF800;

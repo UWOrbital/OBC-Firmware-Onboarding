@@ -46,10 +46,13 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
     if (event == NULL) {
         return ERR_CODE_INVALID_QUEUE_MSG;}
+    else if (thermalMgrQueueHandle == NULL) {
+        return ERR_CODE_QUEUE_NOT_CREATED;
+    }
     if (xQueueSend(thermalMgrQueueHandle, (void *)event, (TickType_t) 0) == pdTRUE){
         return ERR_CODE_SUCCESS;
     }
-  return ERR_CODE_UNKNOWN; // prev: ERR_CODE_QUEUE_FULL;
+  return ERR_CODE_QUEUE_FULL;
 }
 
 void osHandlerLM75BD(void) {
@@ -62,23 +65,23 @@ void osHandlerLM75BD(void) {
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
-    thermal_mgr_event_t thermalReceivedData;
-    float currentTemperature;
 
   while (1) {
       if (xQueueReceive( thermalMgrQueueHandle,
                          &thermalReceivedData,
                          portMAX_DELAY ) == pdPASS ) {
 
-          readTempLM75BD(LM75BD_OBC_I2C_ADDR, &currentTemperature);
-          //it'll run in either case so i have it outisde switch statement? idk might be not correct tho
+          thermal_mgr_event_t thermalReceivedData;
+          float currentTemperature;
 
-        switch(thermalReceivedData.type){
+          switch(thermalReceivedData.type){
             case(THERMAL_MGR_EVENT_MEASURE_TEMP_CMD):
+                readTempLM75BD(LM75BD_OBC_I2C_ADDR, &currentTemperature);
                 addTemperatureTelemetry(currentTemperature);
                 break;
 
             case(THERMAL_MGR_EVENT_INTERRUPTS):
+                readTempLM75BD(LM75BD_OBC_I2C_ADDR, &currentTemperature);
                 if(currentTemperature<= 80){
                     safeOperatingConditions();
                 }
