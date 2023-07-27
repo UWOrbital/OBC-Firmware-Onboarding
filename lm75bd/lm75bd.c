@@ -45,7 +45,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     if ((tempDataRead[0] &( 1 << 7)) == 0) {
         *temp = tempRaw * 0.125;
     } else {
-        int16_t mask = zeroMask; // 1111 1000 0000 0000, has 5 msbs set to 1
+        int16_t mask = ZER_MASK; // 1111 1000 0000 0000, has 5 msbs set to 1
 
         tempRaw = ~tempRaw + 1;// two's complement of the entire number (but we only want it for the 11 lsb)
         tempRaw = tempRaw ^ mask; // so we use this mask in order to invert the 5 msbs of tempRaw back to 0 using XOR
