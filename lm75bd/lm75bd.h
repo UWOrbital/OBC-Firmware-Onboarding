@@ -9,7 +9,7 @@
 
 // Temp register address decleration
 #define TEMP_REG 0x00
-#define  zeroMask 0xF800 //value is 1111100000000000
+#define  ZERO_MASK 0xF800 //value is 1111100000000000
 
 
 /* LM75BD Configuration Values */
