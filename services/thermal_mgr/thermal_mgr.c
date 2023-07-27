@@ -49,9 +49,9 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 }
 
 void osHandlerLM75BD(void) {
-  thermal_mgr_event_t *eventTriggered;
-  eventTriggered->type = THERMAL_EVENT_DETECTED;
-  thermalMgrSendEvent(eventTriggered);
+  thermal_mgr_event_t eventTriggered;
+  eventTriggered.type = THERMAL_EVENT_DETECTED;
+  thermalMgrSendEvent(&eventTriggered);
 }
 
 static void thermalMgr(void *pvParameters) {
