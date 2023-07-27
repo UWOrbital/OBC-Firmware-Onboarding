@@ -30,19 +30,21 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  uint8_t tmp_reg_pointer = LM75BD_TEMP_REG;
-  i2cSendTo(devAddr, &tmp_reg_pointer, 1);
-  uint8_t buffer[] = {0x00, 0x00};
-  i2cReceiveFrom(devAddr, &buffer[0], 2);
+  if (temp == NULL) return ERR_CODE_INVALID_ARG;
 
-  uint16_t tmp_data =  (((uint16_t) buffer[0]) << 3)  | (((uint16_t) buffer[1])  >> 5);
-  float real_tmp = 0;
-  if (buffer[0] & D10_MASK_BYTE) {
-    real_tmp = - ((tmp_data ^ 0x07FF) + 0x0001) * 0.125;
+  uint8_t tmpPointerRegister = LM75BD_TEMP_REG;
+  i2cSendTo(devAddr, &tmpPointerRegister, 1);
+  uint8_t buffer[2] = {0};
+  i2cReceiveFrom(devAddr, buffer, 2);
+
+  uint16_t tmpData =  (((uint16_t) buffer[0]) << 3)  | (((uint16_t) buffer[1])  >> 5);
+  float realTmp = 0;
+  if (buffer[0] & D10_MASK_BYTE) {     // D10_MASK_BYTE is defined above as (1<<8);
+    realTmp = - ((tmpData ^ 0x07FF) + 0x0001) * 0.125;
   } else {
-    real_tmp = tmp_data * 0.125;
+    realTmp = tmpData * 0.125;
   }
-  *temp = real_tmp; 
+  *temp = realTmp; 
   return ERR_CODE_SUCCESS;
 }
 
