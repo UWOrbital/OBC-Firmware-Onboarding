@@ -41,12 +41,14 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     i2cReceiveFrom(devAddr, tempDataRead, 2);
     int16_t tempRaw = (uint16_t)(tempDataRead[0] << 3) | (uint16_t)(tempDataRead[1]>>5);
 
+    //check datasheet section 7.4.3 to find more info on temp conversion
     if ((tempDataRead[0] &( 1 << 7)) == 0) {
         *temp = tempRaw * 0.125;
     } else {
-        tempRaw = ~tempRaw + 1;
-        int16_t mask = 0xF800;
-        tempRaw = tempRaw ^ mask;
+        int16_t mask = zeroMask; // 1111 1000 0000 0000, has 5 msbs set to 1
+
+        tempRaw = ~tempRaw + 1;// two's complement of the entire number (but we only want it for the 11 lsb)
+        tempRaw = tempRaw ^ mask; // so we use this mask in order to invert the 5 msbs of tempRaw back to 0 using XOR
         *temp = -tempRaw * 0.125;
     }
 

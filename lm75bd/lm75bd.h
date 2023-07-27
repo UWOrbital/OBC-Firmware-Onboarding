@@ -8,8 +8,9 @@
 #define LM75BD_OBC_I2C_ADDR  0x4F //1001111 /* Define the address here */
 
 // Temp register address decleration
+#define TEMP_REG 0x00
+#define  zeroMask 0xF800 //value is 1111100000000000
 
-#define TEMP_REG 0x00 // since it's 000000003
 
 /* LM75BD Configuration Values */
 #define LM75BD_DEV_OP_MODE_NORMAL 0x00U
