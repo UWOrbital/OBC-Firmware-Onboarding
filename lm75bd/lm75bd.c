@@ -33,9 +33,14 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   if (temp == NULL) return ERR_CODE_INVALID_ARG;
 
   uint8_t tmpPointerRegister = LM75BD_TEMP_REG;
-  i2cSendTo(devAddr, &tmpPointerRegister, 1);
+  error_code_t errorCode = {0};
+
+  errorCode =  i2cSendTo(devAddr, &tmpPointerRegister, 1);
+  if (errorCode != ERR_CODE_SUCCESS) return errorCode;
   uint8_t buffer[2] = {0};
-  i2cReceiveFrom(devAddr, buffer, 2);
+
+  errorCode = i2cReceiveFrom(devAddr, buffer, 2);
+  if (errorCode != ERR_CODE_SUCCESS) return errorCode;
 
   uint16_t tmpData =  (((uint16_t) buffer[0]) << 3)  | (((uint16_t) buffer[1])  >> 5);
   float realTmp = 0;
