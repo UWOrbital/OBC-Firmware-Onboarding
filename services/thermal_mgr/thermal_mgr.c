@@ -66,7 +66,7 @@ static void thermalMgr(void *pvParameters) {
         readTempLM75BD(config.devAddr, &tmp);
         addTemperatureTelemetry(tmp);
       } else if (event.type == THERMAL_EVENT_DETECTED) {
-        if (readTempLM75BD(config.devAddr, &tmp) != ERR_CODE_SUCCESS) return ERR_CODE_UNKNOWN;
+        if (readTempLM75BD(config.devAddr, &tmp) != ERR_CODE_SUCCESS) return;
 
         if (tmp > config.hysteresisThresholdCelsius) overTemperatureDetected();
         else safeOperatingConditions();
