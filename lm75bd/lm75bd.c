@@ -28,11 +28,10 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
-
+  
   if (temp == NULL) {
-    return ERROR_CODE_INVALID_ARG;
-  }
-
+    return ERR_CODE_INVALID_ARG;
+  } 
   uint8_t tempWriteBit = 0x00;
  
   i2cSendTo(devAddr, &tempWriteBit,(uint16_t) 1);
@@ -40,7 +39,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   i2cReceiveFrom(devAddr, tempData, (uint16_t) 2);
 
   /* Concatenate the received data */
-  uint16_t rawData = (tempData[1] << 8) | tempData[0];
+  uint16_t rawData = (tempData[0] << 8) | tempData[1];
 
   /* Determine if received temperature is positive or negative */
   uint16_t posOrNeg = rawData & 0x8000;
@@ -54,9 +53,11 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   else /* Negative Temperature*/ {
     /* Convert to two's complement */
-    rawData = rawData ^ 0xFFFF;
-    rawData++;
-    *temp = (float)(rawData) * -0.125;
+    uint16_t flipLeadingBits = 0xF800;
+    rawData = ~rawData + 1;    
+    rawData = rawData ^ flipLeadingBits;
+    *temp = (float)(rawData) * -0.125; 
+ 
   }
   return ERR_CODE_SUCCESS;
 }
