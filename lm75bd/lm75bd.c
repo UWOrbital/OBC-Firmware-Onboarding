@@ -44,7 +44,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Determine if received temperature is positive or negative */
   uint16_t posOrNeg = rawData & 0x8000;
 
-  /* Bitshift right 5 because LSB 5 is useless so delete */
+  /* Bitshift right 5 because the 5 LSB are useless so delete */
   rawData = rawData >> 5;
 
   if (posOrNeg == 0) /* Positive Temperature */{ 
