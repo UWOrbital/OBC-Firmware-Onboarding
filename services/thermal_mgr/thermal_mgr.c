@@ -18,6 +18,9 @@ static StackType_t thermalMgrTaskStack[THERMAL_MGR_STACK_SIZE];
 #define THERMAL_MGR_QUEUE_LENGTH 10U
 #define THERMAL_MGR_QUEUE_ITEM_SIZE sizeof(thermal_mgr_event_t)
 
+
+#define TEMPERATURE_HYSTERESIS_THRESHOLD 75.0 // Defining hysteresis threshold as a macro here
+
 static QueueHandle_t thermalMgrQueueHandle;
 static StaticQueue_t thermalMgrQueueBuffer;
 static uint8_t thermalMgrQueueStorageArea[THERMAL_MGR_QUEUE_LENGTH * THERMAL_MGR_QUEUE_ITEM_SIZE];
@@ -43,11 +46,14 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-  
+  BaseType_t checkQueueSend;
   if (event == NULL) {
     return ERR_CODE_INVALID_ARG;
   }
-  xQueueSend(thermalMgrQueueHandle, event, 0);
+  checkQueueSend = xQueueSend(thermalMgrQueueHandle, (void *) event, (TickType_t) 10);
+  if (checkQueueSend == pdFAIL) {
+    return ERR_CODE_INVALID_ARG;
+  }
   return ERR_CODE_SUCCESS;
   
 }
@@ -55,30 +61,39 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 void osHandlerLM75BD(void) {
   
   /* Implement this function */
+  thermal_mgr_event_t interrupt;
+  interrupt.type = THERMAL_MGR_EVENT_INTERRUPT;
+  thermalMgrSendEvent(&interrupt); 
   
-  float *temp;
-  readTempLM75BD(LM75BD_OBC_I2C_ADDR, temp);
-  if (*temp > 75.0) {
-    overTemperatureDetected();
-  }
-  else {
-    safeOperatingConditions();
-  } 
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
-  
-  float *temp;
+  float tempData;
+  error_code_t readTempCheck;
+  thermal_mgr_event_t eventTypecheck; 
+
   while (1) {
-    thermal_mgr_event_t check; 
-    if (xQueueReceive(thermalMgrQueueHandle, pvParameters , 0) == pdTRUE) {
-      if (check.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
-        readTempLM75BD(LM75BD_OBC_I2C_ADDR, temp);
-        addTemperatureTelemetry(*temp); 
+    if (xQueueReceive(thermalMgrQueueHandle, (void *) &eventTypecheck , (TickType_t) 10) == pdTRUE) {
+      switch (check.type) {
+        case (THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+          if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempData) == ERR_CODE_SUCCESS) {
+            addTemperatureTelemetry(tempData);
+          }
+          break;
+        }
       }
-      
-    }
+        case (THERMAL_MGR_EVENT_INTERRUPT) {
+          if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempData) == ERR_CODE_SUCCESS) {
+            if (tempData > TEMPERATURE_HYSTERESIS_THRESHOLD) {
+              overTemperatureDetected();
+            }
+            else {
+              safeOperatingConditions();
+            }
+          }
+          break;
+        }
   }
   
 }

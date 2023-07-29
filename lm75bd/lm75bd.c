@@ -28,16 +28,22 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
-  
+  err_code_t errCodeSend;
+  err_cdoe_t errCodeReceive;
   if (temp == NULL) {
     return ERR_CODE_INVALID_ARG;
   } 
   uint8_t tempWriteBit = 0x00;
  
-  i2cSendTo(devAddr, &tempWriteBit,(uint16_t) 1);
-  uint8_t tempData[2];
-  i2cReceiveFrom(devAddr, tempData, (uint16_t) 2);
-
+  errCodeSend = i2cSendTo(devAddr, &tempWriteBit, 1);
+  if (errCodeSend == ERR_CODE_INVALID_ARG) {
+    return ERR_CODE_INVALID_ARG;
+  }
+  uint8_t tempData[2] = {0};
+  errCodeReceive = i2cReceiveFrom(devAddr, tempData, 2);
+  if (errCodeReceive == ERR_CDOE_INVALID_ARGE) {
+    return ERR_CODE_INVALID_ARG;
+  }
   /* Concatenate the received data */
   uint16_t rawData = (tempData[0] << 8) | tempData[1];
 
@@ -53,7 +59,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   else /* Negative Temperature*/ {
     /* Convert to two's complement */
-    uint16_t flipLeadingBits = 0xF800;
+    const uint16_t flipLeadingBits = 0xF800;
     rawData = ~rawData + 1;    
     rawData = rawData ^ flipLeadingBits;
     *temp = (float)(rawData) * -0.125; 
