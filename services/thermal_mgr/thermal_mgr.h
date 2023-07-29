@@ -6,7 +6,7 @@
 typedef enum {
   THERMAL_MGR_EVENT_MEASURE_TEMP_CMD,
   // added interrupt into this enum for osHandler() function
-  THERMAL_MGR_EVENT_INTERRUPT,
+  THERMAL_MGR_EVENT_TYPE_INTERRUPT,
 } thermal_mgr_event_type_t;
 
 typedef struct {
@@ -14,7 +14,7 @@ typedef struct {
 } thermal_mgr_event_t;
 
 #ifdef __cplusplus
-extern "C" {
+extern "C" 
 #endif
 
 void initThermalSystemManager(lm75bd_config_t *config);

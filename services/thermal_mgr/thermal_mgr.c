@@ -62,7 +62,7 @@ void osHandlerLM75BD(void) {
   
   /* Implement this function */
   thermal_mgr_event_t interrupt;
-  interrupt.type = THERMAL_MGR_EVENT_INTERRUPT;
+  interrupt.type = THERMAL_MGR_EVENT_TYPE_INTERRUPT;
   thermalMgrSendEvent(&interrupt); 
   
 }
@@ -71,19 +71,18 @@ static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   float tempData;
   error_code_t readTempCheck;
-  thermal_mgr_event_t eventTypecheck; 
+  thermal_mgr_event_t eventTypeCheck; 
 
   while (1) {
-    if (xQueueReceive(thermalMgrQueueHandle, (void *) &eventTypecheck , (TickType_t) 10) == pdTRUE) {
-      switch (check.type) {
-        case (THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+    if (xQueueReceive(thermalMgrQueueHandle, (void *) &eventTypeCheck , (TickType_t) 10) == pdTRUE) {
+      switch (eventTypeCheck.type) {
+        case (THERMAL_MGR_EVENT_MEASURE_TEMP_CMD):
           if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempData) == ERR_CODE_SUCCESS) {
             addTemperatureTelemetry(tempData);
           }
           break;
-        }
-      }
-        case (THERMAL_MGR_EVENT_INTERRUPT) {
+        
+        case (THERMAL_MGR_EVENT_TYPE_INTERRUPT):
           if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempData) == ERR_CODE_SUCCESS) {
             if (tempData > TEMPERATURE_HYSTERESIS_THRESHOLD) {
               overTemperatureDetected();
@@ -92,12 +91,11 @@ static void thermalMgr(void *pvParameters) {
               safeOperatingConditions();
             }
           }
-          break;
-        }
+          break;    
+      }
+    }
   }
-  
 }
-
 void addTemperatureTelemetry(float tempC) {
   printConsole("Temperature telemetry: %f deg C\n", tempC);
 }

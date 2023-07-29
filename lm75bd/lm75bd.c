@@ -28,8 +28,8 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
-  err_code_t errCodeSend;
-  err_cdoe_t errCodeReceive;
+  error_code_t errCodeSend;
+  error_code_t errCodeReceive;
   if (temp == NULL) {
     return ERR_CODE_INVALID_ARG;
   } 
@@ -41,7 +41,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   }
   uint8_t tempData[2] = {0};
   errCodeReceive = i2cReceiveFrom(devAddr, tempData, 2);
-  if (errCodeReceive == ERR_CDOE_INVALID_ARGE) {
+  if (errCodeReceive == ERR_CODE_INVALID_ARG) {
     return ERR_CODE_INVALID_ARG;
   }
   /* Concatenate the received data */
