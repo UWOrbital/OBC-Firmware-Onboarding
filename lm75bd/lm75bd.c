@@ -28,21 +28,20 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
-  error_code_t errCodeSend;
-  error_code_t errCodeReceive;
+  error_code_t i2cSendAndReceive; // Stores the return value from the i2cSendTo() and i2cReceiveFrom() functions
   if (temp == NULL) {
     return ERR_CODE_INVALID_ARG;
   } 
   uint8_t tempWriteByte = 0x00; // 0x00 because that's what the notion document specified for the i2cSendTo() function
  
-  errCodeSend = i2cSendTo(devAddr, &tempWriteByte, 1);
-  if (errCodeSend != ERR_CODE_SUCCESS) {
-    return ERR_CODE_INVALID_ARG;
+  i2cSendAndReceive = i2cSendTo(devAddr, &tempWriteByte, 1);
+  if (i2cSendAndReceive != ERR_CODE_SUCCESS) {
+    return i2cSendAndReceive;
   }
   uint8_t tempData[2] = {0};
-  errCodeReceive = i2cReceiveFrom(devAddr, tempData, 2);
-  if (errCodeReceive != ERR_CODE_SUCCESS) {
-    return ERR_CODE_INVALID_ARG;
+  i2cSendAndReceive = i2cReceiveFrom(devAddr, tempData, 2);
+  if (i2cSendAndReceive != ERR_CODE_SUCCESS) {
+    return i2cSendAndReceive;
   }
   /* Concatenate the received data */
   uint16_t rawData = (tempData[0] << 8) | tempData[1];
