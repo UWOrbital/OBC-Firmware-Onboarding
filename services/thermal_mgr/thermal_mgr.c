@@ -47,15 +47,15 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
   BaseType_t checkQueueSend;
-  if (event == NULL) {
+  if (event == NULL || thermalMgrQueueHandle == NULL) {
     return ERR_CODE_INVALID_ARG;
   }
-  checkQueueSend = xQueueSend(thermalMgrQueueHandle, (void *) event, (TickType_t) 10);
-  if (checkQueueSend == pdFAIL) {
-    return ERR_CODE_INVALID_ARG;
+  
+  checkQueueSend = xQueueSend(thermalMgrQueueHandle, (void *) event, 0);
+  if (checkQueueSend != pdTRUE) {
+    return ERR_CODE_QUEUE_FULL;
   }
   return ERR_CODE_SUCCESS;
-  
 }
 
 void osHandlerLM75BD(void) {
@@ -69,12 +69,13 @@ void osHandlerLM75BD(void) {
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
-  float tempData;
-  error_code_t readTempCheck;
-  thermal_mgr_event_t eventTypeCheck; 
+ 
 
   while (1) {
-    if (xQueueReceive(thermalMgrQueueHandle, (void *) &eventTypeCheck , (TickType_t) 10) == pdTRUE) {
+    float tempData;
+    error_code_t readTempCheck;
+    thermal_mgr_event_t eventTypeCheck; 
+    if (xQueueReceive(thermalMgrQueueHandle, (void *) &eventTypeCheck , portMAX_DELAY) == pdTRUE) {
       switch (eventTypeCheck.type) {
         case (THERMAL_MGR_EVENT_MEASURE_TEMP_CMD):
           if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempData) == ERR_CODE_SUCCESS) {

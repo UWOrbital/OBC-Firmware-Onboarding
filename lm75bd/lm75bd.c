@@ -33,15 +33,15 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   if (temp == NULL) {
     return ERR_CODE_INVALID_ARG;
   } 
-  uint8_t tempWriteBit = 0x00;
+  uint8_t tempWriteByte = 0x00; // 0x00 because that's what the notion document specified for the i2cSendTo() function
  
-  errCodeSend = i2cSendTo(devAddr, &tempWriteBit, 1);
-  if (errCodeSend == ERR_CODE_INVALID_ARG) {
+  errCodeSend = i2cSendTo(devAddr, &tempWriteByte, 1);
+  if (errCodeSend != ERR_CODE_SUCCESS) {
     return ERR_CODE_INVALID_ARG;
   }
   uint8_t tempData[2] = {0};
   errCodeReceive = i2cReceiveFrom(devAddr, tempData, 2);
-  if (errCodeReceive == ERR_CODE_INVALID_ARG) {
+  if (errCodeReceive != ERR_CODE_SUCCESS) {
     return ERR_CODE_INVALID_ARG;
   }
   /* Concatenate the received data */
