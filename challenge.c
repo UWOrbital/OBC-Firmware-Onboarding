@@ -1,17 +1,17 @@
+
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+
 //-------------------------------------------------------------------------
 // Question 0
 // Include the challenge.h header file
-//-------------------------------------------------------------------------
-
-#include <challenge.h>
-
-
-
+//-----------------------------------------------------------------------
+#include "challenge.h"
 //-------------------------------------------------------------------------
 // Question 1
 // Declare two global variables. Both are integers named `q1A` and `q1B`, 
@@ -46,6 +46,8 @@ int q2Array[Q2_ARRAY_SIZE];
 //          The function should return 0b0001001101100101
 //-------------------------------------------------------------------------
 uint16_t q3(uint8_t x, uint8_t y) {
+//learn how to do this 
+
 
 }
 
@@ -60,10 +62,12 @@ uint16_t q3(uint8_t x, uint8_t y) {
 // Note: The array contains 8-bit unsigned integers.
 //-------------------------------------------------------------------------
 int32_t q4(uint8_t * array, uint32_t arrayLength) {
-    for (uint8_t i = 0; i <= arrayLength; i++) {
-        int32_t sum = 0;
+
+    int32_t sum = 0;
+    for (uint8_t i = 0; i < arrayLength -1; i++) {
         sum += array[i];
     }
+    return sum;
 }
 
 //-------------------------------------------------------------------------
@@ -73,7 +77,11 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - uint16_t b
 //-------------------------------------------------------------------------
 
+union q5_t{
+    uint32_t a;
+    uint16_t b;
 
+};
 
 
 //-------------------------------------------------------------------------
@@ -84,13 +92,11 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - uint16_t y
 //-------------------------------------------------------------------------
 
-struct q6_t {
-uint32_t x;
-uint16_t y;
+struct q6_t{
+    uint32_t x;
+    uint16_t y;
 
 };
-
-
 
 
 //-------------------------------------------------------------------------
@@ -107,7 +113,7 @@ enum error_t
    SUCCESS = 0,
    FAIL = 1
 
-}
+};
 
 
 //-------------------------------------------------------------------------
@@ -148,7 +154,10 @@ typedef struct {
     int b;
 } q10_t;
 
-error_t q10(q10_t *q10) {
+enum error_t q10(q10_t *q10) 
+{
+
+
 
 }
 
@@ -171,7 +180,7 @@ typedef struct {
     uint16_t array[51];
 } q11_b_t;
 
-error_t q11(q11_a_t *a, q11_b_t *b){
+enum error_t q11(q11_a_t *a, q11_b_t *b){
 
 }
 
