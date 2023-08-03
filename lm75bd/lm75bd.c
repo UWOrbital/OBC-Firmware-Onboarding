@@ -41,18 +41,14 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   errCode = i2cReceiveFrom(devAddr, buff, 2);
   if (errCode != ERR_CODE_SUCCESS) return errCode;
 
-  int16_t tempCombined = (uint16_t)(buff[0] << 3) | (uint16_t)(buff[1] >> 5);
-
   /*
-    1. If the Temp data MSByte bit D10 = 0, then the temperature is positive and Temp value = +(Temp data) * 0.125.
-    2. If the Temp data MSByte bit D10 = 1, then the temperature is negative and Temp value = -(two’s complement of Temp data) * 0.125.
+    Combine the received temperature data (11-bit signed) into a 16-bit integer
+    Right-shift the tempData by 5 bits (divide by 32) to get the 11-bit signed temperature value
+    Convert the 11-bit temperature value to Celsius, each bit is 0.125 degrees Celsius
   */
-  if (tempCombined & 0x0400) {
-    tempCombined = ~tempCombined + 1;
-    *temp = -1.0f * (float)tempCombined * 0.125f;
-  } else {
-    *temp = (float)tempCombined * 0.125f;
-  }
+  int16_t tempData = (buff[0] << 8) | buff[1];
+  tempData >>= 5;
+  *temp = tempData * 0.125f;
 
   return ERR_CODE_SUCCESS;
 }
