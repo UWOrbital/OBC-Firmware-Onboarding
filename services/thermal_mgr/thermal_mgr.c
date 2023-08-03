@@ -45,7 +45,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
 
   if (event == NULL) return ERR_CODE_INVALID_QUEUE_MSG;
-  else if (thermalMgrQueueHandle == NULL) return ERR_CODE_COULD_NOT_CREATE_QUEUE;
+  else if (thermalMgrQueueHandle == NULL) return ERR_CODE_INVALID_STATE;
 
   if (xQueueSend(thermalMgrQueueHandle, event, 0) != pdTRUE) {
     return ERR_CODE_QUEUE_FULL;
@@ -62,11 +62,10 @@ void osHandlerLM75BD(void) {
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
-  thermal_mgr_event_t event;
-  float tempC;
   while (1) {
-    
-    if (xQueueReceive(thermalMgrQueueHandle, &event, 0) == pdTRUE) {
+    thermal_mgr_event_t event;
+    float tempC;
+    if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdTRUE) {
       switch (event.type) {
         case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
           if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC) == ERR_CODE_SUCCESS) {
@@ -75,9 +74,9 @@ static void thermalMgr(void *pvParameters) {
           break;
         case THERMAL_MGR_EVENT_INTERRUPT:
           if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC) == ERR_CODE_SUCCESS) {
-            if (tempC > LM75BD_DEFAULT_OT_THRESH) {
+            if (tempC > LM75BD_DEFAULT_HYST_THRESH) {
               overTemperatureDetected();
-            } else if (tempC < LM75BD_DEFAULT_HYST_THRESH) {
+            } else {
               safeOperatingConditions();
             }
           }
