@@ -43,9 +43,10 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
+
   if (event == NULL) return ERR_CODE_INVALID_QUEUE_MSG;
   else if (thermalMgrQueueHandle == NULL) return ERR_CODE_COULD_NOT_CREATE_QUEUE;
-  
+
   if (xQueueSend(thermalMgrQueueHandle, event, 0) != pdTRUE) {
     return ERR_CODE_QUEUE_FULL;
   }
@@ -64,6 +65,7 @@ static void thermalMgr(void *pvParameters) {
   thermal_mgr_event_t event;
   float tempC;
   while (1) {
+    
     if (xQueueReceive(thermalMgrQueueHandle, &event, 0) == pdTRUE) {
       switch (event.type) {
         case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
