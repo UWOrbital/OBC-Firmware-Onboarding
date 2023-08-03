@@ -27,9 +27,9 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  error_code_t errCode;
-
   if (temp == NULL) return ERR_CODE_INVALID_ARG;
+
+  error_code_t errCode;
 
   uint8_t regAddr = 0x00;
   errCode = i2cSendTo(devAddr, &regAddr, 1);
@@ -38,10 +38,19 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   uint8_t buff[2] = {0};
   errCode = i2cReceiveFrom(devAddr, buff, 2);
   if (errCode != ERR_CODE_SUCCESS) return errCode;
-  
-  int16_t tempData = (buff[0] << 8) | buff[1];
-  tempData >>= 5;
-  *temp = tempData * 0.125f;
+
+  int16_t tempCombined = (uint16_t)(buff[0] << 3) | (uint16_t)(buff[1] >> 5);
+
+  /*
+    1. If the Temp data MSByte bit D10 = 0, then the temperature is positive and Temp value = +(Temp data) * 0.125.
+    2. If the Temp data MSByte bit D10 = 1, then the temperature is negative and Temp value = -(two’s complement of Temp data) * 0.125.
+  */
+  if (tempCombined & 0x0400) {
+    tempCombined = ~tempCombined + 1;
+    *temp = -1.0f * (float)tempCombined * 0.125f;
+  } else {
+    *temp = (float)tempCombined * 0.125f;
+  }
 
   return ERR_CODE_SUCCESS;
 }
