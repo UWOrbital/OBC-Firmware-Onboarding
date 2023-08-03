@@ -43,7 +43,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   /*
     Combine the received temperature data (11-bit signed) into a 16-bit integer
-    Right-shift the tempData by 5 bits (divide by 32) to get the 11-bit signed temperature value
+    Right-shift tempData by 5 bits (divide by 32) to get the 11-bit signed temperature value
     Convert the 11-bit temperature value to Celsius, each bit is 0.125 degrees Celsius
   */
   int16_t tempData = (buff[0] << 8) | buff[1];
