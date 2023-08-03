@@ -41,9 +41,9 @@ int32_t q2Array[Q2_ARRAY_SIZE];
 //          x becomes 0b00010011
 //          The function should return 0b0001001101100101
 //-------------------------------------------------------------------------
-// uint16_t q3(uint8_t x, uint8_t y) {
-//     return (x ^ 0b10000001) << 8 | y;
-// }
+uint16_t q3(uint8_t x, uint8_t y) {
+    return x^(0b10000001) << 8 | y;
+}
 
 //-------------------------------------------------------------------------
 // Question 4
@@ -180,22 +180,23 @@ error_t q10(q10_t *q10) {
 // 
 // Note: The error_t type is defined in question 7.
 //-------------------------------------------------------------------------
-// typedef struct {
-//     uint16_t array[50];
-// } q11_a_t;
+typedef struct {
+    uint16_t array[100];
+} q11_a_t;
 
-// typedef struct {
-//     uint16_t array[51];
-// } q11_b_t;
+typedef struct {
+    uint16_t array[101];
+} q11_b_t;
 
-// error_t q11(q11_a_t *a, q11_b_t *b){
-//     if (a == NULL || b == NULL) {
-//         return FAIL;
-//     }
+error_t q11(q11_a_t *a, q11_b_t *b){
+    if (a == NULL || b == NULL) {
+        return FAIL;
+    }
+    
 
-//     memcpy(b->array + 1, a->array, sizeof(a->array));
-//     return SUCCESS;
-// }
+
+
+}
 
 //-------------------------------------------------------------------------
 // Question 12
@@ -213,9 +214,23 @@ error_t q10(q10_t *q10) {
 // 0x00000009 or -1 if there is an error.
 //-------------------------------------------------------------------------
 
-// void *q13(uint32_t *ptr1, uint16_t *ptr2) {
+void *q13(uint32_t *ptr1, uint16_t *ptr2)
+{
+    if ( ptr1 == NULL || ptr2 == NULL){
+        return -1;
+    }
 
-// }
+    //do the two pointer operations 
+
+
+    //now do the comparison between which memory address is bigger
+
+    //if new pointer is greater than the other new pointer, then then return one thing, not else return the other 
+
+    
+
+
+}
 //-------------------------------------------------------------------------
 // The following function is used to test your code. Do not remove any 
 // existing code. You may add additional tests if you wish.
@@ -247,10 +262,10 @@ int main(void) {
     q2Array[1] = -1;
     ASSERT(q2Array[1] == -1);
 
-    // Question 3 Test
-    // ASSERT(q3(0b10010010, 0b01100101) == 0b0001001101100101);
-    // ASSERT(q3(3, 3) == 33283);
-    // ASSERT(q3(0x0, 0x0) == 0x8100);
+    Question 3 Test
+    ASSERT(q3(0b10010010, 0b01100101) == 0b0001001101100101);
+    ASSERT(q3(3, 3) == 33283);
+    ASSERT(q3(0x0, 0x0) == 0x8100);
 
     // Question 4 Test
     uint8_t smallArray[5] = {1, 2, 3, 4, 5};
