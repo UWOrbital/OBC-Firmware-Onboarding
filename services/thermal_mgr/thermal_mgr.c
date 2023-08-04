@@ -43,18 +43,41 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
+  const void * itemToQueue = (const void *)event;
+  BaseType_t sendEventResult = xQueueSend(thermalMgrQueueHandle, itemToQueue, 0);
+  if (sendEventResult != pdTRUE) return ERR_CODE_QUEUE_FULL;
 
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
+  thermal_mgr_event_t checkOverUnder;
+  checkOverUnder.type = THERMAL_MGR_EVENT_OVER_UNDER;
+
+  /* Add interrupt event to the queue */
+  thermalMgrSendEvent(&checkOverUnder);
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
+  lm75bd_config_t config = *(lm75bd_config_t *)pvParameters;
+  float currTemp;
+  thermal_mgr_event_t nextEvent;
+
   while (1) {
-    
+    /* Receive next event and read temperature */
+    BaseType_t recResult = xQueueReceive(thermalMgrQueueHandle, &nextEvent, 0);
+    error_code_t tempReadResult = readTempLM75BD(config.devAddr, &currTemp);
+    if (tempReadResult != ERR_CODE_SUCCESS) continue;
+
+    /* Check for interrupt condition else check for telemetry request */
+    if (nextEvent.type == THERMAL_MGR_EVENT_OVER_UNDER) {
+      if (currTemp > config.hysteresisThresholdCelsius) overTemperatureDetected();
+      else safeOperatingConditions();
+    } else if (nextEvent.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+      addTemperatureTelemetry(currTemp);
+    }
   }
 }
 
