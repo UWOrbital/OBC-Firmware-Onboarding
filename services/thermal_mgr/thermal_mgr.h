@@ -3,28 +3,32 @@
 #include "lm75bd.h"
 #include "errors.h"
 
-typedef enum {
+typedef enum
+{
   THERMAL_MGR_EVENT_MEASURE_TEMP_CMD,
-  
+  THERMAL_MGR_EVENT_INTERRUPT,
+
 } thermal_mgr_event_type_t;
 
-typedef struct {
+typedef struct
+{
   thermal_mgr_event_type_t type;
 } thermal_mgr_event_t;
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-void initThermalSystemManager(lm75bd_config_t *config);
+  void initThermalSystemManager(lm75bd_config_t *config);
 
-error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event);
+  error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event);
 
-void addTemperatureTelemetry(float tempC);
+  void addTemperatureTelemetry(float tempC);
 
-void overTemperatureDetected(void);
+  void overTemperatureDetected(void);
 
-void safeOperatingConditions(void);
+  void safeOperatingConditions(void);
 
 #ifdef __cplusplus
 }
