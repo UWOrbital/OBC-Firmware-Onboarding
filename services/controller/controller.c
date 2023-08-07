@@ -26,16 +26,18 @@ static StackType_t controllerTaskStack[CONTROLLER_STACK_SIZE];
 
 static void controller(void *pvParameters);
 
-void initController(void) {
+void initController(void)
+{
   memset(&controllerTaskBuffer, 0, sizeof(controllerTaskBuffer));
   memset(controllerTaskStack, 0, sizeof(controllerTaskStack));
 
   controllerTaskHandle = xTaskCreateStatic(
-    controller, "controller", CONTROLLER_STACK_SIZE,
-    NULL, 1, controllerTaskStack, &controllerTaskBuffer);
+      controller, "controller", CONTROLLER_STACK_SIZE,
+      NULL, 1, controllerTaskStack, &controllerTaskBuffer);
 }
 
-static void controller(void *pvParameters) {
+static void controller(void *pvParameters)
+{
   // Initialize the mutex that protects the console output
   initConsole();
   initI2C();
@@ -72,10 +74,12 @@ static void controller(void *pvParameters) {
 
   const uint16_t testRunLimit = 4 * tempRegSeqSize;
   uint16_t testRunCount = 0;
-  
-  while (1) {
 
-    if (testRunCount >= testRunLimit) {
+  while (1)
+  {
+
+    if (testRunCount >= testRunLimit)
+    {
       // We don't want the test environment to run forever
       printConsole("Exiting the test environment. Examine the output to determine if your implementation is correct.\n");
       exit(0);
@@ -83,22 +87,30 @@ static void controller(void *pvParameters) {
 
     thermal_mgr_event_t event;
 
-    if (testTempRegSeq[nextValIndex] >= overTempThresholdRegVal && seqDir == 1 && !getOsActive() && !overTempThreshExceeded) {
+    if (testTempRegSeq[nextValIndex] >= overTempThresholdRegVal && seqDir == 1 && !getOsActive() && !overTempThreshExceeded)
+    {
       overTempThreshExceeded = 1;
       setOsActive(1);
       osHandlerLM75BD();
-    } else if (testTempRegSeq[nextValIndex] <= hysteresisThresholdRegVal && seqDir == -1 && !getOsActive() && overTempThreshExceeded) {
+    }
+    else if (testTempRegSeq[nextValIndex] <= hysteresisThresholdRegVal && seqDir == -1 && !getOsActive() && overTempThreshExceeded)
+    {
       overTempThreshExceeded = 0;
       setOsActive(1);
       osHandlerLM75BD();
-    } else {
+    }
+    else
+    {
       event.type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;
       thermalMgrSendEvent(&event);
     }
 
-    if (nextValIndex == 0) {
+    if (nextValIndex == 0)
+    {
       seqDir = 1;
-    } else if (nextValIndex == tempRegSeqSize - 1) {
+    }
+    else if (nextValIndex == tempRegSeqSize - 1)
+    {
       seqDir = -1;
     }
 

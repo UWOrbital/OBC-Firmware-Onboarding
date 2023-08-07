@@ -34,21 +34,6 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
   uint8_t accessBuffer = TEMP_REGISTER;
   uint8_t readData[READ_BYTES];
   float answer;
-
-  /* Implement this driver function */
-  /**
-   * to read the current temperature from the temperature sensor. To implement this, you’ll need to select the
-   * sensor's internal temperature register (since that's the register we're interested in reading) using the pointer register.
-   * Once you select it, you can read the temperature from the sensor.
-   * Look at section 7.4.1 for a description of the pointer register.
-   *
-   *
-   * Look at Figure 11 on the datasheet for the timing diagrams of interest. The top diagram shows an I2C write that sets the pointer
-   * register. The bottom diagram shows an I2C read that gets the data from the register you selected via the pointer register.
-   *
-   * Note that both the I2C write and read start by transmitting the I2C device address. Once you get the data from the register,
-   * you'll need to perform a conversion to get the temperature in degrees Celsius. This conversion is described in section 7.4.3
-   */
   i2cSendTo(devAddr, accessBuffer, WRITE_BYTES);
   i2cReceiveFrom(devAddr, readData, READ_BYTES);
 
@@ -65,7 +50,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
     // Negate everything, good, except now have 1111 at the front which i don't want
     // Use bitwise or to remove those
     processedTemp ^= 0xF800;
-    answer = processedTemp * 0.125;
+    answer = -processedTemp * 0.125;
     *temp = answer;
     // two's complement
     //- that * 0.125
