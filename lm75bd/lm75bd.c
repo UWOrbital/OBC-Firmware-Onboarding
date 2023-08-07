@@ -34,7 +34,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
   uint8_t accessBuffer = TEMP_REGISTER;
   uint8_t readData[READ_BYTES];
   float answer;
-  i2cSendTo(devAddr, accessBuffer, WRITE_BYTES);
+  i2cSendTo(devAddr, &accessBuffer, WRITE_BYTES);
   i2cReceiveFrom(devAddr, readData, READ_BYTES);
 
   int16_t processedTemp = ((uint16_t)readData[0] << 3) | ((uint16_t)(readData[1]) >> 5);
