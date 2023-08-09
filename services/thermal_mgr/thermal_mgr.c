@@ -44,7 +44,7 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
   if (event == NULL) return ERR_CODE_INVALID_ARG;
-  if (!thermalMgrQueueHandle) return ERR_CODE_UNKNOWN;
+  if (!thermalMgrQueueHandle) return ERR_CODE_INVALID_STATE;
   if (xQueueSend(thermalMgrQueueHandle, (const void *)event, 0) != pdTRUE) return ERR_CODE_QUEUE_FULL;
 
   return ERR_CODE_SUCCESS;
@@ -73,6 +73,7 @@ static void thermalMgr(void *pvParameters) {
 
     /* Check for interrupt condition else check for telemetry request */
     if (nextEvent.type == THERMAL_MGR_EVENT_OVER_UNDER) {
+      if (readTempLM75BD(config.devAddr, &currTemp) != ERR_CODE_SUCCESS) continue;
       if (currTemp > config.hysteresisThresholdCelsius) overTemperatureDetected();
       else safeOperatingConditions();
     } else if (nextEvent.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
