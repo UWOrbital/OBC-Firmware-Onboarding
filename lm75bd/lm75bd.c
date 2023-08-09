@@ -28,16 +28,18 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  if (temp == NULL) return ERR_CODE_INVALID_ARG;
+  error_code_t err;
 
   /* Select the temperature register */
   uint8_t tempRegister[1] = {0x00};
-  error_code_t selectTemp = i2cSendTo(devAddr, tempRegister, 1);
-  if (selectTemp != ERR_CODE_SUCCESS) return selectTemp;
+  err = i2cSendTo(devAddr, tempRegister, 1);
+  if (err != ERR_CODE_SUCCESS) return err;
   
   /* Receive data from temperature reader */
   uint8_t recTempBuff[2];
-  error_code_t recTemp = i2cReceiveFrom(devAddr, recTempBuff, 2);
-  if (recTemp != ERR_CODE_SUCCESS) return recTemp;
+  err = i2cReceiveFrom(devAddr, recTempBuff, 2);
+  if (err != ERR_CODE_SUCCESS) return err;
 
   /* Convert data to Celsius */
   uint16_t tempData16 = ((recTempBuff[0] << 8) | recTempBuff[1]) >> 5;
