@@ -1,6 +1,81 @@
-# OBC Firmware Onboarding Challenge
+# Embedded Systems Thermal Management Project
+This repository contains the implementation of an embedded systems project focused on temperature monitoring and thermal management using the LM75BD temperature sensor. The project includes driver functions for sensor interfacing, a dynamic task system with queues, and an interrupt handler for overtemperature shutdown events. The goal is to ensure efficient temperature control and telemetry for CubeSat applications.
 
-Welcome to Orbital's OBC Firmware Onboarding Challenge! Please visit [this Notion doc](https://www.notion.so/uworbital/Firmware-Onboarding-Challenge-Updated-24340dfccb0547a5a7246ce6d7207c28) for the challenge instructions. Remember to follow our style guide which is written below.
+## Table of Contents
+* Introduction
+* Requirements
+* Setup
+* Usage
+* Components
+* Contributing
+* License
+
+# Introduction
+The Embedded Systems Thermal Management Project aims to address the temperature monitoring and control needs of CubeSat applications. The project involves implementing various technical components, including I2C communication with the LM75BD temperature sensor, task synchronization using queues for telemetry, and an interrupt handler for overtemperature shutdown events.
+
+## Requirements
+To successfully build and run this project, you will need the following tools and dependencies:
+
+Windows Subsystem for Linux 2 (WSL2)
+CMake
+Make
+GCC
+LM75BD Temperature Sensor Datasheet: Link
+I2C Protocol Tutorial: Link
+Setup
+Clone this repository to your local machine.
+
+Set up WSL2 on your Windows system: WSL2 Installation Guide
+
+Install required build tools within WSL2:
+
+```c
+Copy code
+sudo apt-get update
+sudo apt-get install build-essential cmake
+```
+Follow the additional setup instructions provided in the project documentation.
+
+## Usage
+Follow these steps to build and test the project locally:
+
+Navigate to the project directory in your WSL2 terminal.
+
+Build the project and run unit tests:
+
+```c
+Copy code
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Test
+cmake --build .
+ctest --verbose
+```
+Run integration tests:
+
+```c
+Copy code
+mkdir build_fw && cd build_fw
+cmake .. -DCMAKE_BUILD_TYPE=FW
+cmake --build .
+./onboarding # Run the executable
+```
+Refer to the project documentation for additional usage instructions and details on interpreting test results.
+
+## Components
+This project consists of the following key components:
+
+Sensor Driver Functions: Implement driver functions for interfacing with the LM75BD temperature sensor using the I2C protocol.
+
+Thermal Management Task: Create a task that periodically measures temperature data using the driver functions and sends telemetry.
+
+OS Interrupt Handler: Develop an interrupt handler for overtemperature shutdown (OS) events from the LM75BD sensor, ensuring efficient event handling and system responsiveness.
+
+Queue System: Implement a dynamic queue system for efficient data exchange between tasks, enabling seamless temperature telemetry updates.
+
+Console Printing: Utilize the printConsole function for generating log messages and monitoring program execution.
+
+## Contributing
+Contributions to this project are welcome! If you encounter issues or have suggestions for improvements, please create an issue or pull request in this repository.
 
 ## Style Guide
 
