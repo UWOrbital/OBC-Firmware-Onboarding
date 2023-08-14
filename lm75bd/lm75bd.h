@@ -22,10 +22,6 @@
 #define LM75BD_DEFAULT_OT_THRESH 80.0f
 #define LM75BD_DEFAULT_HYST_THRESH 75.0f
 
-// Read Write Constants
-#define READ_BYTES 2
-#define WRITE_BYTES 1
-
 /**
  * @struct Configuration struct for LM75BD,118 temperature sensor
  *

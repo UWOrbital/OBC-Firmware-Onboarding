@@ -9,6 +9,10 @@
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U /* Configuration Register (R/W) */
 
+// Read Write Constants
+#define READ_BYTES 2
+#define WRITE_BYTES 1
+
 error_code_t lm75bdInit(lm75bd_config_t *config)
 {
   error_code_t errCode;
@@ -31,18 +35,33 @@ error_code_t lm75bdInit(lm75bd_config_t *config)
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
 {
+  error_code_t i2cFunctions; // Stores the return value from the i2cSendTo() and i2cReceiveFrom() functions
+
+  if (temp == NULL)
+  {
+    return ERR_CODE_INVALID_ARG;
+  }
+
   uint8_t accessBuffer = TEMP_REGISTER;
+
+  i2cFunctions = i2cSendTo(devAddr, &accessBuffer, WRITE_BYTES);
+  if (i2cFunctions != ERR_CODE_SUCCESS)
+  {
+    return i2cFunctions;
+  }
+
   uint8_t readData[READ_BYTES];
-  float answer;
-  i2cSendTo(devAddr, &accessBuffer, WRITE_BYTES);
-  i2cReceiveFrom(devAddr, readData, READ_BYTES);
+  i2cFunctions = i2cReceiveFrom(devAddr, readData, READ_BYTES);
+  if (i2cFunctions != ERR_CODE_SUCCESS)
+  {
+    return i2cFunctions;
+  }
 
   int16_t processedTemp = ((uint16_t)readData[0] << 3) | ((uint16_t)(readData[1]) >> 5);
 
   if (readData[0] >> 7 == 0)
   { // positive temp
-    answer = processedTemp * 0.125;
-    *temp = answer;
+    *temp = processedTemp * 0.125;
   }
   else
   { // negative temp
