@@ -69,8 +69,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
     // Negate everything, good, except now have 1111 at the front which i don't want
     // Use bitwise or to remove those
     processedTemp ^= 0xF800;
-    answer = -processedTemp * 0.125;
-    *temp = answer;
+    *temp = -processedTemp * 0.125;
     // two's complement
     //- that * 0.125
   }
