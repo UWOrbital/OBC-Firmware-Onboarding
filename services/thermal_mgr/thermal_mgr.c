@@ -87,7 +87,7 @@ static void thermalMgr(void *pvParameters)
         checker = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &currTemp);
         if (checker != ERR_CODE_SUCCESS)
         {
-          printConsole(checker);
+          printConsole(std::toString(checker));
           continue;
         }
         addTemperatureTelemetry(currTemp);
@@ -96,7 +96,7 @@ static void thermalMgr(void *pvParameters)
         checker = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &currTemp);
         if (checker != ERR_CODE_SUCCESS)
         {
-          printConsole(checker);
+          printConsole(std::toString(checker));
           continue;
         }
         if (currTemp >= 80)
