@@ -98,7 +98,6 @@ static void thermalMgr(void *pvParameters)
         if (checker != ERR_CODE_SUCCESS)
         {
           // Convert the error code to a string using to_string
-          string errorString = to_string(static_cast<int>(checker));
           // Print the error string to the console
           printConsole("%d\n", checker);
           continue;
