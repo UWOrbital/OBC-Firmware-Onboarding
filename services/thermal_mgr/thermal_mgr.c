@@ -49,7 +49,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 
   if (!thermalMgrQueueHandle) {
-    return ERR_CODE_QUEUE_NOT_CREATED;
+    return ERR_CODE_INVALID_QUEUE_MSG;
   }
 
   if(xQueueSend(thermalMgrQueueHandle, (const void *) event, 0) != pdTRUE){
