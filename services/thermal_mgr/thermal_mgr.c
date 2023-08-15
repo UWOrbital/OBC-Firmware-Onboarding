@@ -1,5 +1,5 @@
 #include "thermal_mgr.h"
-#include "../../sys/errors.h"
+#include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
 
@@ -48,8 +48,12 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   }
 
 
+  if (!thermalMgrQueueHandle) {
+    return ERR_CODE_QUEUE_NOT_CREATED;
+  }
+
   if(xQueueSend(thermalMgrQueueHandle, (const void *) event, 0) != pdTRUE){
-    return ERR_CODE_INVALID_QUEUE_MSG;
+    return ERR_CODE_QUEUE_FULL;
   }
   return ERR_CODE_SUCCESS;
 }
@@ -66,14 +70,23 @@ static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   thermal_mgr_event_t event;
   float temp;
-
+  error_code_t errCode;
   while (1) {
     if(xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdTRUE){
+
       if(event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD ){
-        readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+        errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+        if(errCode != ERR_CODE_SUCCESS){
+          return errCode;
+        }
         addTemperatureTelemetry(temp);
       }
+
       else if(event.type == THERMAL_MGR_EVENT_INTERRUPT){
+        errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+        if(errCode != ERR_CODE_SUCCESS){
+          return errCode;
+        }
         if(temp<80){
           safeOperatingConditions();
         }
@@ -84,7 +97,7 @@ static void thermalMgr(void *pvParameters) {
     }  
 
     else{
-      printConsole("Invalid Thermal Event Type");
+      printConsole("Error, timed out");
     }
   }
 }

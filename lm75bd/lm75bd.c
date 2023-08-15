@@ -1,6 +1,6 @@
 #include "lm75bd.h"
 #include "i2c_io.h"
-#include "../sys/errors.h"
+#include "errors.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -43,12 +43,11 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
   {
     return errCode;
   }
-  error_code_t errCode2;
-  errCode2 = i2cReceiveFrom(devAddr, buff, 2);
+  errCode = i2cReceiveFrom(devAddr, buff, 2);
 
-  if (errCode2 != ERR_CODE_SUCCESS)
+  if (errCode != ERR_CODE_SUCCESS)
   {
-    return errCode2;
+    return errCode;
   }
 
   uint16_t tempData = ((uint16_t)buff[0] << 3) | ((uint16_t)buff[1] >> 5);

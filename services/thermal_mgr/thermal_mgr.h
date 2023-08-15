@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lm75bd.h"
-#include "../../sys/errors.h"
+#include "errors.h"
 
 typedef enum {
   THERMAL_MGR_EVENT_MEASURE_TEMP_CMD,
