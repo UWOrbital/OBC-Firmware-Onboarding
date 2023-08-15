@@ -51,7 +51,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event)
     return ERR_CODE_INVALID_QUEUE_MSG;
   if (thermalMgrQueueHandle == NULL)
   {
-    return ERR_CODE_INVALID_ARG; // Return an error code if the queue hasn't been created
+    return ERR_CODE_INVALID_STATE; // Return an error code if the queue hasn't been created
   }
 
   if (xQueueSend(thermalMgrQueueHandle, (void *)event, (TickType_t)0) == pdTRUE)
@@ -87,7 +87,8 @@ static void thermalMgr(void *pvParameters)
         checker = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &currTemp);
         if (checker != ERR_CODE_SUCCESS)
         {
-          return checker;
+          printConsole(checker);
+          continue;
         }
         addTemperatureTelemetry(currTemp);
         break;
@@ -95,7 +96,8 @@ static void thermalMgr(void *pvParameters)
         checker = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &currTemp);
         if (checker != ERR_CODE_SUCCESS)
         {
-          return checker;
+          printConsole(checker);
+          continue;
         }
         if (currTemp >= 80)
         {
