@@ -1,5 +1,5 @@
 #include "thermal_mgr.h"
-#include "errors.h"
+#include "../../sys/errors.h"
 #include "lm75bd.h"
 #include "console.h"
 
@@ -43,18 +43,49 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
+  if(!event){
+    return ERR_CODE_INVALID_ARG;
+  }
 
+
+  if(xQueueSend(thermalMgrQueueHandle, (const void *) event, 0) != pdTRUE){
+    return ERR_CODE_INVALID_QUEUE_MSG;
+  }
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
+  thermal_mgr_event_t eventInterrupt;
+  eventInterrupt.type = THERMAL_MGR_EVENT_INTERRUPT;
+  thermalMgrSendEvent(&eventInterrupt);
+
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
+  thermal_mgr_event_t event;
+  float temp;
+
   while (1) {
-    
+    if(xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdTRUE){
+      if(event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD ){
+        readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+        addTemperatureTelemetry(temp);
+      }
+      else if(event.type == THERMAL_MGR_EVENT_INTERRUPT){
+        if(temp<80){
+          safeOperatingConditions();
+        }
+        else{
+          overTemperatureDetected();
+        }
+      }
+    }  
+
+    else{
+      printConsole("Invalid Thermal Event Type");
+    }
   }
 }
 

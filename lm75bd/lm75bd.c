@@ -1,6 +1,6 @@
 #include "lm75bd.h"
 #include "i2c_io.h"
-#include "errors.h"
+#include "../sys/errors.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -26,9 +26,43 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
   return ERR_CODE_SUCCESS;
 }
 
-error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
+error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
+{
   /* Implement this driver function */
-  
+  if (!temp)
+  {
+    return ERR_CODE_INVALID_ARG;
+  }
+
+  uint8_t tempPointerRegister = 0x00;
+  uint8_t buff[2] = {0};
+
+  error_code_t errCode;
+  errCode = i2cSendTo(devAddr, &tempPointerRegister, 1);
+  if (errCode != ERR_CODE_SUCCESS)
+  {
+    return errCode;
+  }
+  error_code_t errCode2;
+  errCode2 = i2cReceiveFrom(devAddr, buff, 2);
+
+  if (errCode2 != ERR_CODE_SUCCESS)
+  {
+    return errCode2;
+  }
+
+  uint16_t tempData = ((uint16_t)buff[0] << 3) | ((uint16_t)buff[1] >> 5);
+
+  if (buff[0] >> 7)
+  {
+    tempData = (~tempData + 1) ^ (0xF800);
+    *temp = -tempData * 0.125;
+  }
+  else
+  {
+    *temp = tempData * 0.125;
+  }
+
   return ERR_CODE_SUCCESS;
 }
 

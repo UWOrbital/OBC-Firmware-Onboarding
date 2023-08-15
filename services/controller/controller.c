@@ -2,7 +2,7 @@
 #include "console.h"
 #include "thermal_mgr.h"
 #include "lm75bd.h"
-#include "errors.h"
+#include "../../sys/errors.h"
 #include "i2c_io.h"
 
 #include <FreeRTOS.h>

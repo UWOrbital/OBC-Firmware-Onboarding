@@ -1,5 +1,5 @@
 #include "i2c_io.h"
-#include "errors.h"
+#include "../errors.h"
 
 #include <FreeRTOS.h>
 #include <os_portmacro.h>
