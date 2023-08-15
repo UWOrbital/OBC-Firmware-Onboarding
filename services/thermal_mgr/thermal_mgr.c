@@ -88,7 +88,7 @@ static void thermalMgr(void *pvParameters)
         if (checker != ERR_CODE_SUCCESS)
         {
           // Print the error string to the console
-          printConsole("Error");
+          printConsole("%d\n", checker);
           continue;
         }
         addTemperatureTelemetry(currTemp);
@@ -100,7 +100,7 @@ static void thermalMgr(void *pvParameters)
           // Convert the error code to a string using to_string
           string errorString = to_string(static_cast<int>(checker));
           // Print the error string to the console
-          printConsole("Error");
+          printConsole("%d\n", checker);
           continue;
         }
         if (currTemp >= 80)
