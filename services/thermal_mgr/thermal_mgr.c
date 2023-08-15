@@ -87,11 +87,8 @@ static void thermalMgr(void *pvParameters)
         checker = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &currTemp);
         if (checker != ERR_CODE_SUCCESS)
         {
-          // Convert the error code to a string using to_string
-          string errorString = to_string(static_cast<int>(checker));
-
           // Print the error string to the console
-          printConsole("Error code: %s", errorString.c_str());
+          printConsole("Error");
           continue;
         }
         addTemperatureTelemetry(currTemp);
@@ -103,7 +100,7 @@ static void thermalMgr(void *pvParameters)
           // Convert the error code to a string using to_string
           string errorString = to_string(static_cast<int>(checker));
           // Print the error string to the console
-          printConsole("Error code: %s", errorString.c_str());
+          printConsole("Error");
           continue;
         }
         if (currTemp >= 80)
