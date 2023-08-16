@@ -60,4 +60,4 @@ venv/
 
 build*
 
-run.sh
+*.sh

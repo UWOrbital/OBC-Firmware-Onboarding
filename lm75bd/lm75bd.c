@@ -44,9 +44,6 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   // Get most significant bit
   uint8_t msb = buffer[0] & 0b10000000;
 
-  // Remove most significant bit
-  // buffer[0] &= 0b01111111;
-
   // Calculate temperature
   if (msb == 0) {
     *temp = buffer[0] + (buffer[1] * TEMPERATURE_CONVERSION_FACTOR);
