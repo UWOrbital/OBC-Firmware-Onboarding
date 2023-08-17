@@ -6,10 +6,6 @@
 
 /* LM75BD I2C Device Address */
 #define LM75BD_OBC_I2C_ADDR 0b1001111
-#define TEMPERATURE_ADDR 0x00U
-#define WRITE_BYTES 1U
-#define READ_BYTES 2U
-#define TEMPERATURE_CONVERSION_FACTOR 0.125f
 
 /* LM75BD Configuration Values */
 #define LM75BD_DEV_OP_MODE_NORMAL 0x00U

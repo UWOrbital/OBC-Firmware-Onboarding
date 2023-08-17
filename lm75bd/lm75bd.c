@@ -8,6 +8,10 @@
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
+#define LM75BD_REG_TEMP 0x00U
+#define WRITE_BYTES 1U
+#define READ_BYTES 2U
+#define TEMPERATURE_CONVERSION_FACTOR 0.125f
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
@@ -29,29 +33,30 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
   // Initialize local variables
-  uint8_t buffer[READ_BYTES];
-  uint8_t tempReg = TEMPERATURE_ADDR;
+  if (temp == NULL) return ERR_CODE_INVALID_ARG;
+
+  uint8_t buffer[READ_BYTES] = {0};
+  uint8_t tempReg = LM75BD_REG_TEMP;
 
   // Set temperature registry
-  if (i2cSendTo(devAddr, &tempReg, WRITE_BYTES) != ERR_CODE_SUCCESS) return ERR_CODE_INVALID_ARG;
+  error_code_t error = i2cSendTo(devAddr, &tempReg, WRITE_BYTES);
+  if (error != ERR_CODE_SUCCESS) return error;
 
   // read from temperature registry
-  if (i2cReceiveFrom(devAddr, buffer, READ_BYTES) != ERR_CODE_SUCCESS) return ERR_CODE_INVALID_ARG;
+  error = i2cReceiveFrom(devAddr, buffer, READ_BYTES);
+  if (error != ERR_CODE_SUCCESS) return error;
 
-  // Bit shift by 5 to get rid of the last 5 bits
-  buffer[1] >>= 5;
-
-  // Get most significant bit
+  // Get most significant bit and combine 
   uint8_t msb = buffer[0] & 0b10000000;
+  int16_t regVal = (buffer[0] << 8 | buffer[1]) >> 5;
 
   // Calculate temperature
+  // *temp = (float) regVal * TEMPERATURE_CONVERSION_FACTOR;
+
   if (msb == 0) {
-    *temp = buffer[0] + (buffer[1] * TEMPERATURE_CONVERSION_FACTOR);
+    *temp = (float) regVal * TEMPERATURE_CONVERSION_FACTOR;
   } else {
-    buffer[1] = (~buffer[1]) + 1;
-    buffer[1] = (buffer[1] == 8) ? 0 : buffer[1];
-    buffer[0] = (~buffer[0]) + (buffer[1] == 0 ? 1 : 0);
-    *temp = -buffer[0] - buffer[1] * TEMPERATURE_CONVERSION_FACTOR;
+    *temp = (float) (~regVal + 1) * TEMPERATURE_CONVERSION_FACTOR;
   }
   
   return ERR_CODE_SUCCESS;

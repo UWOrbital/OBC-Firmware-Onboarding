@@ -45,6 +45,8 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
   if(event == NULL) return ERR_CODE_INVALID_ARG;
 
+  if(thermalMgrQueueHandle == NULL) return ERR_CODE_INVALID_STATE;
+
   if(xQueueSend(thermalMgrQueueHandle, (void *) event, TEMPERATURE_WAIT_TIME) != pdTRUE) {
     return ERR_CODE_QUEUE_FULL;
   }
@@ -53,35 +55,42 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 }
 
 void osHandlerLM75BD(void) {
-  thermal_mgr_event_t event = {.type = THERMAL_OS_HANDLE};
+  thermal_mgr_event_t event = {.type = THERMAL_MGR_EVENT_OS_HANDLE};
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-  while(1) {
-   if(xQueueSendFromISR(thermalMgrQueueHandle, (void *) &event, &xHigherPriorityTaskWoken) == pdTRUE)
-    break;
-  }
+  xQueueSendFromISR(thermalMgrQueueHandle, (void *) &event, &xHigherPriorityTaskWoken);
+  taskYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 static void thermalMgr(void *pvParameters) {
   // Set variables and get config for lm75bd
-  thermal_mgr_event_t event;
-  float temp;
   lm75bd_config_t *config = (lm75bd_config_t *) pvParameters;
   
   while (1) {
-    if (xQueueReceive(thermalMgrQueueHandle, (void *) &event, TEMPERATURE_WAIT_TIME) == pdTRUE) {
-      readTempLM75BD(config->devAddr, &temp);
-
+    thermal_mgr_event_t event;
+    if (xQueueReceive(thermalMgrQueueHandle, (void *) &event, TEMPERATURE_RECEIVE_TIME) == pdTRUE) {
+      
       // Part 2 of challenge
       if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
+        float temp; 
+        if(readTempLM75BD(config->devAddr, &temp) != ERR_CODE_SUCCESS) 
+          continue;
         addTemperatureTelemetry(temp);
 
       // Part 3 of challenge 
-      } else if(event.type == THERMAL_OS_HANDLE) {
+      } else if(event.type == THERMAL_MGR_EVENT_OS_HANDLE) {
+        float temp; 
+        if(readTempLM75BD(config->devAddr, &temp) != ERR_CODE_SUCCESS) 
+          continue;
+
         if(temp > config->hysteresisThresholdCelsius) {
           overTemperatureDetected();
         } else {
           safeOperatingConditions();
         }
+
+      // Failure
+      } else {
+        
       }
     }
   }
