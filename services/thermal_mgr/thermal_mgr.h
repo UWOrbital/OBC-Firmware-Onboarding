@@ -3,8 +3,6 @@
 #include "lm75bd.h"
 #include "errors.h"
 
-#define TEMPERATURE_SEND_TIME pdMS_TO_TICKS(1000)
-#define TEMPERATURE_RECEIVE_TIME pdMS_TO_TICKS(1000)
 
 typedef enum {
   THERMAL_MGR_EVENT_MEASURE_TEMP_CMD = 0,

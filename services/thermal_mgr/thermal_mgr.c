@@ -9,6 +9,9 @@
 
 #include <string.h>
 
+#define TEMPERATURE_SEND_TIME pdMS_TO_TICKS(1000)
+#define TEMPERATURE_RECEIVE_TIME pdMS_TO_TICKS(1000)
+
 #define THERMAL_MGR_STACK_SIZE 256U
 
 static TaskHandle_t thermalMgrTaskHandle;
@@ -47,7 +50,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
   if(thermalMgrQueueHandle == NULL) return ERR_CODE_INVALID_STATE;
 
-  if(xQueueSend(thermalMgrQueueHandle, (void *) event, TEMPERATURE_WAIT_TIME) != pdTRUE) {
+  if(xQueueSend(thermalMgrQueueHandle, (void *) event, TEMPERATURE_SEND_TIME) != pdTRUE) {
     return ERR_CODE_QUEUE_FULL;
   }
 
@@ -57,12 +60,15 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 void osHandlerLM75BD(void) {
   thermal_mgr_event_t event = {.type = THERMAL_MGR_EVENT_OS_HANDLE};
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-  xQueueSendFromISR(thermalMgrQueueHandle, (void *) &event, &xHigherPriorityTaskWoken);
-  taskYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+
+  if (thermalMgrQueueHandle != NULL) {
+    xQueueSendFromISR(thermalMgrQueueHandle, (void *) &event, &xHigherPriorityTaskWoken);
+  }
+  
+  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 static void thermalMgr(void *pvParameters) {
-  // Set variables and get config for lm75bd
   lm75bd_config_t *config = (lm75bd_config_t *) pvParameters;
   
   while (1) {
@@ -90,7 +96,7 @@ static void thermalMgr(void *pvParameters) {
 
       // Failure
       } else {
-        
+        printConsole("WARNING: Invalid type for thermal_mgr_event_t event");
       }
     }
   }
