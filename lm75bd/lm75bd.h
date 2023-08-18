@@ -5,7 +5,9 @@
 #include <stdint.h>
 
 /* LM75BD I2C Device Address */
-#define LM75BD_OBC_I2C_ADDR /* Define the address here */
+// make sure to define the address here my dawgs...
+#define LM75BD_OBC_I2C_ADDR 1001111
+
 
 /* LM75BD Configuration Values */
 #define LM75BD_DEV_OP_MODE_NORMAL 0x00U
