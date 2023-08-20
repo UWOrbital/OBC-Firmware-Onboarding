@@ -39,12 +39,12 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   uint8_t tempReg = LM75BD_REG_TEMP;
 
   // Set temperature registry
-  error_code_t error1 = i2cSendTo(devAddr, &tempReg, WRITE_BYTES);
-  if (error1 != ERR_CODE_SUCCESS) return error1;
+  error_code_t error = i2cSendTo(devAddr, &tempReg, WRITE_BYTES);
+  if (error != ERR_CODE_SUCCESS) return error;
 
   // read from temperature registry
-  error_code_t error2 = i2cReceiveFrom(devAddr, buffer, READ_BYTES);
-  if (error2 != ERR_CODE_SUCCESS) return error2;
+  error = i2cReceiveFrom(devAddr, buffer, READ_BYTES);
+  if (error != ERR_CODE_SUCCESS) return error;
 
   // Combine 
   int16_t regVal = (buffer[0] << 8 | buffer[1]);
