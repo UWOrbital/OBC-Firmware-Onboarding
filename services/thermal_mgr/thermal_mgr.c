@@ -10,7 +10,6 @@
 #include <string.h>
 
 #define THERMAL_MGR_STACK_SIZE 256U
-#define QUEUE_WAIT_TIME 10U
 
 static TaskHandle_t thermalMgrTaskHandle;
 static StaticTask_t thermalMgrTaskBuffer;
@@ -43,36 +42,19 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
-  if (xQueueSend(thermalMgrQueueHandle, event, QUEUE_WAIT_TIME) == 1){
-    return ERR_CODE_SUCCESS;
-  }
-  else{
-    return ERR_CODE_QUEUE_FULL;
-  }
+  /* Send an event to the thermal manager queue */
+
+  return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
-  float curr_temp;
-  error_code_t status = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &curr_temp);
-
-  if (status == ERR_CODE_SUCCESS){
-    if(curr_temp > LM75BD_DEFAULT_HYST_THRESH)overTemperatureDetected();
-    else safeOperatingConditions();  
-  }
+  /* Implement this function */
 }
 
 static void thermalMgr(void *pvParameters) {
-  thermal_mgr_event_t receivedEvent;
-  lm75bd_config_t data = *(lm75bd_config_t *) pvParameters;
-
+  /* Implement this task */
   while (1) {
-    if((xQueueReceive(thermalMgrQueueHandle, &receivedEvent, QUEUE_WAIT_TIME)) == 1){
-      if(receivedEvent.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
-        float curr_temp;
-        error_code_t status = readTempLM75BD(data.devAddr, &curr_temp);
-        if(status == ERR_CODE_SUCCESS) addTemperatureTelemetry(curr_temp);
-      }
-    }
+    
   }
 }
 

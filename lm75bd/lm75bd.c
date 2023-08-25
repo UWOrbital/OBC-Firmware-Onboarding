@@ -8,7 +8,6 @@
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
-#define LM75BD_REG_TEMP 0x00U //Temperature Register
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
@@ -28,27 +27,8 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  uint8_t tempRegAddr = LM75BD_REG_TEMP;
-  error_code_t status_set_pointer = i2cSendTo(devAddr, &tempRegAddr, 1);
-  if(status_set_pointer != ERR_CODE_SUCCESS) return status_set_pointer;
-
-  uint8_t buffer[2];
-  error_code_t status_read = i2cReceiveFrom(devAddr, buffer, 2);
-  if(status_read != ERR_CODE_SUCCESS) return status_read;
-
-  int16_t eleven_bit_temp = ((buffer[0] << 8) | buffer[1]) >> 5;
-  int16_t decimal_val;
-
-  if(eleven_bit_temp & 0x0400){//If 11th bit is 1
-    //Find 2s complement
-    decimal_val = -((eleven_bit_temp ^ 0x7FF) +1);
-  }
-  else{
-    decimal_val = eleven_bit_temp;
-  }
- 
-  *temp = decimal_val * 0.125;
-
+  /* Implement this driver function */
+  
   return ERR_CODE_SUCCESS;
 }
 
