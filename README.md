@@ -3,6 +3,8 @@
 This mini-challenge is intended to test your knowledge of C programming. There are 13 C programming questions that can be found in the `challenge.c` file. Your solution to this challenge will be verified automatically on a standard Linux machine once you make a pull request.
 
 To test your solutions locally, you can use the provided Dockerfile to build a Docker image that will run the tests for you.
+
+If you do not have Docker installed on your machine, you can follow the instructions <a href="https://www.notion.so/uworbital/How-To-Docker">here</a>.
  
 To build the Docker image, run:
 ```
