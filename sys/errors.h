@@ -2,7 +2,8 @@
 
 /* Define new error codes here if needed */
 
-typedef enum {
+typedef enum
+{
     /* Common Errors 0 - 99 */
     ERR_CODE_SUCCESS = 0,
     ERR_CODE_UNKNOWN = 1,
