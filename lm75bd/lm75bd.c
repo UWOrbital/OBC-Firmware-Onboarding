@@ -29,12 +29,12 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   uint8_t tempRegAddr = LM75BD_REG_TEMP;
-  error_code_t status_set_pointer = i2cSendTo(devAddr, &tempRegAddr, 1);
-  if(status_set_pointer != ERR_CODE_SUCCESS) return status_set_pointer;
+  error_code_t status_i2c = i2cSendTo(devAddr, &tempRegAddr, 1);
+  if(status_i2c != ERR_CODE_SUCCESS) return status_i2c;
 
-  uint8_t buffer[2];
-  error_code_t status_read = i2cReceiveFrom(devAddr, buffer, 2);
-  if(status_read != ERR_CODE_SUCCESS) return status_read;
+  uint8_t buffer[2] = {0};
+  status_i2c = i2cReceiveFrom(devAddr, buffer, 2);
+  if(status_i2c != ERR_CODE_SUCCESS) return status_i2c;
 
   int16_t eleven_bit_temp = ((buffer[0] << 8) | buffer[1]) >> 5;
   int16_t decimal_val;
