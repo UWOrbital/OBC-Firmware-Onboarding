@@ -41,7 +41,7 @@ uint16_t
 q3(uint8_t x, uint8_t y)
 {
     x = x ^ 0b10000001;
-    x = x | y;
+    x = x << 8 | y;
     return x;
 }
 
