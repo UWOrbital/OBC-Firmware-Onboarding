@@ -5,7 +5,14 @@
 #include <stdint.h>
 
 /* LM75BD I2C Device Address */
-#define LM75BD_OBC_I2C_ADDR /* Define the address here */
+#define LM75BD_OBC_I2C_ADDR 0b01001111 /* Define the address here */
+
+/* Address of Temp Register */
+#define TEMP_REGISTER 0x00
+
+/* R/W Buffers */
+#define WRITE_BUFFER 1
+#define READ_BUFFER 2
 
 /* LM75BD Configuration Values */
 #define LM75BD_DEV_OP_MODE_NORMAL 0x00U

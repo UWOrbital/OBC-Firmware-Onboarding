@@ -28,7 +28,33 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+
+  uint8_t pointerBuffer = TEMP_REGISTER;
+
+  error_code_t send_code = i2cSendTo(devAddr, &pointerBuffer, WRITE_BUFFER);
+
+  if (send_code != ERR_CODE_SUCCESS){
+    return send_code;
+  }
   
+  uint8_t data[WRITE_BUFFER] = {0};
+  int receive_code = i2cReceiveFrom(devAddr, data, READ_BUFFER);
+
+  if (receive_code != ERR_CODE_SUCCESS){
+    return receive_code;
+  }
+
+  uint16_t raw_temp = (data[0] << 8) | data[1]; // Get 11 most significant bits
+  raw_temp = raw_temp >> 5; // Shift down 11 MSB
+
+  if (raw_temp & 0x0400){ // If 11th bit is 1, compute negative
+    raw_temp = ((~raw_temp)+1) & 0x07FF;
+    *temp = -raw_temp * 0.125f;
+  }
+  else{
+    *temp = raw_temp * 0.125f;
+  }
+
   return ERR_CODE_SUCCESS;
 }
 
