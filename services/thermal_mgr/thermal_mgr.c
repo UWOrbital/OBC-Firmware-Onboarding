@@ -82,26 +82,26 @@ static void thermalMgr(void *pvParameters)
       /* Switch statement to perform type comparison on current item*/
       switch (currentItem.type)
       {
-      /* In the case of an item of normal/default type, record the current temperature and, if successful, print current temp to console*/
+      /* In case the current item of normal/default type, record the current temperature and, if successful, print current temp to console*/
       case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
         status = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &currentTemp);
         if (status != ERR_CODE_SUCCESS)
         {
-          printConsole(status);
+          printConsole("%d\n", status);
           continue;
         }
         addTemperatureTelemetry(currentTemp);
 
-      /* If item is an OS interrupt, check if the current temperature is past hysteresis conditions and call the appropriate function*/
+      /* If the current item is an OS interrupt, check if the current temperature is past hysteresis conditions and call the appropriate function*/
       case THERMAL_MGR_EVENT_INTERRUPT:
         status = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &currentTemp);
         if (status != ERR_CODE_SUCCESS)
         {
-          printConsole(status);
+          printConsole("%d\n", status);
           continue;
         }
 
-        if (currentTemp > 75)
+        if (currentTemp > 75) // 75 degrees is temperature hysteresis
         {
           overTemperatureDetected();
         }
