@@ -54,7 +54,7 @@ void osHandlerLM75BD(void) {
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   while (1) {
-    
+    if()
   }
 }
 

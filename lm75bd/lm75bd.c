@@ -9,6 +9,21 @@
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
 
+/* LM75BD I2C Device Address */
+#define LM75BD_OBC_I2C_ADDR 0b1001111
+#define TEMP_ADD 0b00000000
+#define READ_BUF_SIZE 2
+
+
+float binaryToDec(uint16_t bin){
+
+  int base = 1;
+  uint16_t temp = bin;
+
+
+
+
+}
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
 
@@ -27,11 +42,35 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
+
+
+  if (temp == NULL) return ERR_CODE_INVALID_ARG;
+
+  if (i2cSendTo(devAddr, &tempBuf, 1) != ERR_CODE_SUCCESS) {
+    return i2cSendTo(devAddr, &tempBuf, 1);
+  }
+
+  if (i2cReceiveFrom(devAddr, &buffer, 2) != ERR_CODE_SUCCESS) {
+    return i2cReceiveFrom(devAddr, &buffer, 2);
+  }
+  
+  uint8_t buffer[READ_BUF_SIZE] = {0};
+  uint8_t tempBuf = TEMP_ADD;
+  uint16_t tempBytes = (buffer[0] << 8 | buffer[1]) >> 5;
+
+  
+  if (!(buffer[0] && 0b10000000)) {
+    *temp = (float)tempBytes * 0.125f;
+  }
+  else {
+    *temp = -(float)(~tempBytes + 1) * 0.125f;
+  }
+
   /* Implement this driver function */
   
   return ERR_CODE_SUCCESS;
 }
-
+ 
 #define CONF_WRITE_BUFF_SIZE 2U
 error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_t osPolarity,
                                    uint8_t osOperationMode, uint8_t devOperationMode) {
