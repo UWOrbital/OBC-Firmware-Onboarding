@@ -9,6 +9,13 @@
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
 
+/* Address of Temp Register */
+#define TEMP_REGISTER 0x00
+
+/* R/W Buffers */
+#define WRITE_BUFFER _SIZE_T 1
+#define READ_BUFFER  _SIZE_T 2
+
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
 
@@ -38,7 +45,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   }
   
   uint8_t data[WRITE_BUFFER] = {0};
-  int receive_code = i2cReceiveFrom(devAddr, data, READ_BUFFER);
+  error_code_t receive_code = i2cReceiveFrom(devAddr, data, READ_BUFFER);
 
   if (receive_code != ERR_CODE_SUCCESS){
     return receive_code;
