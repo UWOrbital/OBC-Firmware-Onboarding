@@ -101,15 +101,16 @@ static void thermalMgr(void *pvParameters)
           continue;
         }
 
-        if (currentTemp > 75) // 75 degrees is temperature hysteresis
+        if (currentTemp >= 80) 
         {
           overTemperatureDetected();
         }
-        else
+        else if (currentTemp <= 75)
         {
           safeOperatingConditions();
         }
         break;
+        
       default:
         break;
       }
