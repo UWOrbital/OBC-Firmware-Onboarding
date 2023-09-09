@@ -52,9 +52,9 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
     return readErr;
   }
 
-  uint16_t tempBytes = ((buffer[0] << 8) | buffer[1]) >> 5;
+  int16_t tempBytes = buffer[0] << 8 | buffer[1];
 
-  *temp = (float)tempBytes * 0.125;
+  *temp = (float)(tempBytes >> 5) * 0.125;
 
   /* Implement this driver function */
 
