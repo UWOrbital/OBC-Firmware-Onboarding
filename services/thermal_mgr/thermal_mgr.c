@@ -42,9 +42,13 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
-  /* Send an event to the thermal manager queue */
+    if (event == NULL) return ERR_CODE_INVALID_ARG;
 
-  return ERR_CODE_SUCCESS;
+    if (xQueueSend(thermalMgrQueueHandle, (void *) event, (TickType_t) 0) == errQUEUE_FULL) {
+        return ERR_CODE_QUEUE_FULL;
+    }
+    
+    return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
@@ -52,10 +56,22 @@ void osHandlerLM75BD(void) {
 }
 
 static void thermalMgr(void *pvParameters) {
-  /* Implement this task */
-  while (1) {
-    
-  }
+    if (pvParameters == NULL) return;
+
+    lm75bd_config_t config = *(lm75bd_config_t *) pvParameters;
+    thermal_mgr_event_t taskEvent;
+    error_code_t taskStatus;
+    float temp = 0;
+
+    while (1) {
+        if (xQueueReceive(thermalMgrQueueHandle, &taskEvent, portMAX_DELAY) == pdTRUE) {
+            if (taskEvent.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+                taskStatus = readTempLM75BD(config.devAddr, &temp);
+                if (taskStatus != ERR_CODE_SUCCESS) continue;
+                addTemperatureTelemetry(temp);
+            }
+        }  
+    }
 }
 
 void addTemperatureTelemetry(float tempC) {
