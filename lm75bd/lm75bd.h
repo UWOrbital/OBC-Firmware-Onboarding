@@ -6,8 +6,6 @@
 
 /* LM75BD I2C Device Address */
 #define LM75BD_OBC_I2C_ADDR 0b01001111
-#define TEMP_ADD 0b00000000
-#define READ_BUF_SIZE 2
 
 /* LM75BD Configuration Values */
 #define LM75BD_DEV_OP_MODE_NORMAL 0x00U

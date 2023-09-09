@@ -45,7 +45,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event)
   /* Send an event to the thermal manager queue */
 
   if (thermalMgrQueueHandle == NULL)
-    return ERR_CODE_UNKNOWN;
+    return ERR_CODE_INVALID_STATE;
 
   if (event == NULL)
     return ERR_CODE_INVALID_ARG;
@@ -61,30 +61,24 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event)
 void osHandlerLM75BD(void)
 {
 
-  float temp;
-  readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
-
-  if (temp >= LM75BD_DEFAULT_HYST_THRESH)
-    overTemperatureDetected();
-
-  else if (temp <= LM75BD_DEFAULT_HYST_THRESH)
-    safeOperatingConditions();
+  thermal_mgr_event_t interruptEvent;
+  interruptEvent.type = THERMAL_MGR_EVENT_INTERRUPT;
+  thermalMgrSendEvent(&interruptEvent);
 }
 
 static void thermalMgr(void *pvParameters)
 {
 
-  float temp = 0;
-  thermal_mgr_event_t eventItem;
-  error_code_t errCode;
   /* Implement this task */
-
-  printConsole("Hello\n");
 
   while (1)
   {
 
-    if (xQueueReceive(thermalMgrQueueHandle, &eventItem, (TickType_t)10) == pdTRUE)
+    float temp = 0;
+    thermal_mgr_event_t eventItem;
+    error_code_t errCode;
+
+    if (xQueueReceive(thermalMgrQueueHandle, &eventItem, (TickType_t)2000) == pdTRUE)
     {
 
       if (eventItem.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD)
@@ -99,6 +93,23 @@ static void thermalMgr(void *pvParameters)
         }
 
         addTemperatureTelemetry(temp);
+      }
+      else if (eventItem.type == THERMAL_MGR_EVENT_INTERRUPT)
+      {
+
+        errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+
+        if (errCode != ERR_CODE_SUCCESS)
+        {
+          printConsole("%d\n", errCode);
+          continue;
+        }
+
+        if (temp >= LM75BD_DEFAULT_HYST_THRESH)
+          overTemperatureDetected();
+
+        else if (temp <= LM75BD_DEFAULT_HYST_THRESH)
+          safeOperatingConditions();
       }
     }
   }
