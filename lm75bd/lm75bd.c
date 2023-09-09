@@ -44,7 +44,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     return send_code;
   }
   
-  uint8_t data[WRITE_BUFFER] = {0};
+  uint8_t data[READ_BUFFER] = {0};
   error_code_t receive_code = i2cReceiveFrom(devAddr, data, READ_BUFFER);
 
   if (receive_code != ERR_CODE_SUCCESS){
