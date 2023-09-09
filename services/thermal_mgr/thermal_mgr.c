@@ -66,30 +66,32 @@ void osHandlerLM75BD(void) {
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
-  float *temp;
-  thermal_mgr_event_t item;
-  error_code_t read_code;
+
   
   while (1) {
 
-    if(xQueueReceive(thermalMgrQueueHandle, &item, (TickType_t) 10) == pdTRUE){ 
+    float temp;
+    thermal_mgr_event_t item;
+    error_code_t read_code;
+
+    if(xQueueReceive(thermalMgrQueueHandle, &item, 5000) == pdTRUE){ 
 
       if(item.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
-        read_code = readTempLM75BD((uint8_t) LM75BD_OBC_I2C_ADDR, temp);
+        read_code = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
 
          if (read_code != ERR_CODE_SUCCESS){
            printConsole("%i\n", read_code);
            continue;
          }
-         addTemperatureTelemetry(*temp);
+         addTemperatureTelemetry(temp);
       }
       else if(item.type == THERMAL_MGR_EVENT_INTERRUPT){
-        read_code = readTempLM75BD((uint8_t) LM75BD_OBC_I2C_ADDR, temp);
+        read_code = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
         
-        if (*temp >= OVERTEMP){
+        if (temp >= OVERTEMP){
             overTemperatureDetected();
          }
-         else if (*temp <= HYSTERESIS){
+         else if (temp <= HYSTERESIS){
             safeOperatingConditions();
          }
       }
