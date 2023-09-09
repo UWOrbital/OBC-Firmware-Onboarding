@@ -55,7 +55,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 void osHandlerLM75BD(void) {
     thermal_mgr_event_t interruptEvent;
     interruptEvent.type = THERMAL_MGR_EVENT_INTERRUPT_CMD;
-    thermalMgrSendEvent(&interruptEvent);
+    (void)thermalMgrSendEvent(&interruptEvent);
 }
 
 static void thermalMgr(void *pvParameters) {
