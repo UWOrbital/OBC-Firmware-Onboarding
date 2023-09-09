@@ -63,19 +63,21 @@ static void thermalMgr(void *pvParameters) {
 
     lm75bd_config_t config = *(lm75bd_config_t *)pvParameters;
     thermal_mgr_event_t taskEvent;
-    error_code_t taskStatus;
-    float temp = 0;
 
     while (1) {
         if (xQueueReceive(thermalMgrQueueHandle, &taskEvent, portMAX_DELAY) ==
             pdTRUE) {
             if (taskEvent.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
-                taskStatus = readTempLM75BD(config.devAddr, &temp);
-                if (taskStatus != ERR_CODE_SUCCESS) continue;
-                addTemperatureTelemetry(temp);
+                float temp = 0;
+                error_code_t taskStatus = readTempLM75BD(config.devAddr, &temp);
+                if (taskStatus == ERR_CODE_SUCCESS) {
+                    addTemperatureTelemetry(temp);
+                }
             } else if (taskEvent.type == THERMAL_MGR_EVENT_INTERRUPT_CMD) {
-                taskStatus = readTempLM75BD(config.devAddr, &temp);
+                float temp = 0;
+                error_code_t taskStatus = readTempLM75BD(config.devAddr, &temp);
                 if (taskStatus != ERR_CODE_SUCCESS) continue;
+
                 if (temp > config.overTempThresholdCelsius) {
                     overTemperatureDetected();
                 } else if (temp < config.hysteresisThresholdCelsius) {
