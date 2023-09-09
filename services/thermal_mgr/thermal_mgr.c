@@ -43,12 +43,16 @@ void initThermalSystemManager(lm75bd_config_t *config)
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event)
 {
+  if (thermalMgrQueueHandle == NULL)
+  {
+    return ERR_CODE_INVALID_STATE;
+  }
   /* Returns appropriate error code according to queue status*/
   if (event == NULL)
   {
     return ERR_CODE_INVALID_ARG;
   }
-  if (xQueueSend(thermalMgrQueueHandle, (void *)event, portMAX_DELAY) == errQUEUE_FULL)
+  if (xQueueSend(thermalMgrQueueHandle, (void *)event, (TickType_t)0) == errQUEUE_FULL)
   {
     return ERR_CODE_QUEUE_FULL;
   }
@@ -91,6 +95,7 @@ static void thermalMgr(void *pvParameters)
           continue;
         }
         addTemperatureTelemetry(currentTemp);
+        break;
 
       /* If the current item is an OS interrupt, check if the current temperature is past hysteresis conditions and call the appropriate function*/
       case THERMAL_MGR_EVENT_INTERRUPT:
@@ -101,7 +106,7 @@ static void thermalMgr(void *pvParameters)
           continue;
         }
 
-        if (currentTemp >= 80) 
+        if (currentTemp >= 80)
         {
           overTemperatureDetected();
         }
@@ -110,7 +115,7 @@ static void thermalMgr(void *pvParameters)
           safeOperatingConditions();
         }
         break;
-        
+
       default:
         break;
       }
