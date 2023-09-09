@@ -59,7 +59,7 @@ void osHandlerLM75BD(void) {
 }
 
 static void thermalMgr(void *pvParameters) {
-    if (pvParameters == NULL) return;
+    if (pvParameters == NULL) vTaskDelete(NULL);
 
     lm75bd_config_t config = *(lm75bd_config_t *)pvParameters;
     thermal_mgr_event_t taskEvent;
