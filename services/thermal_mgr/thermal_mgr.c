@@ -47,12 +47,14 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
     if (xQueueSend(thermalMgrQueueHandle, (void *) event, (TickType_t) 0) == errQUEUE_FULL) {
         return ERR_CODE_QUEUE_FULL;
     }
-    
+
     return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
-  /* Implement this function */
+  thermal_mgr_event_t interruptEvent;
+  interruptEvent.type = THERMAL_MGR_EVENT_INTERRUPT_CMD;
+  thermalMgrSendEvent(&interruptEvent);
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -69,6 +71,14 @@ static void thermalMgr(void *pvParameters) {
                 taskStatus = readTempLM75BD(config.devAddr, &temp);
                 if (taskStatus != ERR_CODE_SUCCESS) continue;
                 addTemperatureTelemetry(temp);
+            } else if (taskEvent.type == THERMAL_MGR_EVENT_INTERRUPT_CMD) {
+                taskStatus = readTempLM75BD(config.devAddr, &temp);
+                if (taskStatus != ERR_CODE_SUCCESS) continue;
+                if (temp > config.overTempThresholdCelsius) {
+                    overTemperatureDetected();
+                } else if (temp < config.hysteresisThresholdCelsius) {
+                    safeOperatingConditions();
+                }
             }
         }  
     }
