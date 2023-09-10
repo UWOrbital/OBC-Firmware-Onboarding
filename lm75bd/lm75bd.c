@@ -40,16 +40,16 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
   uint8_t buffer[TEMP_REG_SIZE_B] = {0};
   uint8_t tempBuf = LM75BD_REG_TEMP;
 
-  error_code_t sendErr = i2cSendTo(devAddr, &tempBuf, 1);
-  if (sendErr != ERR_CODE_SUCCESS)
+  error_code_t errCode = i2cSendTo(devAddr, &tempBuf, 1);
+  if (errCode != ERR_CODE_SUCCESS)
   {
-    return sendErr;
+    return errCode;
   }
 
-  error_code_t readErr = i2cReceiveFrom(devAddr, &buffer, 2);
-  if (readErr != ERR_CODE_SUCCESS)
+  errCode = i2cReceiveFrom(devAddr, &buffer, 2);
+  if (errCode != ERR_CODE_SUCCESS)
   {
-    return readErr;
+    return errCode;
   }
 
   int16_t tempBytes = buffer[0] << 8 | buffer[1];
