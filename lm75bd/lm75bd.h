@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 /* LM75BD I2C Device Address */
-#define LM75BD_OBC_I2C_ADDR /* Define the address here */
+#define LM75BD_OBC_I2C_ADDR 0x4FU
 
 /* LM75BD Configuration Values */
 #define LM75BD_DEV_OP_MODE_NORMAL 0x00U
@@ -20,6 +20,17 @@
 // Default temperature thresholds
 #define LM75BD_DEFAULT_OT_THRESH 80.0f
 #define LM75BD_DEFAULT_HYST_THRESH 75.0f
+
+// Personal Defines
+enum Pointer_Value{
+  TEMP_REG  = 0x00U,
+  CONF_REG  = 0x01U,
+  THYST_REG = 0x02U,
+  TOS_REG   = 0x03U
+};
+
+// ratio between temp value and temp
+#define TEMP_CONVERSION 0.125f
 
 /**
  * @struct Configuration struct for LM75BD,118 temperature sensor
