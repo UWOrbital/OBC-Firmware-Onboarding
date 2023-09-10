@@ -87,6 +87,11 @@ static void thermalMgr(void *pvParameters) {
       }
       else if(item.type == THERMAL_MGR_EVENT_INTERRUPT){
         read_code = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+
+        if (read_code != ERR_CODE_SUCCESS){
+           printConsole("%i\n", read_code);
+           continue;
+        }
         
         if (temp >= OVERTEMP){
             overTemperatureDetected();
