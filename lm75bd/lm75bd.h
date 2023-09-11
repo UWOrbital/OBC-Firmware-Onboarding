@@ -21,19 +21,6 @@
 #define LM75BD_DEFAULT_OT_THRESH 80.0f
 #define LM75BD_DEFAULT_HYST_THRESH 75.0f
 
-// Personal Defines ------------------
-typedef enum{
-  TEMP_REG  = 0x00U,
-  CONF_REG  = 0x01U,
-  THYST_REG = 0x02U,
-  TOS_REG   = 0x03U
-}pointer_value_type_t;
-
-// ratio between temp value and temp
-#define TEMP_CONVERSION 0.125f
-
-// Personal Defines End --------------
-
 /**
  * @struct Configuration struct for LM75BD,118 temperature sensor
  *

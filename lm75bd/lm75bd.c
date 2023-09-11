@@ -6,6 +6,19 @@
 #include <string.h>
 #include <math.h>
 
+// Personal Defines ------------------
+typedef enum{
+  TEMP_REG  = 0x00U,
+  CONF_REG  = 0x01U,
+  THYST_REG = 0x02U,
+  TOS_REG   = 0x03U
+} pointer_value_type_t;
+
+// ratio between temp value and temp
+#define TEMP_CONVERSION 0.125f
+
+// Personal Defines End --------------
+
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
 
@@ -34,18 +47,19 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   
   // write:
   uint8_t pointerBuf = TEMP_REG;
-  error_code_t sendErr = i2cSendTo(devAddr, &pointerBuf, 1);
-  if (sendErr != ERR_CODE_SUCCESS)
+  error_code_t i2c_error;
+  i2c_error = i2cSendTo(devAddr, &pointerBuf, 1);
+  if (i2c_error != ERR_CODE_SUCCESS)
   {
-    return sendErr;
+    return i2c_error;
   }
 
   // read:
   uint8_t tempBuf[2];
-  error_code_t recivErr = i2cReceiveFrom(devAddr, &tempBuf, 2);
-  if (recivErr != ERR_CODE_SUCCESS)
+  i2c_error = i2cReceiveFrom(devAddr, &tempBuf, 2);
+  if (i2c_error != ERR_CODE_SUCCESS)
   {
-    return recivErr;
+    return i2c_error;
   }
   tempBuf[1] = (tempBuf[1] & 0xE0U); // masking useless bits, cuz y not :)
   int16_t tempIn = tempBuf[0] << 8 | tempBuf[1];

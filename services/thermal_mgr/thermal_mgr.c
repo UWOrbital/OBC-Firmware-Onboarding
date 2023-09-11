@@ -50,8 +50,8 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
     return ERR_CODE_INVALID_ARG;
 
   if( xQueueSend(thermalMgrQueueHandle,
-                ( void * )event,
-                ( TickType_t ) 10) == errQUEUE_FULL)
+                ( void * ) event,
+                ( TickType_t ) 0) == errQUEUE_FULL)
   {
     return ERR_CODE_QUEUE_FULL;
   }
@@ -60,38 +60,28 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
-  float tempC;
   thermal_mgr_event_t eventCall;
-
-  error_code_t errTemp = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC);
-  if (errTemp != ERR_CODE_SUCCESS)
-    printConsole("Error reading Temp in OS Handler");
-    //logging for good measure
-
-  if (tempC > LM75BD_DEFAULT_HYST_THRESH)
-    eventCall.type = OVER_TMP_EVENT_CMD;
-  else
-    eventCall.type = SAFE_OPERATION_CMD;
-
+  eventCall.type = OS_INTERRUPT_EVENT;
+  
   error_code_t errEvent = thermalMgrSendEvent(&eventCall);
   if (errEvent != ERR_CODE_SUCCESS)
     printConsole("Error sending event in OS Handler");
-    //logging for good measure
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
-  float tempC = 0;
   thermal_mgr_event_t eventIn;
-  error_code_t errIn;
 
   while (1) {
     if(xQueueReceive(thermalMgrQueueHandle,
                      &eventIn,
-                     (TickType_t) 10) == pdTRUE)
+                     (TickType_t) 10000) == pdTRUE)
     {
       if (eventIn.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD)
       {
+        
+        error_code_t errIn;
+        float tempC = 0;
         errIn = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC);
         if (errIn != ERR_CODE_SUCCESS)
           printConsole("Error reading Temp in Thermal Manager");
@@ -99,11 +89,20 @@ static void thermalMgr(void *pvParameters) {
         addTemperatureTelemetry(tempC);
       }
 
-      else if (eventIn.type == OVER_TMP_EVENT_CMD)
-        overTemperatureDetected();
+      else if (eventIn.type == OS_INTERRUPT_EVENT)
+      {
+        float tempC;
+        error_code_t errTemp = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC);
 
-      else if (eventIn.type == SAFE_OPERATION_CMD)
-        safeOperatingConditions();
+        if (errTemp != ERR_CODE_SUCCESS)
+          printConsole("Error reading Temp while handling OS interrupt");
+
+        if (tempC > LM75BD_DEFAULT_HYST_THRESH)
+          overTemperatureDetected();        
+        else
+          safeOperatingConditions();
+
+      }
     }
   }
 }
