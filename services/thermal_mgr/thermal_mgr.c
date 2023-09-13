@@ -85,7 +85,7 @@ static void thermalMgr(void *pvParameters) {
         addTemperatureTelemetry(tempC);
       }
 
-      else if (eventIn.type == OS_INTERRUPT_EVENT)
+      else if (eventIn.type == THERMAL_MGR_EVENT_OS_INTERRUPT)
       {
         float tempC = 0;
         error_code_t errTemp = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC);
