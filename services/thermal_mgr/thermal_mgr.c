@@ -61,11 +61,9 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 void osHandlerLM75BD(void) {
   /* Implement this function */
   thermal_mgr_event_t eventCall;
-  eventCall.type = OS_INTERRUPT_EVENT;
+  eventCall.type = THERMAL_MGR_EVENT_OS_INTERRUPT;
   
   error_code_t errEvent = thermalMgrSendEvent(&eventCall);
-  if (errEvent != ERR_CODE_SUCCESS)
-    printConsole("Error sending event in OS Handler");
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -79,11 +77,9 @@ static void thermalMgr(void *pvParameters) {
     {
       if (eventIn.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD)
       {
-        
-        error_code_t errIn;
         float tempC = 0;
-        errIn = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC);
-        if (errIn != ERR_CODE_SUCCESS)
+        error_code_t errTemp = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC);
+        if (errTemp != ERR_CODE_SUCCESS)
           printConsole("Error reading Temp in Thermal Manager");
         
         addTemperatureTelemetry(tempC);
@@ -91,7 +87,7 @@ static void thermalMgr(void *pvParameters) {
 
       else if (eventIn.type == OS_INTERRUPT_EVENT)
       {
-        float tempC;
+        float tempC = 0;
         error_code_t errTemp = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC);
 
         if (errTemp != ERR_CODE_SUCCESS)
