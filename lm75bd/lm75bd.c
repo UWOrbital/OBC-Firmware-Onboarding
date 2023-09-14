@@ -3,7 +3,7 @@
 #include "errors.h"
 
 //include sys/i2c/i2c_io.h
-#include "../sys/i2c/i2c_io.h"
+#include "i2c_io.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -11,7 +11,7 @@
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
-#define LM75BD_REG_TEMP_BUF 0b00000000 //bit to be sent to buf
+#define LM75BD_REG_TEMP_BUF 0x00 //bit to be sent to buf
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
@@ -36,7 +36,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   if (temp == NULL) return ERR_CODE_INVALID_ARG;
   /* Implement this driver function */
 
-  uint8_t temp_reg = 0b00000000;
+  uint8_t temp_reg = LM75BD_REG_TEMP_BUF;
 
   //send 8 bits
   errCode = i2cSendTo(LM75BD_OBC_I2C_ADDR, &temp_reg, 1);
