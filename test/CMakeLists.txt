@@ -20,6 +20,7 @@ target_include_directories(${TEST_BINARY}
     ${CMAKE_SOURCE_DIR}/sys
     ${CMAKE_SOURCE_DIR}/sys/i2c
     ${CMAKE_SOURCE_DIR}/sys/console
+    ${CMAKE_SOURCE_DIR}/sys/logging
 )
 
 target_link_libraries(${TEST_BINARY} PRIVATE
