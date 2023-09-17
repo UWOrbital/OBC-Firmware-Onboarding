@@ -43,6 +43,10 @@ typedef enum { LOG_TRACE, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_FATAL, L
     }                                      \
   } while (0)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Initialize the logger
  */
@@ -67,3 +71,7 @@ void logSetLevel(log_level_t newLogLevel);
  *
  */
 error_code_t logLog(log_level_t msgLevel, const char *file, uint32_t line, const char *s, ...);
+
+#ifdef __cplusplus
+}
+#endif
