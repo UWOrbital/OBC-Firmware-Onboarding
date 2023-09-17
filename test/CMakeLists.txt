@@ -2,8 +2,7 @@ set(TEST_BINARY onboarding-tests)
 
 set(TEST_DEPENDENCIES
     ${CMAKE_SOURCE_DIR}/lm75bd/lm75bd.c
-    ${CMAKE_SOURCE_DIR}/sys/logging/logging.c
-    ${CMAKE_SOURCE_DIR}/sys/console_io/console.c
+    ${CMAKE_SOURCE_DIR}/sys/logging/mock_logging.c
 )
 
 set(TEST_SOURCES
