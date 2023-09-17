@@ -7,6 +7,7 @@ set(TEST_DEPENDENCIES
 set(TEST_SOURCES
     ${CMAKE_SOURCE_DIR}/test/main.cpp
     ${CMAKE_SOURCE_DIR}/test/test_driver.cpp
+    ${CMAKE_SOURCE_DIR}/test/mock_logging.c
 )
 
 set(TEST_SOURCES ${TEST_SOURCES} ${TEST_DEPENDENCIES})
@@ -19,7 +20,8 @@ target_include_directories(${TEST_BINARY}
     ${CMAKE_SOURCE_DIR}/lm75bd
     ${CMAKE_SOURCE_DIR}/sys
     ${CMAKE_SOURCE_DIR}/sys/i2c
-    ${CMAKE_SOURCE_DIR}/sys/console
+    ${CMAKE_SOURCE_DIR}/sys/console_io
+    ${CMAKE_SOURCE_DIR}/sys/logging
 )
 
 target_link_libraries(${TEST_BINARY} PRIVATE
