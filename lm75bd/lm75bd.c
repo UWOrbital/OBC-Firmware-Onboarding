@@ -1,6 +1,7 @@
 #include "lm75bd.h"
 #include "i2c_io.h"
 #include "errors.h"
+#include "logging.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -14,10 +15,8 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
   if (config == NULL) return ERR_CODE_INVALID_ARG;
 
-  errCode = writeConfigLM75BD(config->devAddr, config->osFaultQueueSize, config->osPolarity,
-                                         config->osOperationMode, config->devOperationMode);
-  
-  if (errCode != ERR_CODE_SUCCESS) return errCode;
+  RETURN_IF_ERROR_CODE(writeConfigLM75BD(config->devAddr, config->osFaultQueueSize, config->osPolarity,
+                                         config->osOperationMode, config->devOperationMode));
 
   // Assume that the overtemperature and hysteresis thresholds are already set
   // Hysteresis: 75 degrees Celsius
@@ -67,7 +66,7 @@ error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_
   buff[1] |= (osOperationMode << 1);
   buff[1] |= devOperationMode;
 
-  errCode = i2cSendTo(LM75BD_OBC_I2C_ADDR, buff, CONF_WRITE_BUFF_SIZE);
+  //errCode = i2cSendTo(LM75BD_OBC_I2C_ADDR, buff, CONF_WRITE_BUFF_SIZE);
   if (errCode != ERR_CODE_SUCCESS) return errCode;
 
   return ERR_CODE_SUCCESS;
