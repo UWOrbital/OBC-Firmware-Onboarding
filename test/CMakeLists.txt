@@ -3,6 +3,7 @@ set(TEST_BINARY onboarding-tests)
 set(TEST_DEPENDENCIES
     ${CMAKE_SOURCE_DIR}/lm75bd/lm75bd.c
     ${CMAKE_SOURCE_DIR}/sys/logging/logging.c
+    ${CMAKE_SOURCE_DIR}/sys/logging/console.c
 )
 
 set(TEST_SOURCES
@@ -20,7 +21,7 @@ target_include_directories(${TEST_BINARY}
     ${CMAKE_SOURCE_DIR}/lm75bd
     ${CMAKE_SOURCE_DIR}/sys
     ${CMAKE_SOURCE_DIR}/sys/i2c
-    ${CMAKE_SOURCE_DIR}/sys/console
+    ${CMAKE_SOURCE_DIR}/sys/console_io
     ${CMAKE_SOURCE_DIR}/sys/logging
 )
 
