@@ -56,13 +56,6 @@ void initLogger(void);
 void logSetLevel(log_level_t newLogLevel);
 
 /**
- * @brief Set the output location
- *
- * @param newOutputLocation The new output location
- */
-void logSetOutputLocation(log_output_location_t newOutputLocation);
-
-/**
  * @brief Log a message
  *
  * @param msgLevel				Level of the message
