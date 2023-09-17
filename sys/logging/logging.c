@@ -53,5 +53,5 @@ error_code_t logLog(log_level_t msgLevel, const char *file, uint32_t line, const
 
   printConsole((unsigned char *)buf);
 
-  return ERR_CODE_UNKNOWN;
+  return ERR_CODE_SUCCESS;
 }
