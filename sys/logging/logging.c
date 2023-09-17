@@ -16,21 +16,17 @@
 static const char *LEVEL_STRINGS[] = {"TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
 
 static log_level_t logLevel;
-static log_output_location_t outputLocation;
 
 void initLogger(void) {
   logLevel = LOG_DEFAULT_LEVEL;
-  outputLocation = LOG_DEFAULT_OUTPUT_LOCATION;
 }
 
 void logSetLevel(log_level_t newLogLevel) { logLevel = newLogLevel; }
 
-void logSetOutputLocation(log_output_location_t newOutputLocation) { outputLocation = newOutputLocation; }
-
 error_code_t logLog(log_level_t msgLevel, const char *file, uint32_t line, const char *s, ...) {
-  if (msgLevel < logLevel) return OBC_ERR_CODE_LOG_MSG_SILENCED;
+  if (msgLevel < logLevel) return ERR_CODE_LOG_MSG_SILENCED;
 
-  if (file == NULL || s == NULL) return OBC_ERR_CODE_INVALID_ARG;
+  if (file == NULL || s == NULL) return ERR_CODE_INVALID_ARG;
 
   int ret = 0;
 
@@ -40,27 +36,22 @@ error_code_t logLog(log_level_t msgLevel, const char *file, uint32_t line, const
   va_start(args, s);
   ret = vsnprintf(msgbuf, MAX_MSG_SIZE, s, args);
   va_end(args);
-  if (ret < 0) return OBC_ERR_CODE_INVALID_ARG;
-  if ((uint32_t)ret >= MAX_MSG_SIZE) return OBC_ERR_CODE_BUFF_TOO_SMALL;
+  if (ret < 0) return ERR_CODE_INVALID_ARG;
+  if ((uint32_t)ret >= MAX_MSG_SIZE) return ERR_CODE_BUFF_TOO_SMALL;
 
   // File & line number
   char infobuf[MAX_FNAME_LINENUM_SIZE] = {0};
   ret = snprintf(infobuf, MAX_FNAME_LINENUM_SIZE, "%-5s -> %s:%lu", LEVEL_STRINGS[msgLevel], file, line);
-  if (ret < 0) return OBC_ERR_CODE_INVALID_ARG;
-  if ((uint32_t)ret >= MAX_FNAME_LINENUM_SIZE) return OBC_ERR_CODE_BUFF_TOO_SMALL;
+  if (ret < 0) return ERR_CODE_INVALID_ARG;
+  if ((uint32_t)ret >= MAX_FNAME_LINENUM_SIZE) return ERR_CODE_BUFF_TOO_SMALL;
 
   // Prepare entire output
   char buf[MAX_LOG_SIZE] = {0};
   ret = snprintf(buf, MAX_LOG_SIZE, "%s - %s\r\n", infobuf, msgbuf);
   if (ret < 0) return OBC_ERR_CODE_INVALID_ARG;
-  if ((uint32_t)ret >= MAX_LOG_SIZE) return OBC_ERR_CODE_BUFF_TOO_SMALL;
+  if ((uint32_t)ret >= MAX_LOG_SIZE) return ERR_CODE_BUFF_TOO_SMALL;
 
-  if (outputLocation == LOG_TO_UART) {
-    error_code_t retSci = printConsole((unsigned char *)buf);
-    return retSci;
-  } else if (outputLocation == LOG_TO_SDCARD) {
-    // implement when SD card driver is written
-  }
+  printConsole((unsigned char *)buf);
 
-  return OBC_ERR_CODE_UNKNOWN;
+  return ERR_CODE_UNKNOWN;
 }

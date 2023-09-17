@@ -6,18 +6,6 @@
 #include <stdarg.h>
 
 /**
- * @enum log_output_location_t
- * @brief Log output location enum.
- *
- * Enum containing all locations to output logs to.
- */
-typedef enum { LOG_TO_SDCARD, LOG_TO_UART } log_output_location_t;
-
-#ifndef LOG_DEFAULT_OUTPUT_LOCATION
-#define LOG_DEFAULT_OUTPUT_LOCATION LOG_TO_UART
-#endif
-
-/**
  * @enum log_level_t
  * @brief Log levels enum.
  *
