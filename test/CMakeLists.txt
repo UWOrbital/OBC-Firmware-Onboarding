@@ -2,12 +2,12 @@ set(TEST_BINARY onboarding-tests)
 
 set(TEST_DEPENDENCIES
     ${CMAKE_SOURCE_DIR}/lm75bd/lm75bd.c
-    ${CMAKE_SOURCE_DIR}/sys/logging/mock_logging.c
 )
 
 set(TEST_SOURCES
     ${CMAKE_SOURCE_DIR}/test/main.cpp
     ${CMAKE_SOURCE_DIR}/test/test_driver.cpp
+    ${CMAKE_SOURCE_DIR}/test/mock_logging.c
 )
 
 set(TEST_SOURCES ${TEST_SOURCES} ${TEST_DEPENDENCIES})
