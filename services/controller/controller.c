@@ -43,7 +43,7 @@ static void controller(void *pvParameters) {
   initLogger();
 
   static lm75bd_config_t config = {0};
-  //config.devAddr = LM75BD_OBC_I2C_ADDR;
+  config.devAddr = LM75BD_OBC_I2C_ADDR;
   config.osFaultQueueSize = 1;
   config.osPolarity = LM75BD_OS_POL_ACTIVE_LOW;
   config.osOperationMode = LM75BD_OS_OP_MODE_INT;
