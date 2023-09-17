@@ -41,8 +41,10 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   tempReading = tempReading | buf2[1];
   tempReading = tempReading >> 5;
   /* If 11th bit (MSB) is less than 1 (1024), then assigns temp the value of tempReading the formula for + temp reading
-  Otherwise, inverts the last 11 bits of tempReading and finds the two's complement for the - temp reading
+  Otherwise, inverts the last 11 bits of tempReading and finds the two's complement for the - temp reading.
+  Divides all values by 8.0.
   */
+  
   if (tempReading < 1024)
   {
     *temp = (float)tempReading / 8.0;
@@ -51,7 +53,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   else
   {
     tempReading  = tempReading ^ 0b0000011111111111;
-    *temp = (float)(-(tempReading + 1.0));
+    *temp = (float)((-(tempReading + 1.0)) / 8.0);
   }
 
 
