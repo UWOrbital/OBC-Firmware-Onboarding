@@ -1,0 +1,1 @@
+/usr/bin/g++ CMakeFiles/onboarding-tests.dir/main.cpp.o CMakeFiles/onboarding-tests.dir/test_driver.cpp.o CMakeFiles/onboarding-tests.dir/__/lm75bd/lm75bd.c.o -o onboarding-tests  ../lib/libgtest_main.a ../lib/libgtest.a 

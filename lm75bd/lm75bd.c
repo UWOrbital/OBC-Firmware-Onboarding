@@ -27,8 +27,36 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
-  
+  uint8_t * buf1 = (uint8_t *) malloc(sizeof(uint8_t));
+  uint8_t * buf2 = (uint8_t *) malloc(sizeof(uint8_t) * 2);
+  buf1[0] = 0b00000000;
+  i2cSendTo(devAddr, buf1 , 1);
+  i2cReceiveFrom(devAddr, buf2, 2);
+  uint16_t tempReading = 0b0000000000000000;
+  /* Sets the first 8 bits of tempReading to the MSB in index 0 of buf2 (which stored the temperature data from the sensor)
+    then shifts the byte 8 to the left so it occupies the first 8 bits
+  )*/
+  tempReading = tempReading | buf2[0];
+  tempReading = tempReading << 8;
+  tempReading = tempReading | buf2[1];
+  tempReading = tempReading >> 5;
+  /* If 11th bit (MSB) is less than 1 (1024), then assigns temp the value of tempReading the formula for + temp reading
+  Otherwise, inverts the last 11 bits of tempReading and finds the two's complement for the - temp reading
+  */
+  if (tempReading < 1024)
+  {
+    *temp = (float)tempReading / 8.0;
+  }
+
+  else
+  {
+    tempReading  = tempReading ^ 0b0000011111111111;
+    *temp = (float)(-(tempReading + 1.0));
+  }
+
+
+  free(buf1);
+  free(buf2);
   return ERR_CODE_SUCCESS;
 }
 

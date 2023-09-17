@@ -1,0 +1,58 @@
+Start testing: Sep 16 20:23 EDT
+----------------------------------------------------------
+1/1 Testing: onboarding-tests
+1/1 Test: onboarding-tests
+Command: "/mnt/c/users/adept/OBC-Firmware-Onboarding/test/test/onboarding-tests"
+Directory: /mnt/c/users/adept/OBC-Firmware-Onboarding/test/test
+"onboarding-tests" start time: Sep 16 20:23 EDT
+Output:
+----------------------------------------------------------
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from TestLm75bdDriver
+[ RUN      ] TestLm75bdDriver.TestWriteConfigLm75bdSuccess
+/mnt/c/Users/adept/OBC-Firmware-Onboarding/test/test_driver.cpp:49: Failure
+Expected equality of these values:
+  writeConfigLM75BD(0x4FU, 1, 0, 1, 0)
+    Which is: 200
+  ERR_CODE_SUCCESS
+    Which is: 0
+[  FAILED  ] TestLm75bdDriver.TestWriteConfigLm75bdSuccess (0 ms)
+[ RUN      ] TestLm75bdDriver.TestReadTempLm75bdPosTempSuccess
+/mnt/c/Users/adept/OBC-Firmware-Onboarding/test/test_driver.cpp:85: Failure
+Expected equality of these values:
+  temp
+    Which is: 3.07585e-41
+  127.0f
+    Which is: 127
+[  FAILED  ] TestLm75bdDriver.TestReadTempLm75bdPosTempSuccess (0 ms)
+[ RUN      ] TestLm75bdDriver.TestReadTempLm75bdNegTempSuccess
+/mnt/c/Users/adept/OBC-Firmware-Onboarding/test/test_driver.cpp:101: Failure
+Expected equality of these values:
+  temp
+    Which is: 3.07585e-41
+  -25.0f
+    Which is: -25
+[  FAILED  ] TestLm75bdDriver.TestReadTempLm75bdNegTempSuccess (0 ms)
+[ RUN      ] TestLm75bdDriver.TestReadTempLm75bdCallSequence
+[       OK ] TestLm75bdDriver.TestReadTempLm75bdCallSequence (0 ms)
+[----------] 4 tests from TestLm75bdDriver (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+[  FAILED  ] 3 tests, listed below:
+[  FAILED  ] TestLm75bdDriver.TestWriteConfigLm75bdSuccess
+[  FAILED  ] TestLm75bdDriver.TestReadTempLm75bdPosTempSuccess
+[  FAILED  ] TestLm75bdDriver.TestReadTempLm75bdNegTempSuccess
+
+ 3 FAILED TESTS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Failed.
+"onboarding-tests" end time: Sep 16 20:23 EDT
+"onboarding-tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Sep 16 20:23 EDT
