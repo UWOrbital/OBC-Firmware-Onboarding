@@ -6,6 +6,9 @@
 #include <string.h>
 #include <math.h>
 
+#define SIGN_BIT_MASK       0x0400
+#define TEMPERATURE_MASK    0x03FF
+
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
 
@@ -43,8 +46,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) { // Question 1. what 
     // error_code_t i2cReceiveFrom(uint8_t sAddr, uint8_t *buf, uint16_t numBytes);
 
     
-    // uint16_t numBytes = 2; 
-    errCode = i2cSendTo(devAddr,&pointer_register_value, 1U); // read the temperature from the sensor
+    errCode = i2cSendTo(devAddr,&pointer_register_value, 1); // read the temperature from the sensor
 		if (errCode != ERR_CODE_SUCCESS) return errCode;
 	
 		uint8_t temp_raw[2]; // Temperature data is 16 bits (2 bytes) 
@@ -73,11 +75,11 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) { // Question 1. what 
     //     *temp = -((temp_int) >> 5) * 0.125; 
     // }
 
-    const uint16_t sign_bit_mask = 0x0400;
-    const uint16_t temperature_bits_mask = 0x03FF;
+    // const uint16_t sign_bit_mask = 0x0400; // #define SIGN_BIT_MASK       0x0400
+    // const uint16_t temperature_bits_mask = 0x03FF; //#define TEMPERATURE_MASK    0x03FF
 
     // Extract the sign bit
-    uint16_t sign_bit = temp_data & sign_bit_mask;
+    uint16_t sign_bit = temp_data & SIGN_BIT_MASK;
 
     if (sign_bit == 0) {
         // Temperature is positive

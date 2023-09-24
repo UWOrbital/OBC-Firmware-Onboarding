@@ -44,29 +44,30 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 }
 
+
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-  BaseType_t send = xQueueSend(thermalMgrQueueHandle, event, 0); // 0 ticks to wait 
-  if (send != pdPASS) return ERR_CODE_INVALID_QUEUE_MSG/*failed case*/;
+  if(event == NULL) return ERR_CODE_INVALID_ARG; 
+  if(thermalMgrQueueHandle == NULL) return ERR_CODE_INVALID_QUEUE_MSG;
+  if (xQueueSend(thermalMgrQueueHandle, event, 0) != pdPASS) return ERR_CODE_INVALID_QUEUE_MSG/*failed case*/;
+  // check to make sure the queue has been created 
   return ERR_CODE_SUCCESS;
 }
 
+
+// you currently have 1 change requests left to make 
+
+
 void osHandlerLM75BD(void) { 
   /* Implement this function */
-  float* temperature;
-  // Question: a, I using the correct devAddr 
-    error_code_t errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, temperature); // Use your readTempLM75BD function
-
-    if (temperature > HYS_THRESHOLD) {
-        // Temperature is above or equal to the overtemperature threshold
-        overTemperatureDetected();
-    } else if (temperature <= HYS_THRESHOLD) {
-        // Temperature is below or equal to the hysteresis threshold
-        safeOperatingConditions(); 
-    }
+  thermal_mgr_event_t osInterruptEvent;
+  osInterruptEvent.type = THERMAL_MGR_EVENT_OS_INTERRUPT; // Set the event type to the newly defined type
+  thermalMgrSendEvent(&osInterruptEvent); // Send the event to the queue
 }
 
-static void thermalMgr(void *pvParameters) { // Kemi: fix this also 
+
+
+static void thermalMgr(void *pvParameters) { 
   /* Implement this task */
   while (1) {
     // Question , what do I declare this as? 
@@ -75,17 +76,30 @@ static void thermalMgr(void *pvParameters) { // Kemi: fix this also
     // Task should only perform an action if it receives an event through the thermal manager queue
 		if (xQueueReceive(thermalMgrQueueHandle, &receivedEvent, portMAX_DELAY) == pdPASS) { // set the addresses for this 
 			 // Check if it's the temperature measure event
-       // Kemi: Obtain type how
 			 if (receivedEvent.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
 			     // collect temperature data using drive fcn 
-			     float* temperature; 
-           // Kemi: Obtain devAddr Question, is this the correct devAddr
-					 error_code_t errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, temperature);
-					 if (errCode != ERR_CODE_SUCCESS) /*do something*/;
+			     float temperature; 
+					 error_code_t errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temperature);
 			     // Send it as telemetry
-			     addTemperatureTelemetry(*temperature);
+           // only add telemetry temperature if the reading was a success
+			     if(errCode == ERR_CODE_SUCCESS) addTemperatureTelemetry(temperature);
+			  }
+        if (receivedEvent.type == THERMAL_MGR_EVENT_OS_INTERRUPT) {
+			     // Kemi: Note that, if you decide to do this, you’ll need to define a new event type to send to the thermal manager queue.
+          // Team Lead -> u dont necessarily need to read the temperature in the OShandler, u just need a way to communicate that an 
+          // interrupt has happened so that u can read the temperature and deal with it from outside to OS handler
+          float temperature; 
+          error_code_t errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temperature); // Use your readTempLM75BD function
+          if (temperature > HYS_THRESHOLD) {
+              // Temperature is above or equal to the overtemperature thresholdF
+              overTemperatureDetected();
+          } else if (temperature <= HYS_THRESHOLD) {
+              // Temperature is below or equal to the hysteresis threshold
+              safeOperatingConditions(); 
+          }
 			  }
 		}
+    
   }
 }
 
@@ -101,10 +115,3 @@ void safeOperatingConditions(void) {
   printConsole("Returned to safe operating conditions!\n");
 }
 
-
-
-//  Questions 
-//  1. I do not know if I am passing the right address to the readTempLM75BD() function for the devAddr, I think I am reading from the wrong devAddr 
-//  2. I am struggling with the bitwise conversions and the celcius conversion 
-//  3. thermalMgrSendEvent
-//  4. I need help understanding how to test 
