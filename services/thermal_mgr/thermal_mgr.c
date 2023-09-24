@@ -48,7 +48,7 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
   if(event == NULL) return ERR_CODE_INVALID_ARG; 
-  if(thermalMgrQueueHandle == NULL) return ERR_CODE_INVALID_QUEUE_MSG;
+  if(thermalMgrQueueHandle == NULL) return ERR_CODE_QUEUE_FULL;
   if (xQueueSend(thermalMgrQueueHandle, event, 0) != pdPASS) return ERR_CODE_INVALID_QUEUE_MSG/*failed case*/;
   // check to make sure the queue has been created 
   return ERR_CODE_SUCCESS;
@@ -90,13 +90,16 @@ static void thermalMgr(void *pvParameters) {
           // interrupt has happened so that u can read the temperature and deal with it from outside to OS handler
           float temperature; 
           error_code_t errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temperature); // Use your readTempLM75BD function
-          if (temperature > HYS_THRESHOLD) {
-              // Temperature is above or equal to the overtemperature thresholdF
-              overTemperatureDetected();
-          } else if (temperature <= HYS_THRESHOLD) {
-              // Temperature is below or equal to the hysteresis threshold
-              safeOperatingConditions(); 
-          }
+           if(errCode == ERR_CODE_SUCCESS){
+              if (temperature > HYS_THRESHOLD) {
+                  // Temperature is above or equal to the overtemperature thresholdF
+                  overTemperatureDetected();
+              } else if (temperature <= HYS_THRESHOLD) {
+                  // Temperature is below or equal to the hysteresis threshold
+                  safeOperatingConditions(); 
+              }
+           }
+          
 			  }
 		}
     

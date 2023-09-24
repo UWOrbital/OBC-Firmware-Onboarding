@@ -37,7 +37,6 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) { // Question 1. what 
 
     // to implement this we need to select the sensor's internaltemeprature register (7.4.1)
 	  uint8_t pointer_register_value = 0x00; // Point to the Temperature Register
-		devAddr = LM75BD_OBC_I2C_ADDR; 
 		// once selected we can read temperature from the sensor 
 		// errCode = i2cSendTo(LM75BD_OBC_I2C_ADDR, pointer_register_value, 2); 
 
@@ -46,7 +45,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) { // Question 1. what 
     // error_code_t i2cReceiveFrom(uint8_t sAddr, uint8_t *buf, uint16_t numBytes);
 
     
-    errCode = i2cSendTo(devAddr,&pointer_register_value, 1); // read the temperature from the sensor
+    errCode = i2cSendTo(devAddr, &pointer_register_value, 1); // read the temperature from the sensor
 		if (errCode != ERR_CODE_SUCCESS) return errCode;
 	
 		uint8_t temp_raw[2]; // Temperature data is 16 bits (2 bytes) 
