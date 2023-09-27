@@ -30,8 +30,8 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   uint8_t buf1[1];
   uint8_t buf2[2];
   buf1[0] = 0b00000000;
-  i2cSendTo(devAddr, &buf1 , 1);
-  i2cReceiveFrom(devAddr, &buf2, 2);
+  i2cSendTo(devAddr, buf1 , 1);
+  i2cReceiveFrom(devAddr, buf2, 2);
   uint16_t tempReading = 0b0000000000000000;
   /* Sets the first 8 bits of tempReading to the MSB in index 0 of buf2 (which stored the temperature data from the sensor)
     then shifts the byte 8 to the left so it occupies the first 8 bits
