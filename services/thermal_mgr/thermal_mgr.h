@@ -5,12 +5,14 @@
 
 typedef enum {
   THERMAL_MGR_EVENT_MEASURE_TEMP_CMD,
-  
+  THERMAL_MGR_EVENT_CHECK_FOR_INTPT,
 } thermal_mgr_event_type_t;
 
 typedef struct {
   thermal_mgr_event_type_t type;
 } thermal_mgr_event_t;
+
+
 
 #ifdef __cplusplus
 extern "C" {
