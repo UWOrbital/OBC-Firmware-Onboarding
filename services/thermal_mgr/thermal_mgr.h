@@ -5,9 +5,12 @@
 
 typedef enum {
   THERMAL_MGR_EVENT_MEASURE_TEMP_CMD,
+  THERMAL_MGR_EVENT_INTERRUPT,
   
 } thermal_mgr_event_type_t;
 
+#define OVER_TEMPERATURE 80.0F
+#define HYSTERESIS_TEMPERATURE 75.0F
 typedef struct {
   thermal_mgr_event_type_t type;
 } thermal_mgr_event_t;
