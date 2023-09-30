@@ -13,7 +13,6 @@
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
-
   if (config == NULL) return ERR_CODE_INVALID_ARG;
 
   RETURN_IF_ERROR_CODE(writeConfigLM75BD(config->devAddr, config->osFaultQueueSize, config->osPolarity,
@@ -32,19 +31,14 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   // temp - Pointer to float to store the temperature in degrees Celsius
   if (temp == NULL) return ERR_CODE_INVALID_ARG;
 
-  uint8_t temp_register= LM75BD_REG_TEMP;
-  uint8_t temp_data[2]; 
-
-  error_code_t err;
-  err = i2cSendTo(devAddr, &temp_register, 1);
-
-  if (err!=ERR_CODE_SUCCESS){return err;}
-  
-  err = i2cReceiveFrom(devAddr, temp_data, 2);
-  if (err!= ERR_CODE_SUCCESS){return err;}
+  uint8_t tempRegister= LM75BD_REG_TEMP;
+  uint8_t tempData[2] = {0}; 
+  error_code_t errCode;
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &tempRegister, 1));
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, tempData, 2));
     
   //temperature calculation
-  int16_t tempBytes = (temp_data[0] << 8 | temp_data[1]) >> 5; //11-bit
+  int16_t tempBytes = (tempData[0] << 8 | tempData[1]) >> 5; //11-bit
   
   if (tempBytes & 0x0400) {
         // Temp is negative

@@ -63,11 +63,10 @@ static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   if (thermalMgrQueueHandle!=NULL){
     thermal_mgr_event_t bufferEvent;
-    error_code_t error;
-    float temp;
     while (1) {
       if (xQueueReceive(thermalMgrQueueHandle, &bufferEvent, portMAX_DELAY)==pdTRUE) {
-
+        error_code_t error;
+        float temp;
         if(bufferEvent.type==THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
 
           error = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
