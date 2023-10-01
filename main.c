@@ -7,6 +7,7 @@ int main(void) {
   initController();
   
   vTaskStartScheduler();
+  // test
 
   return 0;
 }
