@@ -42,40 +42,59 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
-  xQueueSend(thermalMgrQueueHandle, event, 0);
+  if (event == NULL)
+  {
+    return ERR_CODE_INVALID_ARG;
+  }
+  if (thermalMgrQueueHandle == NULL)
+  {
+    return ERR_CODE_INVALID_STATE;
+  }
+  if (xQueueSend(thermalMgrQueueHandle, event, 0) == pdFALSE)
+  {
+    return ERR_CODE_QUEUE_FULL;
+  }
+  
 
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
   thermal_mgr_event_t event;
-  event.type = THERMAL_MGR_EVENT_CHECK_FOR_INTPT;
+  event.type = THERMAL_MGR_EVENT_OT_CHECK;
   thermalMgrSendEvent(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   thermal_mgr_event_t event;
+  error_code_t errCode;
   while (1) {
-    if (xQueueReceive(thermalMgrQueueHandle, &event, 0))
+    if (xQueueReceive(thermalMgrQueueHandle, &event, 5) == pdTRUE)
     {
       if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD)
       {
         float temp;
-        readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
-        addTemperatureTelemetry(temp);
+        error_code_t errRead = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+        if (errRead == ERR_CODE_SUCCESS)
+        {
+          addTemperatureTelemetry(temp);
+        }
       }
-      else if (event.type == THERMAL_MGR_EVENT_CHECK_FOR_INTPT)
+      else if (event.type == THERMAL_MGR_EVENT_OT_CHECK)
       {
         float temp;
-        readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
-        if (temp > 75)
+        error_code_t errRead = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+        if (errRead == ERR_CODE_SUCCESS)
         {
-          overTemperatureDetected();
-        }
-        if (temp <= 75)
-        {
-          safeOperatingConditions();
+          if (temp > LM75BD_DEFAULT_HYST_THRESH)
+          {
+            overTemperatureDetected();
+          }
+          else
+          {
+            safeOperatingConditions();
+          }
         }
       }
 

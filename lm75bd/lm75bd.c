@@ -27,19 +27,28 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  uint8_t buf1[1];
-  uint8_t buf2[2];
-  buf1[0] = 0b00000000;
-  i2cSendTo(devAddr, buf1 , 1);
-  i2cReceiveFrom(devAddr, buf2, 2);
-  uint16_t tempReading = 0b0000000000000000;
+  uint8_t bufRead[1];
+  uint8_t bufWrite[2];
+  bufRead[0] = 0;
+  if (temp == NULL)
+  {
+    return ERR_CODE_INVALID_ARG;
+  }
+  error_code_t sendResult = i2cSendTo(devAddr, bufRead , 1);
+  if (sendResult != ERR_CODE_SUCCESS)
+  {
+    return sendResult;
+  }
+  error_code_t receiveResult = i2cReceiveFrom(devAddr,bufWrite, 2);
+  if (receiveResult != ERR_CODE_SUCCESS)
+  {
+    return receiveResult;
+  }
+  int16_t tempReading = 0;
   /* Sets the first 8 bits of tempReading to the MSB in index 0 of buf2 (which stored the temperature data from the sensor)
     then shifts the byte 8 to the left so it occupies the first 8 bits
   )*/
-  tempReading = tempReading | buf2[0];
-  tempReading = tempReading << 8;
-  tempReading = tempReading | buf2[1];
-  tempReading = tempReading >> 5;
+  tempReading |= ((bufWrite[0] << 8) | bufWrite[1]) >> 5;
   /* If 11th bit (MSB) is less than 1 (1024), then assigns temp the value of tempReading the formula for + temp reading
   Otherwise, inverts the last 11 bits of tempReading and finds the two's complement for the - temp reading.
   Divides all values by 8.0.
@@ -47,13 +56,13 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   
   if (tempReading < 1024)
   {
-    *temp = (float)tempReading / 8.0;
+    *temp = (float)tempReading * 0.125;
   }
 
   else
   {
     tempReading  = tempReading ^ 0b0000011111111111;
-    *temp = (float)((-(tempReading + 1.0)) / 8.0);
+    *temp = (float)((-(tempReading + 1.0)) *0.125);
   }
   return ERR_CODE_SUCCESS;
 }
