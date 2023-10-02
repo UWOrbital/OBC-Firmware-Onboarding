@@ -19,6 +19,7 @@ elseif(CMAKE_BUILD_TYPE MATCHES FW)
         main.c
         sys/console_io/console.c
         sys/i2c/i2c_io.c
+        sys/logging/logging.c
         services/controller/controller.c
         
         lm75bd/lm75bd.c
@@ -33,6 +34,7 @@ elseif(CMAKE_BUILD_TYPE MATCHES FW)
         sys
         sys/i2c
         sys/console_io
+        sys/logging
         lm75bd
         services/controller
         services/thermal_mgr
