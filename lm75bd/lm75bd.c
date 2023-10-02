@@ -15,8 +15,10 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
   if (config == NULL) return ERR_CODE_INVALID_ARG;
 
-  RETURN_IF_ERROR_CODE(writeConfigLM75BD(config->devAddr, config->osFaultQueueSize, config->osPolarity,
-                                         config->osOperationMode, config->devOperationMode));
+  errCode = writeConfigLM75BD(config->devAddr, config->osFaultQueueSize, config->osPolarity,
+                                         config->osOperationMode, config->devOperationMode);
+  
+  if (errCode != ERR_CODE_SUCCESS) return errCode;
 
   // Assume that the overtemperature and hysteresis thresholds are already set
   // Hysteresis: 75 degrees Celsius
@@ -26,23 +28,15 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  uint8_t bufRead[1];
-  uint8_t bufWrite[2];
-  bufRead[0] = 0;
   if (temp == NULL)
   {
     return ERR_CODE_INVALID_ARG;
   }
-  error_code_t sendResult = i2cSendTo(devAddr, bufRead , 1);
-  if (sendResult != ERR_CODE_SUCCESS)
-  {
-    return sendResult;
-  }
-  error_code_t receiveResult = i2cReceiveFrom(devAddr,bufWrite, 2);
-  if (receiveResult != ERR_CODE_SUCCESS)
-  {
-    return receiveResult;
-  }
+  uint8_t bufRead[1] = {0};
+  uint8_t bufWrite[2] = {0};
+  error_code_t errCode;
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, bufRead , 1));
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr,bufWrite, 2));
   int16_t tempReading = 0;
   /* Sets the first 8 bits of tempReading to the MSB in index 0 of buf2 (which stored the temperature data from the sensor)
     then shifts the byte 8 to the left so it occupies the first 8 bits
