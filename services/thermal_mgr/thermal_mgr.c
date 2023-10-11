@@ -43,18 +43,39 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-
-  return ERR_CODE_SUCCESS;
+  if (event == NULL)
+    return ERR_CODE_INVALID_QUEUE_MSG;
+  if (xQueueSend(thermalMgrQueueHandle, event, (TickType_t )0) == pdTRUE)
+    return ERR_CODE_SUCCESS;
+  else
+    return ERR_CODE_UNKNOWN;
 }
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
+  thermal_mgr_event_t interruptEvent = {.type = THERMAL_MGR_EVENT_INTERRUPT};
+  thermalMgrSendEvent(&interruptEvent);
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
+  lm75bd_config_t params = *(lm75bd_config_t *)pvParameters;
+  thermal_mgr_event_t event;
+
   while (1) {
-    
+    if (xQueueReceive(thermalMgrQueueHandle, &event, (TickType_t )0) == pdTRUE){
+      float temp = 0;
+      readTempLM75BD(params.devAddr, &temp);
+      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
+        addTemperatureTelemetry(temp);
+      } else if (event.type == THERMAL_MGR_EVENT_INTERRUPT){
+        if (temp > 80){
+          overTemperatureDetected();
+        } else {
+          safeOperatingConditions();
+        }
+      }
+    }
   }
 }
 
