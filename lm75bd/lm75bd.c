@@ -48,13 +48,17 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
     return errCode;
 
   // Combines the 2 bytes into one 16 bit integer
-  int16_t tempData = (buffer[0] << 8) | buffer[1];
+  // and drops the 5 least siginificant bits
+  int16_t tempData = ((buffer[0] << 8) | buffer[1]) >> 5;
 
-  // Drops the 5 least significant bits
-  tempData >>= 5;
-
-  // Convert to Celsius
-  *temp = tempData * 0.125f;
+  // Temp value is negative
+    if (tempData & (1 << 10)) {
+        // Two's complement
+        tempData = (~(tempData) + 1) & 0b011111111111; 
+        *temp = -(tempData) * 0.125f;
+  } else {
+        *temp = (tempData) * 0.125f;
+  }
 
   return ERR_CODE_SUCCESS;
 }
