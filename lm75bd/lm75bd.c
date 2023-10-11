@@ -44,7 +44,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
   uint8_t buffer[2] = {0};
   errCode = i2cReceiveFrom(devAddr, buffer, 2);
 
-  if (errCode != ERR_CODE_QUEUE_FULL)
+  if (errCode != ERR_CODE_SUCCESS)
     return errCode;
 
   // Combines the 2 bytes into one 16 bit integer
