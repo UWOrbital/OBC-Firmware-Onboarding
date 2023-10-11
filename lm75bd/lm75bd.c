@@ -51,14 +51,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
   // and drops the 5 least siginificant bits
   int16_t tempData = ((buffer[0] << 8) | buffer[1]) >> 5;
 
-  // Temp value is negative
-    if (tempData & (1 << 10)) {
-        // Two's complement
-        tempData = (~(tempData) + 1) & 0b011111111111; 
-        *temp = -(tempData) * 0.125f;
-  } else {
-        *temp = (tempData) * 0.125f;
-  }
+  *temp = (float)(tempData) * 0.125f;
 
   return ERR_CODE_SUCCESS;
 }
