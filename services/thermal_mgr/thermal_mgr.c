@@ -74,7 +74,7 @@ static void thermalMgr(void *pvParameters)
     {
       if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD)
       {
-        errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempCelsius);
+        LOG_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempCelsius));
         if (errCode == ERR_CODE_SUCCESS)
         {
           addTemperatureTelemetry(tempCelsius);
@@ -83,7 +83,7 @@ static void thermalMgr(void *pvParameters)
 
       if (event.type == THERMAL_MGR_EVENT_INTERRUPT)
       {
-        errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempCelsius);
+        LOG_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempCelsius));
         if (errCode == ERR_CODE_SUCCESS)
         {
           if (tempCelsius > LM75BD_DEFAULT_HYST_THRESH)

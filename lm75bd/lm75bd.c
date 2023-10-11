@@ -34,22 +34,15 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
     return ERR_CODE_INVALID_ARG;
 
   error_code_t errCode;
-
   uint8_t tempRegister = LM75BD_REG_TEMP;
-  errCode = i2cSendTo(devAddr, &tempRegister, 1);
+  uint8_t tempBuf[2] = {0};
 
-  if (errCode != ERR_CODE_SUCCESS)
-    return errCode;
-
-  uint8_t buffer[2] = {0};
-  errCode = i2cReceiveFrom(devAddr, buffer, 2);
-
-  if (errCode != ERR_CODE_SUCCESS)
-    return errCode;
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &tempRegister, 1));
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, tempBuf, 2));
 
   // Combines the 2 bytes into one 16 bit integer
   // and drops the 5 least siginificant bits
-  int16_t tempData = ((buffer[0] << 8) | buffer[1]);
+  int16_t tempData = ((tempBuf[0] << 8) | tempBuf[1]);
   tempData >>= 5;
 
   *temp = (float)(tempData) * 0.125f;
