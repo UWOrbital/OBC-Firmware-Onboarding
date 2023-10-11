@@ -49,7 +49,8 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
 
   // Combines the 2 bytes into one 16 bit integer
   // and drops the 5 least siginificant bits
-  int16_t tempData = ((buffer[0] << 8) | buffer[1]) >> 5;
+  int16_t tempData = ((buffer[0] << 8) | buffer[1]);
+  tempData >>= 5;
 
   *temp = (float)(tempData) * 0.125f;
 
