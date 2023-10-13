@@ -6,6 +6,9 @@
 #include <string.h>
 #include <math.h>
 
+//temp
+#include <stdio.h>
+
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
 
@@ -29,6 +32,37 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
   
+  // Store value of pointer register that points to temp. register
+  uint8_t writeBuffer = 0x00;
+
+  // Set pointer register to point to temp. register
+  i2cSendTo(devAddr, &writeBuffer, 1); 
+
+  // Store temp. value retrieved from sensor
+  uint8_t readBuffer[2];
+
+  // Read data from temp. register
+  i2cReceiveFrom(devAddr, &readBuffer[0], 2);
+
+  // Convert temp. data to Celsius
+  uint16_t tempC;
+  float multiplier = 0.125;
+
+  //1) Make into abs. value
+  if ( readBuffer[0] > 128 ) {
+    multiplier = -0.125;
+    readBuffer[1] *= -1; 
+    readBuffer[0] *= -1;
+  }
+
+  // 2) Concatenate MSB with LSB
+  tempC = ((readBuffer[0] ) << 8) | (readBuffer[1]);
+
+  // 3) Bitshift by 5 ignored bits
+  tempC = tempC >> 5;
+
+  *temp = tempC * multiplier;
+
   return ERR_CODE_SUCCESS;
 }
 
