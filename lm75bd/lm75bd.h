@@ -21,6 +21,9 @@
 #define LM75BD_DEFAULT_OT_THRESH 80.0f
 #define LM75BD_DEFAULT_HYST_THRESH 75.0f
 
+// Multiplier to convert temp. register value to Celsius
+#define LM75BD_TEMP_C_MULTIPLIER 0.125
+
 /**
  * @struct Configuration struct for LM75BD,118 temperature sensor
  *

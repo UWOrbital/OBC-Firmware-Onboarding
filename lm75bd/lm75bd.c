@@ -30,37 +30,31 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
-  
+  error_code_t errCode;
+
   // Store value of pointer register that points to temp. register
   uint8_t writeBuffer = 0x00;
 
   // Set pointer register to point to temp. register
-  i2cSendTo(devAddr, &writeBuffer, 1); 
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &writeBuffer, 1));
 
   // Store temp. value retrieved from sensor
-  uint8_t readBuffer[2];
+  uint8_t readBuffer[2] = {0};
 
   // Read data from temp. register
-  i2cReceiveFrom(devAddr, &readBuffer[0], 2);
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, &readBuffer[0], 2));
 
   // Convert temp. data to Celsius
-  uint16_t tempC;
-  float multiplier = 0.125;
+  int16_t tempC;
 
-  //1) Make into abs. value
-  if ( readBuffer[0] > 128 ) {
-    multiplier = -0.125;
-    readBuffer[1] *= -1; 
-    readBuffer[0] *= -1;
-  }
-
-  // 2) Concatenate MSB with LSB
+  // 1) Concatenate MSB with LSB
   tempC = ((readBuffer[0] ) << 8) | (readBuffer[1]);
 
-  // 3) Bitshift by 5 ignored bits
+  // 2) Bitshift by 5 ignored bits
   tempC = tempC >> 5;
 
-  *temp = tempC * multiplier;
+  // 3) Multiply by multiplier
+  *temp = tempC * LM75BD_TEMP_C_MULTIPLIER;
 
   return ERR_CODE_SUCCESS;
 }
