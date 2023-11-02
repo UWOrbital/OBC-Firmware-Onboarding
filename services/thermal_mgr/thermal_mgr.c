@@ -1,12 +1,15 @@
 #include "thermal_mgr.h"
+#include "console.h"
 #include "errors.h"
 #include "lm75bd.h"
-#include "console.h"
+#include "os_portmacro.h"
+#include "os_projdefs.h"
 
 #include <FreeRTOS.h>
-#include <os_task.h>
 #include <os_queue.h>
+#include <os_task.h>
 
+#include <stdint.h>
 #include <string.h>
 
 #define THERMAL_MGR_STACK_SIZE 256U
@@ -20,41 +23,58 @@ static StackType_t thermalMgrTaskStack[THERMAL_MGR_STACK_SIZE];
 
 static QueueHandle_t thermalMgrQueueHandle;
 static StaticQueue_t thermalMgrQueueBuffer;
-static uint8_t thermalMgrQueueStorageArea[THERMAL_MGR_QUEUE_LENGTH * THERMAL_MGR_QUEUE_ITEM_SIZE];
+static uint8_t thermalMgrQueueStorageArea[THERMAL_MGR_QUEUE_LENGTH *
+                                          THERMAL_MGR_QUEUE_ITEM_SIZE];
 
 static void thermalMgr(void *pvParameters);
 
 void initThermalSystemManager(lm75bd_config_t *config) {
   memset(&thermalMgrTaskBuffer, 0, sizeof(thermalMgrTaskBuffer));
   memset(thermalMgrTaskStack, 0, sizeof(thermalMgrTaskStack));
-  
-  thermalMgrTaskHandle = xTaskCreateStatic(
-    thermalMgr, "thermalMgr", THERMAL_MGR_STACK_SIZE,
-    config, 1, thermalMgrTaskStack, &thermalMgrTaskBuffer);
+
+  thermalMgrTaskHandle =
+      xTaskCreateStatic(thermalMgr, "thermalMgr", THERMAL_MGR_STACK_SIZE,
+                        config, 1, thermalMgrTaskStack, &thermalMgrTaskBuffer);
 
   memset(&thermalMgrQueueBuffer, 0, sizeof(thermalMgrQueueBuffer));
   memset(thermalMgrQueueStorageArea, 0, sizeof(thermalMgrQueueStorageArea));
 
-  thermalMgrQueueHandle = xQueueCreateStatic(
-    THERMAL_MGR_QUEUE_LENGTH, THERMAL_MGR_QUEUE_ITEM_SIZE,
-    thermalMgrQueueStorageArea, &thermalMgrQueueBuffer);
-
+  thermalMgrQueueHandle =
+      xQueueCreateStatic(THERMAL_MGR_QUEUE_LENGTH, THERMAL_MGR_QUEUE_ITEM_SIZE,
+                         thermalMgrQueueStorageArea, &thermalMgrQueueBuffer);
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-
-  return ERR_CODE_SUCCESS;
+  if (xQueueSend(thermalMgrQueueHandle, event, (TickType_t)10) == pdTRUE)
+    return ERR_CODE_SUCCESS;
+  else
+    return ERR_CODE_QUEUE_FULL;
 }
 
-void osHandlerLM75BD(void) {
-  /* Implement this function */
+void osHandlerLM75BD(void) { /* Implement this function */
+  thermal_mgr_event_t event;
+  event.type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;
+  thermalMgrSendEvent(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
-  /* Implement this task */
+  lm75bd_config_t details = *(lm75bd_config_t *)pvParameters;
   while (1) {
-    
+    thermal_mgr_event_t event;
+    if (xQueueReceive(thermalMgrQueueHandle, &event, (TickType_t)10) ==
+        pdTRUE) {
+      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+        float val;
+        float *temp = &val;
+        readTempLM75BD(details.devAddr, temp);
+        if (*temp > details.hysteresisThresholdCelsius)
+          overTemperatureDetected();
+        else
+          safeOperatingConditions();
+        addTemperatureTelemetry(*temp);
+      }
+    }
   }
 }
 
@@ -66,6 +86,6 @@ void overTemperatureDetected(void) {
   printConsole("Over temperature detected!\n");
 }
 
-void safeOperatingConditions(void) { 
+void safeOperatingConditions(void) {
   printConsole("Returned to safe operating conditions!\n");
 }

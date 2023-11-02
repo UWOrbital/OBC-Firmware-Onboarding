@@ -21,7 +21,7 @@ elseif(CMAKE_BUILD_TYPE MATCHES FW)
         sys/i2c/i2c_io.c
         sys/logging/logging.c
         services/controller/controller.c
-        
+
         lm75bd/lm75bd.c
         services/thermal_mgr/thermal_mgr.c
     )

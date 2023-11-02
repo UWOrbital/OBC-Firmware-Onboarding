@@ -2,10 +2,10 @@
 #include "errors.h"
 
 #include <FreeRTOS.h>
+#include <os_atomic.h>
 #include <os_portmacro.h>
 #include <os_semphr.h>
 #include <os_task.h>
-#include <os_atomic.h>
 
 #include <stdint.h>
 #include <string.h>
@@ -31,9 +31,11 @@ void initI2C(void) {
 /* MOCKED I2C Functions. DO NOT MODIFY */
 
 error_code_t i2cSendTo(uint8_t sAddr, uint8_t *buf, uint16_t numBytes) {
-  if (buf == NULL || numBytes < 1) return ERR_CODE_INVALID_ARG;
+  if (buf == NULL || numBytes < 1)
+    return ERR_CODE_INVALID_ARG;
 
-  if (i2cMutex == NULL) return ERR_CODE_INVALID_STATE;
+  if (i2cMutex == NULL)
+    return ERR_CODE_INVALID_STATE;
 
   if (xSemaphoreTake(i2cMutex, I2C_MUTEX_TIMEOUT) != pdTRUE) {
     return ERR_CODE_MUTEX_TIMEOUT;
@@ -45,15 +47,17 @@ error_code_t i2cSendTo(uint8_t sAddr, uint8_t *buf, uint16_t numBytes) {
     lastTxBuff[1] = buf[1];
   }
 
-  xSemaphoreGive(i2cMutex);  // Won't fail because the mutex is taken correctly
+  xSemaphoreGive(i2cMutex); // Won't fail because the mutex is taken correctly
 
   return ERR_CODE_SUCCESS;
 }
 
 error_code_t i2cReceiveFrom(uint8_t sAddr, uint8_t *buf, uint16_t numBytes) {
-  if (buf == NULL || numBytes < 1) return ERR_CODE_INVALID_ARG;
+  if (buf == NULL || numBytes < 1)
+    return ERR_CODE_INVALID_ARG;
 
-  if (i2cMutex == NULL) return ERR_CODE_INVALID_STATE;
+  if (i2cMutex == NULL)
+    return ERR_CODE_INVALID_STATE;
 
   if (xSemaphoreTake(i2cMutex, I2C_MUTEX_TIMEOUT) != pdTRUE) {
     return ERR_CODE_MUTEX_TIMEOUT;
@@ -62,19 +66,19 @@ error_code_t i2cReceiveFrom(uint8_t sAddr, uint8_t *buf, uint16_t numBytes) {
   uint16_t nextTemp = getLm75bdNextTempRegVal();
 
   switch (lastTxBuff[0]) {
-    case 0:
-      buf[0] = (nextTemp >> 8) & 0xFF;
-      buf[1] = nextTemp & 0xFF;
-      break;
-    default:
-      for (int i = 0; i < numBytes; i++) {
-        buf[i] = 0;
-      }
+  case 0:
+    buf[0] = (nextTemp >> 8) & 0xFF;
+    buf[1] = nextTemp & 0xFF;
+    break;
+  default:
+    for (int i = 0; i < numBytes; i++) {
+      buf[i] = 0;
+    }
   }
 
   setOsActive(0);
 
-  xSemaphoreGive(i2cMutex);  // Won't fail because the mutex is taken correctly
+  xSemaphoreGive(i2cMutex); // Won't fail because the mutex is taken correctly
   return ERR_CODE_SUCCESS;
 }
 

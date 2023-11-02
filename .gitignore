@@ -21,6 +21,7 @@
 *.a
 *.la
 *.lo
+_deps
 
 # Shared objects (inc. Windows DLLs)
 *.dll
@@ -50,10 +51,12 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+.cache
 
 # IDE files
 .vscode/
 .idea/
+.DS_Store
 
 .venv/
 venv/
