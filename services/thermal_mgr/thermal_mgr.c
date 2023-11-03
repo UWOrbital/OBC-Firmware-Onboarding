@@ -8,7 +8,7 @@
 #include <os_queue.h>
 
 #include <string.h>
-
+//test
 #define THERMAL_MGR_STACK_SIZE 256U
 
 static TaskHandle_t thermalMgrTaskHandle;
@@ -43,6 +43,13 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
+  if(thermalMgrQueueHandle == NULL)
+    return ERR_CODE_INVALID_STATE;
+  else if(event == NULL)
+    return ERR_CODE_INVALID_ARG;
+  
+  if(xQueueSend(thermalMgrQueueHandle, (void*) event, 10) == pdPASS)
+    return ERR_CODE_SUCCESS;  
 
   return ERR_CODE_SUCCESS;
 }
@@ -53,8 +60,18 @@ void osHandlerLM75BD(void) {
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
+  thermal_mgr_event_t eventReceived;
   while (1) {
-    
+    if(xQueueReceive(thermalMgrQueueHandle, &eventReceived, 10) == pdPASS) {
+      switch (eventReceived.type) {
+        case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD: {
+          float temp;
+          readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+          addTemperatureTelemetry(temp);
+        }
+
+      }
+    }
   }
 }
 
