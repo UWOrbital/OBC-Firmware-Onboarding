@@ -27,6 +27,22 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  // Does general rule 4 of the style guide matter for this test and in what situation would they be used?
+  error_code_t errCode; 
+
+  uint8_t pointerTempValue = 0;
+  uint8_t pointerRegisterSize = 1;
+  RETURN_IF_ERROR_CODE(i2cSendTo(LM75BD_OBC_I2C_ADDR, &pointerTempValue, pointerRegisterSize));
+
+  uint8_t tempRegisterSize = 2;
+  uint8_t tempBuff[2] = {0};  
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, tempBuff, tempRegisterSize));
+  // Does this need to be repeated twice at startup since first read is incorrect or does it not matter for this onboarding test? 7.4.1
+
+  uint8_t isNegative = tempBuff[0] >> 7;
+  uint16_t tempData = (tempBuff[0] << 3) + (tempBuff[1] >> 5);
+  *temp = isNegative ? -1 * ((tempData ^ 0x7FF) + 1) : tempData;
+  *temp *= 0.125;
   
   return ERR_CODE_SUCCESS;
 }
