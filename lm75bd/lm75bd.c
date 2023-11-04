@@ -29,17 +29,20 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
+  // check if temp is allocated
+  if (!temp)
+    return ERR_CODE_NULL_ARG;
 
   // set pointer register to temperature
-  uint8_t point_reg = 0x00;
-  uint8_t buf[1] = {point_reg};
-  i2cSendTo(devAddr, buf, 1);
-
+  uint8_t buf[1] = {LM75BD_OBC_TEMP_REG};
+  error_code_t errCode;
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, buf, 1));
   // read data from sensor
-  uint8_t temp_bytes[2] = {};
-  i2cReceiveFrom(devAddr, temp_bytes, 2);
-  int16_t combined = ((temp_bytes[0] << 8) | temp_bytes[1]);
+  uint8_t tempBytes[2] = {0};
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, tempBytes, 2));
+
+  // convert bytes to temperature
+  int16_t combined = ((tempBytes[0] << 8) | tempBytes[1]);
   combined = combined >> 5;
   *temp = combined * 0.125;
   return ERR_CODE_SUCCESS;

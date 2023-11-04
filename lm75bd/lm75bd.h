@@ -17,6 +17,8 @@
 #define LM75BD_OS_OP_MODE_COMP 0x00U
 #define LM75BD_OS_OP_MODE_INT 0x01U
 
+#define LM75BD_OBC_TEMP_REG 0x00
+
 // Default temperature thresholds
 #define LM75BD_DEFAULT_OT_THRESH 80.0f
 #define LM75BD_DEFAULT_HYST_THRESH 75.0f

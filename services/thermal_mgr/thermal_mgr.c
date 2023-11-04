@@ -2,6 +2,7 @@
 #include "console.h"
 #include "errors.h"
 #include "lm75bd.h"
+#include "logging.h"
 #include "os_portmacro.h"
 #include "os_projdefs.h"
 
@@ -46,7 +47,9 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-  if (xQueueSend(thermalMgrQueueHandle, event, (TickType_t)10) == pdTRUE)
+  if (!event)
+    return ERR_CODE_NULL_ARG;
+  if (xQueueSend(thermalMgrQueueHandle, event, (TickType_t)0) == pdTRUE)
     return ERR_CODE_SUCCESS;
   else
     return ERR_CODE_QUEUE_FULL;
@@ -54,7 +57,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 void osHandlerLM75BD(void) { /* Implement this function */
   thermal_mgr_event_t event;
-  event.type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;
+  event.type = THERNAL_MGR_EVENT_CHECK_OS;
   thermalMgrSendEvent(&event);
 }
 
@@ -64,15 +67,25 @@ static void thermalMgr(void *pvParameters) {
     thermal_mgr_event_t event;
     if (xQueueReceive(thermalMgrQueueHandle, &event, (TickType_t)10) ==
         pdTRUE) {
-      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD ||
+          event.type == THERNAL_MGR_EVENT_CHECK_OS) {
         float val;
-        float *temp = &val;
-        readTempLM75BD(details.devAddr, temp);
-        if (*temp > details.hysteresisThresholdCelsius)
-          overTemperatureDetected();
-        else
-          safeOperatingConditions();
-        addTemperatureTelemetry(*temp);
+        error_code_t errCode = readTempLM75BD(details.devAddr, &val);
+        if (errCode != ERR_CODE_SUCCESS) {
+          LOG_ERROR_CODE(errCode);
+          // ensure that if CHECK_OS event was sent, that the temperature gets
+          // if it failed the first time attempt to CHECK_OS again
+          if (event.type == THERNAL_MGR_EVENT_CHECK_OS)
+            thermalMgrSendEvent(&event);
+          continue;
+        }
+        if (event.type == THERNAL_MGR_EVENT_CHECK_OS) {
+          if (val > details.hysteresisThresholdCelsius)
+            overTemperatureDetected();
+          else
+            safeOperatingConditions();
+        }
+        addTemperatureTelemetry(val);
       }
     }
   }
