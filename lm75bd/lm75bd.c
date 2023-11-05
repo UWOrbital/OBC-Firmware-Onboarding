@@ -8,6 +8,7 @@
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
+#define LM75BD_RES 0.125
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
@@ -28,6 +29,10 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  uint8_t *tempData;
+  i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, &tempData, 2);  // receive 2 bytes since the temp register sends 2 bytes of data  
+  uint16_t tempVar = (tempData[0] << 8)+tempData[1];   // combining msb and lsb in one 16 bit thing
+  *temp = (tempVar >> 5)*0.125;   // only need the first 11 bits
   
   return ERR_CODE_SUCCESS;
 }
