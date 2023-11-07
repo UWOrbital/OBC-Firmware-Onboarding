@@ -43,7 +43,10 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-  if (xQueueSend(thermalMgrQueueHandle, event, 1) != pdTRUE) return ERR_CODE_QUEUE_FULL; // timeout?
+  if (!event) return ERR_CODE_INVALID_ARG;
+  if (!thermalMgrQueueHandle) return ERR_CODE_QUEUE_NOT_CREATED;
+
+  if (xQueueSend(thermalMgrQueueHandle, event, 0) != pdTRUE) return ERR_CODE_QUEUE_FULL;
 
   return ERR_CODE_SUCCESS;
 }
@@ -52,7 +55,7 @@ void osHandlerLM75BD(void) {
   /* Implement this function */
   thermal_mgr_event_t event;
   event.type = THERMAL_MGR_EVENT_INTERRUPT;
-  if (thermalMgrSendEvent(&event) != ERR_CODE_SUCCESS) ; // What should be done if error?
+  thermalMgrSendEvent(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -62,14 +65,24 @@ static void thermalMgr(void *pvParameters) {
   float temp;
 
   while (1) {
-    if (xQueueReceive(thermalMgrQueueHandle, &event, 0) == pdTRUE) { // timeout?
+    error_code_t error;
+
+    if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdTRUE) {
       switch (event.type) {
         case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
-          if (readTempLM75BD(config.devAddr, &temp) != ERR_CODE_SUCCESS) break; // What should be done if error?
+          error = readTempLM75BD(config.devAddr, &temp);
+          if (error != ERR_CODE_SUCCESS) {
+            LOG_ERROR_CODE(error);
+            break;
+          }
           addTemperatureTelemetry(temp);
           break;
         case THERMAL_MGR_EVENT_INTERRUPT:
-          if (readTempLM75BD(config.devAddr, &temp) != ERR_CODE_SUCCESS) break;
+          error = readTempLM75BD(config.devAddr, &temp);
+          if (error != ERR_CODE_SUCCESS) {
+            LOG_ERROR_CODE(error);
+            break;
+          }
           if (temp > config.hysteresisThresholdCelsius) {
             overTemperatureDetected();
           } else {
