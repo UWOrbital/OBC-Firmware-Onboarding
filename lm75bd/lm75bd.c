@@ -26,8 +26,22 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
+  // declare error code variable
+  error_code_t errCode;
   
+  // set pointer register to 'temperature sensor'
+  uint8_t writeBuf[] = {0};
+  errCode = i2cSendTo(devAddr, writeBuf, 1);
+  RETURN_IF_ERROR_CODE(errCode);
+
+  // read temperature from sensor
+  uint8_t readBuf[2] = {0};
+  errCode = i2cReceiveFrom(devAddr, readBuf, 2);
+  RETURN_IF_ERROR_CODE(errCode);
+
+  // convert temperature reading to celsius
+  *temp = ((readBuf[0] << 3) | (readBuf[1] >> 5)) * 0.125;
+
   return ERR_CODE_SUCCESS;
 }
 
