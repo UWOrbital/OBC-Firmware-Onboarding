@@ -30,14 +30,12 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   error_code_t errCode;
   
   // set pointer register to 'temperature sensor'
-  uint8_t writeBuf[] = {0};
-  errCode = i2cSendTo(devAddr, writeBuf, 1);
-  RETURN_IF_ERROR_CODE(errCode);
+  uint8_t writeBuf[1] = {0};
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, writeBuf, 1));
 
   // read temperature from sensor
   uint8_t readBuf[2] = {0};
-  errCode = i2cReceiveFrom(devAddr, readBuf, 2);
-  RETURN_IF_ERROR_CODE(errCode);
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, readBuf, 2));
 
   // convert temperature reading to celsius
   int16_t tempC = (readBuf[0] << 8) | readBuf[1];
