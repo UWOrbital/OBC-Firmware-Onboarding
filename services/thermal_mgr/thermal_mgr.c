@@ -72,7 +72,7 @@ static void thermalMgr(void *pvParameters) {
       }
       else if (eventBuf.type == THERMAL_MGR_EVENT_INTERRUPT_CMD) {
         float *temp;
-        if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, temp) >= 75)
+        if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, temp) > 75)
           overTemperatureDetected();
         else
           safeOperatingConditions();
