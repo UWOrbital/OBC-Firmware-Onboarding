@@ -40,7 +40,10 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   RETURN_IF_ERROR_CODE(errCode);
 
   // convert temperature reading to celsius
-  *temp = ((readBuf[0] << 3) | (readBuf[1] >> 5)) * 0.125;
+  int16_t MSByte = readBuf[0] << 3;
+  int16_t LSByte = readBuf[1] >> 5;
+  
+  *temp = (MSByte | LSByte) * 0.125;
 
   return ERR_CODE_SUCCESS;
 }
