@@ -56,7 +56,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   *temp = tempC * 0.125;
 
   
-  return ERR_CODE_INVALID_ARG;
+  return ERR_CODE_SUCCESS;
 }
 
 #define CONF_WRITE_BUFF_SIZE 2U
