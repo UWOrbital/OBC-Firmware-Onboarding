@@ -56,6 +56,9 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
+  thermal_mgr_event_t event;
+  event.type = THERMAL_MGR_EVENT_MEASURE_INTERRUPT;
+  thermalMgrSendEvent(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -68,6 +71,16 @@ static void thermalMgr(void *pvParameters) {
           float temp;
           readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
           addTemperatureTelemetry(temp);
+        }
+        case THERMAL_MGR_EVENT_MEASURE_INTERRUPT: {
+          float temp;
+          readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+          if (temp > 80) {
+            overTemperatureDetected();
+          }
+          else {
+            safeOperatingConditions();
+          }
         }
 
       }
