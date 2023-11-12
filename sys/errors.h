@@ -1,3 +1,4 @@
+
 #pragma once
 
 /* Define new error codes here if needed */
@@ -16,4 +17,9 @@ typedef enum {
 
     /* Driver errors */
     ERR_CODE_I2C_TRANSFER_TIMEOUT = 200,
+
+    /* Logging errors */
+    ERR_CODE_BUFF_TOO_SMALL = 300,
+    ERR_CODE_LOG_MSG_SILENCED = 301,
 } error_code_t;
+

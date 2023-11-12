@@ -1,3 +1,4 @@
+
 cmake_minimum_required(VERSION 3.15)
 
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/toolchain_gcc.cmake)
@@ -19,6 +20,7 @@ elseif(CMAKE_BUILD_TYPE MATCHES FW)
         main.c
         sys/console_io/console.c
         sys/i2c/i2c_io.c
+        sys/logging/logging.c
         services/controller/controller.c
         
         lm75bd/lm75bd.c
@@ -33,6 +35,7 @@ elseif(CMAKE_BUILD_TYPE MATCHES FW)
         sys
         sys/i2c
         sys/console_io
+        sys/logging
         lm75bd
         services/controller
         services/thermal_mgr
@@ -48,3 +51,4 @@ endif()
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
+

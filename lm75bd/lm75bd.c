@@ -1,3 +1,4 @@
+
 #include "lm75bd.h"
 #include "i2c_io.h"
 #include "errors.h"
@@ -79,3 +80,4 @@ error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_
 
   return ERR_CODE_SUCCESS;
 }
+
