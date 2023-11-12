@@ -22,6 +22,8 @@
 #define LM75BD_DEFAULT_HYST_THRESH 75.0f
 
 #define LM75BD_OBC_I2C_ADDR 0x4F   // address of tem sensor in hex
+#define LM75BD_OBC_I2C_ADDR_READ 0x9F  // address of temp sensor in read mode 10011111
+#define LM75BD_OBC_I2C_ADDR_WRITE 0x9E  // address of temp sensor in write mode 10011110
 
 /**
  * @struct Configuration struct for LM75BD,118 temperature sensor

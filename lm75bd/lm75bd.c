@@ -30,7 +30,8 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
   uint8_t *tempData;
-  i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, &tempData, 2);  // receive 2 bytes since the temp register sends 2 bytes of data  
+  i2cSendTo(LM75BD_OBC_I2C_ADDR_WRITE, 0, 1);   // sending 0b00000000 to select temperature register
+  i2cReceiveFrom(LM75BD_OBC_I2C_ADDR_READ, &tempData, 2);  // receive 2 bytes since the temp register sends 2 bytes of data  
   uint16_t tempVar = (tempData[0] << 8)+tempData[1];   // combining msb and lsb in one 16 bit thing
   *temp = (tempVar >> 5)*0.125;   // only need the first 11 bits
   
