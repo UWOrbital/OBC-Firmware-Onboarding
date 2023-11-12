@@ -1,7 +1,7 @@
 #include "lm75bd.h"
 #include "i2c_io.h"
 #include "errors.h"
-
+#include "../sys/console_io/console.h"
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
@@ -28,17 +28,14 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
   uint8_t tempData[2] = {0};
   // i2cSendTo(LM75BD_OBC_I2C_ADDR_WRITE, 0, 1);   // sending 0b00000000 to select temperature register
   // i2cReceiveFrom(LM75BD_OBC_I2C_ADDR_READ, tempData, 2);  // receive 2 bytes since the temp register sends 2 bytes of data 
-
-  i2cSendTo(devAddr, 0, 1);   // sending 0b00000000 to select temperature register
+  uint8_t tempReg[1] = {0};
+  i2cSendTo(devAddr, tempReg, 1);   // sending 0b00000000 to select temperature register
   i2cReceiveFrom(devAddr, tempData, 2);  // receive 2 bytes since the temp register sends 2 bytes of data 
-
-  uint16_t tempVar = (tempData[0] << 8)+tempData[1];   // combining msb and lsb in one 16 bit thing
+  int16_t tempVar = (tempData[0] << 8)|tempData[1];   // combining msb and lsb in one 16 bit thing
   *temp = (tempVar >> 5)*0.125;   // only need the first 11 bits
-  
   return ERR_CODE_SUCCESS;
 }
 

@@ -30,7 +30,7 @@ void initI2C(void) {
 
 /* MOCKED I2C Functions. DO NOT MODIFY */
 
-error_code_t i2cSendTo(uint8_t sAddr, uint8_t *buf, uint16_t numBytes) {
+error_code_t i2cSendTo(uint8_t sAddr, uint8_t * buf, uint16_t numBytes) {
   if (buf == NULL || numBytes < 1) return ERR_CODE_INVALID_ARG;
 
   if (i2cMutex == NULL) return ERR_CODE_INVALID_STATE;
