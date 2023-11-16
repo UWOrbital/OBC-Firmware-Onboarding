@@ -1,4 +1,3 @@
-
 set(TEST_BINARY onboarding-tests)
 
 set(TEST_DEPENDENCIES
@@ -28,6 +27,5 @@ target_include_directories(${TEST_BINARY}
 target_link_libraries(${TEST_BINARY} PRIVATE
     GTest::GTest
 )
-
 
 add_test(${TEST_BINARY} ${TEST_BINARY})
