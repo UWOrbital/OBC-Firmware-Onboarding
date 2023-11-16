@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
-#include "logging.h"
+#include "../sys/logging/logging.h"
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
@@ -29,12 +29,14 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
+  if(temp == NULL) {
+   return ERR_CODE_INVALID_ARG; 
+  }
   uint8_t tempData[2] = {0};
-  // i2cSendTo(LM75BD_OBC_I2C_ADDR_WRITE, 0, 1);   // sending 0b00000000 to select temperature register
-  // i2cReceiveFrom(LM75BD_OBC_I2C_ADDR_READ, tempData, 2);  // receive 2 bytes since the temp register sends 2 bytes of data 
   uint8_t tempReg[1] = {0};
+  error_code_t errCode;
   RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, tempReg, 1));   // sending 0b00000000 to select temperature register
-  i2cReceiveFrom(devAddr, tempData, 2);  // receive 2 bytes since the temp register sends 2 bytes of data 
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, tempData, 2));  // receive 2 bytes since the temp register sends 2 bytes of data
   int16_t tempVar = (tempData[0] << 8)|tempData[1];   // combining msb and lsb in one 16 bit thing
   *temp = (tempVar >> 5)*0.125;   // only need the first 11 bits
   return ERR_CODE_SUCCESS;
