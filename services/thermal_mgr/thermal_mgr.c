@@ -70,12 +70,12 @@ static void thermalMgr(void *pvParameters) {
       switch (eventReceived.type) {
         case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD: {
           float temp;
-          RETURN_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp));
+          LOG_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp));
           addTemperatureTelemetry(temp);
         }
         case THERMAL_MGR_EVENT_INTERRUPT: {
           float temp;
-          RETURN_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp));
+          LOG_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp));
           if (temp > 80) {
             overTemperatureDetected();
           }
