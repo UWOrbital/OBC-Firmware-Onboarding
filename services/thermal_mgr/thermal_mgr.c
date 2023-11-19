@@ -71,14 +71,16 @@ static void thermalMgr(void *pvParameters) {
 
   // Get config structure and initialize event and temperature params
   lm75bd_config_t config = *(lm75bd_config_t *) pvParameters;
-  thermal_mgr_event_t event;
-  float temperature;
 
   while (1) {
 
     error_code_t err;
+    thermal_mgr_event_t event;
 
     if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdTRUE){
+      
+      float temperature;
+
       switch (event.type) {
         case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
           err = readTempLM75BD(config.devAddr, &temperature);
