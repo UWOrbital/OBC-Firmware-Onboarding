@@ -49,6 +49,9 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
   if (!event)
     return ERR_CODE_NULL_ARG;
+  if (!thermalMgrQueueHandle)
+    return ERR_CODE_NULL_QUEUE;
+
   if (xQueueSend(thermalMgrQueueHandle, event, (TickType_t)0) == pdTRUE)
     return ERR_CODE_SUCCESS;
   else
@@ -73,10 +76,6 @@ static void thermalMgr(void *pvParameters) {
         error_code_t errCode = readTempLM75BD(details.devAddr, &val);
         if (errCode != ERR_CODE_SUCCESS) {
           LOG_ERROR_CODE(errCode);
-          // ensure that if CHECK_OS event was sent, that the temperature gets
-          // if it failed the first time attempt to CHECK_OS again
-          if (event.type == THERNAL_MGR_EVENT_CHECK_OS)
-            thermalMgrSendEvent(&event);
           continue;
         }
         if (event.type == THERNAL_MGR_EVENT_CHECK_OS) {
@@ -84,8 +83,8 @@ static void thermalMgr(void *pvParameters) {
             overTemperatureDetected();
           else
             safeOperatingConditions();
-        }
-        addTemperatureTelemetry(val);
+        } else
+          addTemperatureTelemetry(val);
       }
     }
   }

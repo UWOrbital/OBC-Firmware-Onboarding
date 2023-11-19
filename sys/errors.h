@@ -9,6 +9,7 @@ typedef enum {
   ERR_CODE_INVALID_ARG = 2,
   ERR_CODE_INVALID_STATE = 3,
   ERR_CODE_NULL_ARG = 4,
+  ERR_CODE_NULL_QUEUE = 5,
 
   /* FreeRTOS errors */
   ERR_CODE_MUTEX_TIMEOUT = 100,
