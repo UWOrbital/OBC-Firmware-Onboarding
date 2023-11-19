@@ -2,6 +2,7 @@
 #include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
+#include "logging.h"
 
 #include <FreeRTOS.h>
 #include <os_task.h>
@@ -42,19 +43,70 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
+
+  // Check that event pointer is not NULL
+  if (event == NULL)
+    return ERR_CODE_NULL_POINTER;
+
+  // Check that the Queue exists by checking the the handle is not NULL
+  if (thermalMgrQueueHandle == NULL)
+    return ERR_CODE_QUEUE_MISSING;
+
   /* Send an event to the thermal manager queue */
+  if (xQueueSend(thermalMgrQueueHandle, event, 0) != pdTRUE)
+    return ERR_CODE_QUEUE_FULL;
 
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
+  thermal_mgr_event_t event;
+  event.type = THERMAL_MGR_EVENT_INTERRUPT;
+  thermalMgrSendEvent(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
+
+  // Get config structure and initialize event and temperature params
+  lm75bd_config_t config = *(lm75bd_config_t *) pvParameters;
+  thermal_mgr_event_t event;
+  float temperature;
+
   while (1) {
-    
+
+    error_code_t err;
+
+    if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdTRUE){
+      switch (event.type) {
+        case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
+          err = readTempLM75BD(config.devAddr, &temperature);
+
+          if (err != ERR_CODE_SUCCESS){
+            LOG_ERROR_CODE(err);
+            break;
+          }
+
+          addTemperatureTelemetry(temperature);
+          break;
+
+        case THERMAL_MGR_EVENT_INTERRUPT:
+          err = readTempLM75BD(config.devAddr, &temperature);
+
+          if (err != ERR_CODE_SUCCESS){
+            LOG_ERROR_CODE(err);
+            break;
+          }
+
+          if (temperature > config.hysteresisThresholdCelsius){
+            overTemperatureDetected();
+          } else {
+            safeOperatingConditions();
+          }
+          break;
+      } 
+    }
   }
 }
 

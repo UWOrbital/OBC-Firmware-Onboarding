@@ -13,7 +13,8 @@
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
 
-  if (config == NULL) return ERR_CODE_INVALID_ARG;
+  if (config == NULL) 
+    return ERR_CODE_NULL_POINTER;
 
   RETURN_IF_ERROR_CODE(writeConfigLM75BD(config->devAddr, config->osFaultQueueSize, config->osPolarity,
                                          config->osOperationMode, config->devOperationMode));
@@ -27,7 +28,34 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  error_code_t errCode;
   
+  // First check that temp isn't NULL
+  if (temp == NULL)
+    return ERR_CODE_NULL_POINTER;
+
+  // Buffer to send commands and receive data from LM758D
+  uint8_t buf[2] = {0};
+
+  // 16 bit integer to help with celsius conversion
+  uint16_t conversion = 0;
+
+  // Send first byte of buffer which is 0x00 to select temperature register
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, buf, 1)); 
+
+  // Receive 2 bytes and store them in buffer
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, buf, 2));
+
+  // Check if D10 (bit 7) of MSB is a 1 to see if we calculate twos complement 
+  if (buf[0] >> 7){
+    conversion = ((buf[0] << 3) + (buf[1] >> 5));
+    *temp = -1 * ((conversion ^ 0X7FF) + 1); // XOR with 11 1s to get 1s complement and then add 1 for 2s complement
+  } else {
+    *temp = ((buf[0] << 3) + (buf[1] >> 5));
+  }
+  
+  *temp *= 0.125;
+
   return ERR_CODE_SUCCESS;
 }
 
