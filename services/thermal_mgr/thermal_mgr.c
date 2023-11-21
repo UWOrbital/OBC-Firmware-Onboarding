@@ -2,7 +2,7 @@
 #include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
-
+#include "logging.h"
 #include <FreeRTOS.h>
 #include <os_task.h>
 #include <os_queue.h>
@@ -46,7 +46,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
     return ERR_CODE_INVALID_QUEUE_MSG;
 
   if (event == NULL)
-    return ERR_CODE_NULL_POINTER;
+    return NULL_ERR;
 
   if (xQueueSend(thermalMgrQueueHandle, event, 0) != pdTRUE)
     return ERR_CODE_QUEUE_FULL;
@@ -68,6 +68,7 @@ static void thermalMgr(void *pvParameters) {
 
   while (1) {
       thermal_mgr_event_t eventFromQueue;
+      error_code_t errorCode;
   
       // You can receive the next item in the queue using xQueueReceive
       // if receive from queue is successful
@@ -75,12 +76,16 @@ static void thermalMgr(void *pvParameters) {
       float temperature;
 		// Handle event received from queue
         if( eventFromQueue.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
-              LOG_IF_ERROR_CODE(readTempLM75BD(config_data.devAddr, &temperature));
-              addTemperatureTelemetry(temperature);
+
+           errorCode = readTempLM75BD(config_data.devAddr, &temperature);
+           addTemperatureTelemetry(temperature);
+       
+           
+              
         }
 
         else if( eventFromQueue.type == EVENT_INTERRUPT){
-            LOG_IF_ERROR_CODE(readTempLM75BD(config_data.devAddr, &temperature));
+              errorCode = readTempLM75BD(config_data.devAddr, &temperature);
             if (temperature > config_data.overTempThresholdCelsius){
             overTemperatureDetected();
           } else {
