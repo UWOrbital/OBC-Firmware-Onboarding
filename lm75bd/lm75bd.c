@@ -9,6 +9,8 @@
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
+#define LM75BD_TEMP_REG 0x00U // Temperature register address
+
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
@@ -25,11 +27,41 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
   return ERR_CODE_SUCCESS;
 }
 
-error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
+// error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
+//   /* Implement this driver function */
   
+//   return ERR_CODE_SUCCESS;
+// }
+
+error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
+  error_code_t errCode; // Variable to store error codes.
+  
+  if (temp == NULL) {
+    LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
+    return ERR_CODE_INVALID_ARG;
+  }
+
+  uint8_t command[1] = {LM75BD_TEMP_REG};
+
+  // Set the register address in the device 
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, command, 1));
+
+  // Buffer to receive data from LM75BD
+  uint8_t dataBuffer[2] = {0};
+
+  // Receive 2 bytes of temperature data and store them in dataBuffer
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, dataBuffer, 2));
+
+  // Combine the bytes into a 16-bit integer for conversion
+  int16_t rawTemp = (int16_t)(dataBuffer[0] << 8) | dataBuffer[1];
+
+  // Convert the raw temperature data to degrees Celsius according to the datasheet specification.
+  *temp = (float)(rawTemp >> 5) * 0.125;
   return ERR_CODE_SUCCESS;
 }
+
+
+
 
 #define CONF_WRITE_BUFF_SIZE 2U
 error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_t osPolarity,
