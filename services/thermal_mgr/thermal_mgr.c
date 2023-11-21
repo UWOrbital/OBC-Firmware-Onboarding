@@ -43,7 +43,7 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   if (thermalMgrQueueHandle == NULL)
-    return ERR_CODE_INVALID_QUEUE_MSG;
+    return ERR_CODE_INVALID_STATE;
 
   if (event == NULL)
     return NULL_ERR;
@@ -56,7 +56,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
-    thermal_mgr_event_t event;
+  thermal_mgr_event_t event;
   event.type = EVENT_INTERRUPT;
   thermalMgrSendEvent(&event);
 }
@@ -73,24 +73,40 @@ static void thermalMgr(void *pvParameters) {
       // You can receive the next item in the queue using xQueueReceive
       // if receive from queue is successful
     	if (xQueueReceive(thermalMgrQueueHandle, &eventFromQueue, 0) == pdTRUE) {
-      float temperature;
-		// Handle event received from queue
+        float temperature;
+		  // Handle event received from queue
         if( eventFromQueue.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
 
            errorCode = readTempLM75BD(config_data.devAddr, &temperature);
-           addTemperatureTelemetry(temperature);
+           if (errorCode != ERR_CODE_SUCCESS){
+            LOG_ERROR_CODE(errorCode);
+            break;
+          }
+          else{
+            addTemperatureTelemetry(temperature);
+          }       
        
            
               
         }
 
         else if( eventFromQueue.type == EVENT_INTERRUPT){
-              errorCode = readTempLM75BD(config_data.devAddr, &temperature);
-            if (temperature > config_data.overTempThresholdCelsius){
-            overTemperatureDetected();
-          } else {
-            safeOperatingConditions();
+            errorCode = readTempLM75BD(config_data.devAddr, &temperature);
+            if (errorCode != ERR_CODE_SUCCESS){
+            LOG_ERROR_CODE(errorCode);
+            break;
           }
+          else{
+            if(temperature > config_data.overTempThresholdCelsius){
+              overTemperatureDetected();
+          } 
+            else {
+              safeOperatingConditions();
+          }
+
+          }
+
+            
 
              
         }
