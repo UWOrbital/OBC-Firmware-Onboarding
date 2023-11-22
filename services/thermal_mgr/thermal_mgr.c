@@ -43,15 +43,29 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 #define MAX_MS_WAIT 20
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
+  if (!event)                 { return ERR_CODE_INVALID_ARG; }
+  if (!thermalMgrQueueHandle) { return ERR_CODE_INVALID_STATE; }
+
   /* Send an event to the thermal manager queue */
-  xQueueSend(thermalMgrQueueHandle, (void *)event, portTICK_PERIOD_MS*MAX_MS_WAIT);
-  return ERR_CODE_SUCCESS;
+  if (xQueueSend(thermalMgrQueueHandle, (void *)event,
+      portTICK_PERIOD_MS*MAX_MS_WAIT) == pdTrue) {
+    // Successful send
+    return ERR_CODE_SUCCESS;
+  } else {
+    return ERR_CODE_QUEUE_FULL;
+  }
 }
 
 error_code_t thermalMgrSendEventISR(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-  xQueueSendFromISR(thermalMgrQueueHandle, (void *)event, NULL);
-  return ERR_CODE_SUCCESS;
+  if (!event)                 { return ERR_CODE_INVALID_ARG; }
+  if (!thermalMgrQueueHandle) { return ERR_CODE_INVALID_STATE; }
+
+  if (xQueueSendFromISR(thermalMgrQueueHandle, (void *)event, NULL) == pdTRUE) {
+    return ERR_CODE_SUCCESS;
+  } else {
+    return ERR_CODE_QUEUE_FULL;
+  }
 }
 
 void osHandlerLM75BD(void) {
