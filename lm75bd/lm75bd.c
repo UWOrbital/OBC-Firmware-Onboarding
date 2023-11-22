@@ -41,16 +41,11 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Write pointer register */
   uint8_t point_buff[CONF_POINTER_BUFF_SIZE] = {0};
   point_buff[0] = 0x00U;
- 
-  errCode = i2cSendTo(LM75BD_OBC_I2C_ADDR, point_buff, CONF_POINTER_BUFF_SIZE);
-  if (errCode != ERR_CODE_SUCCESS)
-    return errCode;
+  RETURN_IF_ERROR_CODE(i2cSendTo(LM75BD_OBC_I2C_ADDR, point_buff, CONF_POINTER_BUFF_SIZE));
 
   /* Read temperature register */
   uint8_t read_buff[CONF_READ_BUFF_SIZE] = {0};
-  errCode = i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, read_buff, CONF_READ_BUFF_SIZE);
-  if (errCode != ERR_CODE_SUCCESS)
-    return errCode;
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, read_buff, CONF_READ_BUFF_SIZE));
 
   // Concatenate D9 through D0; read data sheet sect 7.4.3
   // <https://www.nxp.com/docs/en/data-sheet/LM75B.pdf>
