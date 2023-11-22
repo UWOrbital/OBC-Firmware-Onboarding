@@ -48,7 +48,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
   /* Send an event to the thermal manager queue */
   if (xQueueSend(thermalMgrQueueHandle, (void *)event,
-      portTICK_PERIOD_MS*MAX_MS_WAIT) == pdTrue) {
+      portTICK_PERIOD_MS*MAX_MS_WAIT) == pdTRUE) {
     // Successful send
     return ERR_CODE_SUCCESS;
   } else {
@@ -79,29 +79,26 @@ void osHandlerLM75BD(void) {
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   lm75bd_config_t config = *(lm75bd_config_t *) pvParameters;
-  float temp = {0};
-  error_code_t err_code = {0};
 
   while (1) {
     thermal_mgr_event_t temp_evt = {0};
     if (
         xQueueReceive(thermalMgrQueueHandle, (void *)&temp_evt,
-                      portTICK_PERIOD_MS*MAX_MS_WAIT) == pdFalse) {
+                      portTICK_PERIOD_MS*MAX_MS_WAIT) == pdFALSE) {
       // Could not receive event
       continue;
     }
 
+    float temp = {0};
     switch (temp_evt.type) {
     case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
       /* Measure temperature */
-      err_code = readTempLM75BD(config.devAddr, &temp);
-      if (err_code == ERR_CODE_SUCCESS) {
+      if (readTempLM75BD(config.devAddr, &temp) == ERR_CODE_SUCCESS) {
         addTemperatureTelemetry(temp); // ambiguous error case
       }
       break;
     case THERMAL_MGR_EVENT_OVER_TEMP_CMD:
-      err_code = readTempLM75BD(config.devAddr, &temp);
-      if (err_code == ERR_CODE_SUCCESS) {
+      if (readTempLM75BD(config.devAddr, &temp) == ERR_CODE_SUCCESS) {
         if (temp <= config.hysteresisThresholdCelsius) {
           // safe temperature
           safeOperatingConditions();
