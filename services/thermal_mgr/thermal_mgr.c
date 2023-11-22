@@ -84,7 +84,12 @@ static void thermalMgr(void *pvParameters) {
 
   while (1) {
     thermal_mgr_event_t temp_evt = {0};
-    xQueueReceive(thermalMgrQueueHandle, (void *)&temp_evt, portTICK_PERIOD_MS*MAX_MS_WAIT);
+    if (
+        xQueueReceive(thermalMgrQueueHandle, (void *)&temp_evt,
+                      portTICK_PERIOD_MS*MAX_MS_WAIT) == pdFalse) {
+      // Could not receive event
+      continue;
+    }
 
     switch (temp_evt.type) {
     case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
