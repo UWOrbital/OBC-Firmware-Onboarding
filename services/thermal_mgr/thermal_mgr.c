@@ -79,6 +79,7 @@ void osHandlerLM75BD(void) {
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   lm75bd_config_t config = *(lm75bd_config_t *) pvParameters;
+  error_code_t errCode;
 
   while (1) {
     thermal_mgr_event_t tempEvt = {0};
@@ -90,21 +91,19 @@ static void thermalMgr(void *pvParameters) {
     }
 
     float temp = {0};
+    RETURN_IF_ERROR_CODE(readTempLM75BD(config.devAddr, &temp));
+
     switch (tempEvt.type) {
     case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
       /* Measure temperature */
-      if (readTempLM75BD(config.devAddr, &temp) == ERR_CODE_SUCCESS) {
-        addTemperatureTelemetry(temp); // ambiguous error case
-      }
+      addTemperatureTelemetry(temp); // ambiguous error case
       break;
     case THERMAL_MGR_EVENT_OVER_TEMP_CMD:
-      if (readTempLM75BD(config.devAddr, &temp) == ERR_CODE_SUCCESS) {
-        if (temp <= config.hysteresisThresholdCelsius) {
+      if (temp <= config.hysteresisThresholdCelsius) {
           // safe temperature
-          safeOperatingConditions();
-        } else {
-          overTemperatureDetected();
-        }
+        safeOperatingConditions();
+      } else {
+        overTemperatureDetected();
       }
       break;
     }
