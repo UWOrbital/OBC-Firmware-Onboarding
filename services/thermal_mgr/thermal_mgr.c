@@ -81,16 +81,16 @@ static void thermalMgr(void *pvParameters) {
   lm75bd_config_t config = *(lm75bd_config_t *) pvParameters;
 
   while (1) {
-    thermal_mgr_event_t temp_evt = {0};
+    thermal_mgr_event_t tempEvt = {0};
     if (
-        xQueueReceive(thermalMgrQueueHandle, (void *)&temp_evt,
+        xQueueReceive(thermalMgrQueueHandle, (void *)&tempEvt,
                       portTICK_PERIOD_MS*MAX_MS_WAIT) == pdFALSE) {
       // Could not receive event
       continue;
     }
 
     float temp = {0};
-    switch (temp_evt.type) {
+    switch (tempEvt.type) {
     case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
       /* Measure temperature */
       if (readTempLM75BD(config.devAddr, &temp) == ERR_CODE_SUCCESS) {

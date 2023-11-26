@@ -35,26 +35,28 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
  * @brief Reads LM75BD temperature using I2C
  */
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
+  error_code_t errCode; 
   /* Implement this driver function */
-  error_code_t errCode;
+  if (!temp)
+    return ERR_CODE_INVALID_ARG;
 
   /* Write pointer register */
-  uint8_t point_buff[CONF_POINTER_BUFF_SIZE] = {0};
-  point_buff[0] = 0x00U;
-  RETURN_IF_ERROR_CODE(i2cSendTo(LM75BD_OBC_I2C_ADDR, point_buff, CONF_POINTER_BUFF_SIZE));
+  uint8_t pointBuff[CONF_POINTER_BUFF_SIZE] = {0};
+  pointBuff[0] = 0x00U;
+  RETURN_IF_ERROR_CODE(i2cSendTo(LM75BD_OBC_I2C_ADDR, pointBuff, CONF_POINTER_BUFF_SIZE));
 
   /* Read temperature register */
-  uint8_t read_buff[CONF_READ_BUFF_SIZE] = {0};
-  RETURN_IF_ERROR_CODE(i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, read_buff, CONF_READ_BUFF_SIZE));
+  uint8_t readBuff[CONF_READ_BUFF_SIZE] = {0};
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, readBuff, CONF_READ_BUFF_SIZE));
 
   // Concatenate D9 through D0; read data sheet sect 7.4.3
   // <https://www.nxp.com/docs/en/data-sheet/LM75B.pdf>
-  uint16_t temp_data = ((read_buff[0] & MASK_SIGN_BIT) << 3) | (read_buff[1] >> 5);
-  if ((read_buff[0] >> 7) & 0x01) {
+  uint16_t tempData = ((readBuff[0] & MASK_SIGN_BIT) << 3) | (readBuff[1] >> 5);
+  if ((readBuff[0] >> 7) & 0x01) {
     // D10 1; temperature negative .. convert from two's complement
-    (*temp) = ((float) (~temp_data & MASK_NINE_BIT)+1) * -0.125;
+    (*temp) = ((float) (~tempData & MASK_NINE_BIT)+1) * -0.125;
   } else {
-    (*temp) = ((float) temp_data) * 0.125; 
+    (*temp) = ((float) tempData) * 0.125; 
   }
     // D10 0; temperature positive
 
@@ -65,7 +67,6 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_t osPolarity,
                                    uint8_t osOperationMode, uint8_t devOperationMode) {
   error_code_t errCode;
-
   // Stores the register address and data to be written
   // 0: Register address
   // 1: Data
@@ -96,8 +97,7 @@ error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_
   buff[1] |= (osOperationMode << 1);
   buff[1] |= devOperationMode;
 
-  errCode = i2cSendTo(LM75BD_OBC_I2C_ADDR, buff, CONF_WRITE_BUFF_SIZE);
-  if (errCode != ERR_CODE_SUCCESS) return errCode;
+  RETURN_IF_ERROR_CODE(i2cSendTo(LM75BD_OBC_I2C_ADDR, buff, CONF_WRITE_BUFF_SIZE));
 
   return ERR_CODE_SUCCESS;
 }
