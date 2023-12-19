@@ -73,13 +73,17 @@ static void thermalMgr(void *pvParameters) {
         error_code_t errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
         if (errCode == ERR_CODE_SUCCESS)
           addTemperatureTelemetry(temp);
+        else
+          LOG_ERROR_CODE(errCode);
       }
       else if (eventBuf.type == THERMAL_MGR_EVENT_INTERRUPT_CMD) {
         error_code_t errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
-        if (temp > 75)
-          overTemperatureDetected();
-        else
-          safeOperatingConditions();
+        if (errCode == ERR_CODE_SUCCESS) {
+          if (temp > 75)
+            overTemperatureDetected();
+          else
+            safeOperatingConditions();
+        }
       }
     }
   }
