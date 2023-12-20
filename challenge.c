@@ -57,7 +57,7 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
     }
 
     int32_t sum = 0;
-    for (uint8_t i = 0; i < arrayLength; i++) {
+    for (uint32_t i = 0; i < arrayLength; i++) {
         sum += array[i];
     }
     return sum;
@@ -144,7 +144,7 @@ error_t q10(q10_t *q10) {
     if (!q10) {
         return FAIL;
     }
-    return q9(&(q10->a), &(q10->b)) ? SUCCESS : FAIL;
+    return q9(&(q10->a), &(q10->b)) == 0 ? SUCCESS : FAIL;
 }
 
 //-------------------------------------------------------------------------
