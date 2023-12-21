@@ -37,11 +37,11 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &pTempReg, 1));
 
   // Read temperature data
-  int8_t tempData[2] = {0};
-  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, &tempData, 2));
+  uint8_t tempData[2] = {0};
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, tempData, 2));
 
   // Convert to Celsius
-  *temp = (((tempData[0] << 8) | tempData[1]) >> 5) * 0.125;
+  *temp = ((((int8_t)tempData[0] << 8) | tempData[1]) >> 5) * 0.125;
   
   return ERR_CODE_SUCCESS;
 }
