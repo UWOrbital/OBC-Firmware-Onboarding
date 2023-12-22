@@ -27,15 +27,15 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   error_code_t errCode = ERR_CODE_INVALID_ARG;
-  if (temp == NULL) return errCode;
-  uint8_t buf[2] = {0x00U, 0x00U};
+  if (temp == NULL) return errCode; //If arguments are problematic return early
+  uint8_t buf[2] = {0x00U, 0x00U}; 
   uint8_t readBuf = 0x00;
   RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &readBuf,1));
   RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, buf, 2));
   if (buf[0] & 0x80)
-    *temp = ((((~((((uint16_t)buf[0])<<3)|((uint16_t)(buf[1]>>5)))) & 0x07FF)+1)  & 0x07FF)*-0.125;
+    *temp = ((((~((((uint16_t)buf[0])<<3)|((uint16_t)(buf[1]>>5)))) & 0x07FF)+1)  & 0x07FF)*-0.125; //If negative temp, converts both numbers into 16 unsigned bits, then adds them, and does twos complement
   else
-    *temp = ((((uint16_t)buf[0])<<3)|((uint16_t)(buf[1]>>5)))*0.125;
+    *temp = ((((uint16_t)buf[0])<<3)|((uint16_t)(buf[1]>>5)))*0.125; //Combines the unsigned bytes and outputs the positive value
   return ERR_CODE_SUCCESS;
 }
 
