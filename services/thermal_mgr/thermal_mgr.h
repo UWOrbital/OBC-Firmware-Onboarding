@@ -5,7 +5,7 @@
 
 typedef enum {
   THERMAL_MGR_EVENT_MEASURE_TEMP_CMD,
-  THERMAL_MGR_INTERRUPT_EVENT,
+  THERMAL_MGR_EVENT_INTERRUPT,
   
 } thermal_mgr_event_type_t;
 
