@@ -49,36 +49,35 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   // If queue handle doesnt describe a queue, error in state
   if (thermalMgrQueueHandle == NULL) return ERR_CODE_INVALID_STATE;
   // If queue is full, cannot add event, error
-  if (uxQueueSpacesAvailable(thermalMgrQueueHandle) == 0) return ERR_CODE_QUEUE_FULL;
-  xQueueSend(thermalMgrQueueHandle, event, 10);
+  if (xQueueSend(thermalMgrQueueHandle, event, 10) == errQUEUE_FULL) return ERR_CODE_QUEUE_FULL;
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
-  /* Implement this function */
-  error_code_t errCode;
-  float tempReading = 0.0;
-  //Imported the logging functions to use this function
-  RETURN_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempReading));
-  if (tempReading>=80)
-    overTemperatureDetected();
-  else if (tempReading<=75)
-    safeOperatingConditions();
+  thermal_mgr_event_t interrupt = {THERMAL_MGR_INTERRUPT_EVENT};
+  thermalMgrSendEvent(&interrupt);
 }
 
 static void thermalMgr(void *pvParameters) {
-  /* Implement this task */
-  thermal_mgr_event_t task;
-  error_code_t errCode;
-  float tempReading = 0.0;
+  thermal_mgr_event_t event;
   while (1) {
-    if (xQueueReceive(thermalMgrQueueHandle, &task, 10) == pdTRUE)
+    if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdTRUE)
     {
-      if (task.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD)
+      error_code_t errCode;
+      float tempReading = 0.0;
+      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD)
       {
         //Imported the logging functions to use this function
-        RETURN_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempReading));
+        LOG_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempReading));
         addTemperatureTelemetry(tempReading);
+      }
+      else if (event.type == THERMAL_MGR_INTERRUPT_EVENT){
+        //Imported the logging functions to use this function
+        LOG_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempReading));
+        if (tempReading>=80)
+            overTemperatureDetected();
+        else if (tempReading<=75)
+            safeOperatingConditions();
       }
     }
   }
