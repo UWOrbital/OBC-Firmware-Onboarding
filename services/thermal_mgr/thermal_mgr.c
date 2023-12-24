@@ -42,10 +42,10 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
-  if (&thermalMgrQueueHandle != NULL)
+  if (&thermalMgrQueueHandle == NULL)
     return ERR_CODE_INVALID_STATE;
   
-  if (event != NULL)
+  if (event == NULL)
     return ERR_CODE_INVALID_ARG;
   
   if (xQueueSend(thermalMgrQueueHandle, (void *) event, (TickType_t) 0) != pdPASS)
