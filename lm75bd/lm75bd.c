@@ -26,9 +26,30 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
   return ERR_CODE_SUCCESS;
 }
 
+
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
-  
+  //sets the temp register
+  error_code_t errCode;
+
+  if ( temp == NULL){
+    return ERR_CODE_INVALID_ARG;
+  }
+  uint8_t buff[1] = {0};
+  errCode = i2cSendTo(devAddr, buff, 1); // this sets the temp register, as the temp register is set to zero 
+  if (errCode != ERR_CODE_SUCCESS) return errCode;
+
+  uint8_t tempData[2] = {0};
+  errCode = i2cReceiveFrom(devAddr, tempData, 2); // the size is set to two as the temperature device sends two bytes of data
+  if (errCode != ERR_CODE_SUCCESS) return errCode;  
+  if ( tempData[0] >> 7 & 1)
+  {
+     * temp = ((~((( tempData[0]<<8)|(tempData[1]>>5))))+1) *0.125; // twos complement of the data concatnated, and then applying tempreture conversion
+  }
+  else
+  {
+     *temp = ((tempData[0]<<8)| (tempData[1]>>5)) * 0.125; // simple case where non negative temp, applying conversion directly 
+  }
   return ERR_CODE_SUCCESS;
 }
 
