@@ -33,8 +33,8 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     return ERR_CODE_INVALID_ARG; 
   }
 
-  uint8_t recTempBuff{1}; 
-  i2cReceiveFrom(devAddr, recTempBuff, 11);
+  uint8_t recTempBuff = 1;
+  i2cReceiveFrom(devAddr, &recTempBuff, 11);
 
 
   if ((recTempBuff & (1 << 9)) == 0)
