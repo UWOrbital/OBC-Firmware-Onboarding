@@ -9,6 +9,9 @@
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
+#define LM75BD_REG_TEMP 0x00U /* Temperature Register (R) */
+
+#define BUFFER_SIZE sizeof(uint16_t)*8
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
@@ -26,9 +29,19 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
+  uint8_t buf[2]={0};
+  buf[0]=LM75BD_REG_TEMP;
+
+  RETURN_IF_ERROR_CODE(i2cSendTo(LM75BD_OBC_I2C_ADDR,buf,1)); //selects internal temp. register
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(LM75BD_OBC_I2C_ADDR,buf,2)); //receives temp. data from internal temp. register; stores in buf
+
+  uint16_t tempData=buf[1]|(buf[0]<<8);
   
+  *temp = (tempData>>5)*0.125;
+
   return ERR_CODE_SUCCESS;
+
+  //return error code fail or something
 }
 
 #define CONF_WRITE_BUFF_SIZE 2U
