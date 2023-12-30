@@ -6,6 +6,8 @@
 typedef enum {
   THERMAL_MGR_EVENT_MEASURE_TEMP_CMD,
   
+  OVER_TEMPERATURE_SHUTDOWN,
+  
 } thermal_mgr_event_type_t;
 
 typedef struct {
