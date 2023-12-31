@@ -27,23 +27,25 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
-  i2cSendTo(devAddr, temp_addr, 8);
+  uint8_t temp1 = temp_addr;
+  i2cSendTo(devAddr, &temp1, 1);
 
   if (temp == NULL) {
     return ERR_CODE_INVALID_ARG; 
   }
 
-  uint8_t recTempBuff = 1;
-  i2cReceiveFrom(devAddr, &recTempBuff, 11);
+  uint8_t recTempBuff[2];
+  i2cReceiveFrom(devAddr, recTempBuff, 2);
 
+  uint16_t newTempValue = (recTempBuff[0] << 8) | recTempBuff[1]; 
 
-  if ((recTempBuff & (1 << 9)) == 0)
+  if ((newTempValue & (1 << 9)) == 0)
   {
-    *temp = recTempBuff * 0.125;
+    *temp = newTempValue * 0.125;
   }
-  else
+  else 
   {
-    *temp = -(~recTempBuff + 1) * 0.125;
+    *temp = -(~newTempValue + 1) * 0.125;
   }
 
   /* Implement this driver function */
