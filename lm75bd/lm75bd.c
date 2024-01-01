@@ -36,7 +36,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     return ERR_CODE_INVALID_ARG;
   }
   uint8_t buff[1] = {0};
-  errCode = i2cSendTo(devAddr, buff, 1); // this sets the temp register, as the temp register is set to zero 
+  errCode = i2cSendTo(devAddr, buff, 1); // this sets the temp register, there is only one byte being passed in to set the pointer register
   if (errCode != ERR_CODE_SUCCESS) return errCode;
 
   uint8_t tempData[2] = {0};
@@ -44,12 +44,23 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   if (errCode != ERR_CODE_SUCCESS) return errCode;  
   if ( tempData[0] >> 7 & 1)
   {
-     * temp = ((~((( tempData[0]<<8)|(tempData[1]>>5))))+1) *0.125; // twos complement of the data concatnated, and then applying tempreture conversion
+    int16_t tempConversion;
+    tempConversion = tempData[0]<<8;
+    tempConversion|=tempData[1];
+    tempConversion>>=5;
+    tempConversion = (~tempConversion)+1;
+    *temp = tempConversion * 0.125;
   }
   else
-  {
-     *temp = ((tempData[0]<<8)| (tempData[1]>>5)) * 0.125; // simple case where non negative temp, applying conversion directly 
+  {    
+    int16_t tempConversion;
+    tempConversion = tempData[0]<<8;
+    tempConversion|=tempData[1];
+    tempConversion>>=5;
+    *temp = tempConversion * 0.125;
+     
   }
+  //go through the data sheet and test out if your calculations actually work
   return ERR_CODE_SUCCESS;
 }
 
