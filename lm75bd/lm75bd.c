@@ -26,8 +26,26 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
-  
+  error_code_t errCode;
+  if (!temp) {
+    return ERR_CODE_INVALID_ARG;
+  }  
+
+  // Configure ptrReg to select tempReg.
+  uint8_t ptrReg = 0b00000000;
+
+  // Send the value of the ptrReg to the sensor.
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &ptrReg, 1));
+
+  // Receive the data from the tempReg.
+  uint8_t tempData[2] = {0};
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, tempData, 2));
+
+  int16_t tempCalc = (tempData[0] << 8) | (tempData[1]);
+  tempCalc >>= 5;
+  tempCalc *= CELSIUS_MULTIPLIER;
+  *temp = (float)tempCalc;
+
   return ERR_CODE_SUCCESS;
 }
 
