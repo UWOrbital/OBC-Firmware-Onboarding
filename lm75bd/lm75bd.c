@@ -37,18 +37,17 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   uint8_t recTempBuff[2];
   i2cReceiveFrom(devAddr, recTempBuff, 2);
 
-  uint16_t newTempValue = (recTempBuff[0] << 8) | recTempBuff[1]; 
+  int16_t newTempValue = (recTempBuff[0] << 8) | recTempBuff[1]; 
+  newTempValue = newTempValue >> 5; 
 
-  if ((newTempValue & (1 << 9)) == 0)
+  if ((newTempValue & (1 << 7)) == 0)
   {
     *temp = newTempValue * 0.125;
   }
   else 
   {
-    *temp = -(~newTempValue + 1) * 0.125;
+    *temp = -1 * ((~newTempValue) + 1) * 0.125;
   }
-
-  /* Implement this driver function */
   
   return ERR_CODE_SUCCESS;
 }
