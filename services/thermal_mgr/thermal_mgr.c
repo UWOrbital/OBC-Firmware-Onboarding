@@ -49,7 +49,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
     return ERR_CODE_INVALID_ARG; 
   }
 
-  if (xQueueSend(thermalMgrQueueHandle, (void *) &event, 0) == pdPASS)
+  if (xQueueSend(thermalMgrQueueHandle, (void *) event, 0) == pdTRUE)
   {
     return ERR_CODE_SUCCESS;
   }  
@@ -93,11 +93,11 @@ static void thermalMgr(void *pvParameters) {
 
           if (errCode == ERR_CODE_SUCCESS)
           {
-            if (currtemp > LM75BD_DEFAULT_OT_THRESH)
+            if (currtemp >= LM75BD_DEFAULT_OT_THRESH)
             {
               overTemperatureDetected();
             }
-            if (currtemp < LM75BD_DEFAULT_HYST_THRESH)
+            if (currtemp <= LM75BD_DEFAULT_HYST_THRESH)
             {
               safeOperatingConditions();
             }

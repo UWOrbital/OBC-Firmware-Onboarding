@@ -40,7 +40,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   int16_t newTempValue = (recTempBuff[0] << 8) | recTempBuff[1]; 
   newTempValue = newTempValue >> 5; 
 
-  if ((newTempValue & (1 << 7)) == 0)
+  if ((recTempBuff[0] & (1 << 7)) == 0)
   {
     *temp = newTempValue * 0.125;
   }
