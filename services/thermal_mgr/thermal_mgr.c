@@ -24,81 +24,94 @@ static uint8_t thermalMgrQueueStorageArea[THERMAL_MGR_QUEUE_LENGTH * THERMAL_MGR
 
 static void thermalMgr(void *pvParameters);
 
-void initThermalSystemManager(lm75bd_config_t *config) {
+void initThermalSystemManager(lm75bd_config_t *config)
+{
   memset(&thermalMgrTaskBuffer, 0, sizeof(thermalMgrTaskBuffer));
   memset(thermalMgrTaskStack, 0, sizeof(thermalMgrTaskStack));
-  
+
   thermalMgrTaskHandle = xTaskCreateStatic(
-    thermalMgr, "thermalMgr", THERMAL_MGR_STACK_SIZE,
-    config, 1, thermalMgrTaskStack, &thermalMgrTaskBuffer);
+      thermalMgr, "thermalMgr", THERMAL_MGR_STACK_SIZE,
+      config, 1, thermalMgrTaskStack, &thermalMgrTaskBuffer);
 
   memset(&thermalMgrQueueBuffer, 0, sizeof(thermalMgrQueueBuffer));
   memset(thermalMgrQueueStorageArea, 0, sizeof(thermalMgrQueueStorageArea));
 
   thermalMgrQueueHandle = xQueueCreateStatic(
-    THERMAL_MGR_QUEUE_LENGTH, THERMAL_MGR_QUEUE_ITEM_SIZE,
-    thermalMgrQueueStorageArea, &thermalMgrQueueBuffer);
-
+      THERMAL_MGR_QUEUE_LENGTH, THERMAL_MGR_QUEUE_ITEM_SIZE,
+      thermalMgrQueueStorageArea, &thermalMgrQueueBuffer);
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event)
- {
-  if ( event == NULL)return ERR_CODE_INVALID_ARG;
+{
+  if (event == NULL)
+    return ERR_CODE_INVALID_ARG;
   error_code_t errCode;
-  errCode = xQueueSend(thermalMgrQueueHandle, (void*)event, 10 );
-  if (errCode!=ERR_CODE_SUCCESS) return errCode;
+  errCode = xQueueSend(thermalMgrQueueHandle, (void *)event, 10);
+  if (errCode != ERR_CODE_SUCCESS)
+    return errCode;
   return ERR_CODE_SUCCESS;
 }
 
-void osHandlerLM75BD(void) 
+void osHandlerLM75BD(void)
 {
   thermal_mgr_event_t overTemp;
   overTemp.type = THERMAL_MGR_EVENT_CHECK_TEMP_CMD;
   thermalMgrSendEvent(&overTemp);
 }
 
-static void thermalMgr(void *pvParameters) 
+static void thermalMgr(void *pvParameters)
 {
-    thermal_mgr_event_t event;
-    /* Implement this task */
-    while (1) {
-        if (thermalMgrQueueHandle != NULL) {
-            if (xQueueReceive(thermalMgrQueueHandle, &event, 10) == pdPASS) {
-                if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
-                    float temp =0;
-                    error_code_t errCode =  readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
-                    if ( errCode == ERR_CODE_SUCCESS){
-                        addTemperatureTelemetry(temp);
-                    }
-                }
-                 if (event.type == THERMAL_MGR_EVENT_CHECK_TEMP_CMD) {
-                    float temp = 0;
-                    error_code_t errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
-                    
-                    if ( errCode == ERR_CODE_SUCCESS){
-                    // now we must execute the checks on the 
-                    if (temp > LM75BD_DEFAULT_OT_THRESH) {
-                        overTemperatureDetected();
-                    }
-                    else {
-                        safeOperatingConditions();
-                    }
-                    }
-                }
-            }
+  if (pvParameters == NULL) {return;}
+  thermal_mgr_event_t event;
+  /* Implement this task */
+  while (1)
+  {
+    if (thermalMgrQueueHandle != NULL)
+    {
+      if (xQueueReceive(thermalMgrQueueHandle, &event, 10) == pdPASS)
+      {
+        if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD)
+        {
+          float temp = 0;
+          error_code_t errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+          if (errCode == ERR_CODE_SUCCESS)
+          {
+            addTemperatureTelemetry(temp);
+          }
         }
+        if (event.type == THERMAL_MGR_EVENT_CHECK_TEMP_CMD)
+        {
+          float temp = 0;
+          error_code_t errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+          if (errCode == ERR_CODE_SUCCESS)
+          {
+            // excecuting checks for over_temp conditions and safe operations
+            if (temp > LM75BD_DEFAULT_OT_THRESH)
+            {
+              overTemperatureDetected();
+            }
+            else
+            {
+              safeOperatingConditions();
+            }
+          }
+        }
+      }
     }
+  }
 }
 
-
-void addTemperatureTelemetry(float tempC) {
+void addTemperatureTelemetry(float tempC)
+{
   printConsole("Temperature telemetry: %f deg C\n", tempC);
 }
 
-void overTemperatureDetected(void) {
+void overTemperatureDetected(void)
+{
   printConsole("Over temperature detected!\n");
 }
 
-void safeOperatingConditions(void) { 
+void safeOperatingConditions(void)
+{
   printConsole("Returned to safe operating conditions!\n");
 }

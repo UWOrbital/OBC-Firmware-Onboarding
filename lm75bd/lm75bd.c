@@ -49,7 +49,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     tempConversion|=tempData[1];
     tempConversion>>=5;
     tempConversion = (~tempConversion)+1;
-    *temp = tempConversion * 0.125;
+    *temp = -tempConversion * 0.125;
   }
   else
   {    
