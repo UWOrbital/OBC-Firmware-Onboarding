@@ -43,7 +43,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   int16_t tempCalc = (tempData[0] << 8) | (tempData[1]);
   tempCalc >>= 5;
-  tempCalc *= CELSIUS_MULTIPLIER;
+  tempCalc *= 0.125;
   *temp = (float)tempCalc;
 
   return ERR_CODE_SUCCESS;
