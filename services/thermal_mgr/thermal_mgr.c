@@ -62,13 +62,27 @@ static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   error_code_t errCode;
   thermal_mgr_event_t event;
+  float temp;
+
   while (1) {
     if (xQueueReceive(thermalMgrQueueHandle,&event,portMAX_DELAY)==pdTRUE){//task will remain blocked as long as queue is empty
       if (event.type==THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
-        float temp;
         errCode=readTempLM75BD(LM75BD_OBC_I2C_ADDR,&temp);
         LOG_IF_ERROR_CODE(errCode);
         if(errCode==ERR_CODE_SUCCESS) addTemperatureTelemetry(temp);
+      }
+      else if (event.type==THERMAL_MGR_EVENT_INTERRUPT){
+        errCode=readTempLM75BD(LM75BD_OBC_I2C_ADDR,&temp);
+        LOG_IF_ERROR_CODE(errCode);
+        if(errCode==ERR_CODE_SUCCESS){
+          if(temp>LM75BD_DEFAULT_OT_THRESH){
+            overTemperatureDetected();//don't bother sending temp as telemetry bc the system shuts down anyway
+          }
+          else{
+            safeOperatingConditions();
+            addTemperatureTelemetry(temp);
+          }
+        }
       }
     }
   }
