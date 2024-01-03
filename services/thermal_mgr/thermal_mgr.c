@@ -44,16 +44,17 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
 
-  if (xQueueSend(thermalMgrQueueHandle, (void *) &event, 5000/portTICK_PERIOD_MS) == pdPASS)
-  {
-    return ERR_CODE_SUCCESS;
-  }  
   if (thermalMgrQueueHandle == NULL || event == NULL)
   {
     return ERR_CODE_INVALID_ARG; 
   }
 
-  return ERR_CODE_UNKNOWN; 
+  if (xQueueSend(thermalMgrQueueHandle, (void *) &event, 0) == pdPASS)
+  {
+    return ERR_CODE_SUCCESS;
+  }  
+
+  return ERR_CODE_QUEUE_FULL; 
 }
 
 void osHandlerLM75BD(void) {
@@ -66,36 +67,47 @@ void osHandlerLM75BD(void) {
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   thermal_mgr_event_t event;
-  void *const pvBuffer = &event; 
+   
   lm75bd_config_t data = *(lm75bd_config_t *) pvParameters;
 
   
-  
   while (1) {
-    if (xQueueReceive(thermalMgrQueueHandle, pvBuffer, 5000/portTICK_PERIOD_MS) == pdPASS)
+    if (thermalMgrQueueHandle != NULL)
     {
+    if (xQueueReceive(thermalMgrQueueHandle, &event, 5000/portTICK_PERIOD_MS) == pdPASS)
+    {
+        float currtemp;
         if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD)
         {
-            float currtemp;
-            readTempLM75BD(data.devAddr,&currtemp);
+          error_code_t errCode = readTempLM75BD(data.devAddr, &currtemp);
+
+          if (errCode == ERR_CODE_SUCCESS)
+          {
             addTemperatureTelemetry(currtemp);
+          }
+
         }
         if (event.type == OVER_TEMPERATURE_SHUTDOWN)
         {
-          float currtemp;
-          readTempLM75BD(data.devAddr, &currtemp);
+          error_code_t errCode = readTempLM75BD(data.devAddr, &currtemp); 
 
-          if (currtemp > 80)
+          if (errCode == ERR_CODE_SUCCESS)
           {
-            overTemperatureDetected();
+            if (currtemp > LM75BD_DEFAULT_OT_THRESH)
+            {
+              overTemperatureDetected();
+            }
+            if (currtemp < LM75BD_DEFAULT_HYST_THRESH)
+            {
+              safeOperatingConditions();
+            }
           }
-          if (currtemp < 75)
-          {
-            safeOperatingConditions();
-          }
+
         }
     }
   }
+  
+}
 }
 
 void addTemperatureTelemetry(float tempC) {
