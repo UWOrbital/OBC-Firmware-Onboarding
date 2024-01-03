@@ -80,7 +80,7 @@ static void thermalMgr(void *pvParameters) {
       }
 
       if (receivedEvent.type == THERMAL_MGR_EVENT_OS_INTERRUPT) {
-        currTemp > config->overTempThresholdCelsius ? overTemperatureDetected() : safeOperatingConditions();
+        currTemp > config->hysteresisThresholdCelsius ? overTemperatureDetected() : safeOperatingConditions();
       }
     }
   }
