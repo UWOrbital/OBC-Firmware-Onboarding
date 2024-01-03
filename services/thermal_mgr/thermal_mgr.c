@@ -76,7 +76,8 @@ static void thermalMgr(void *pvParameters) {
         LOG_IF_ERROR_CODE(errCode);
         if(errCode==ERR_CODE_SUCCESS){
           if(temp>LM75BD_DEFAULT_OT_THRESH){
-            overTemperatureDetected();//don't bother sending temp as telemetry bc the system shuts down anyway
+            overTemperatureDetected();
+            addTemperatureTelemetry(temp);
           }
           else{
             safeOperatingConditions();
