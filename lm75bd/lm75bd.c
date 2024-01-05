@@ -29,16 +29,17 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   error_code_t errCode;
 
-  if(temp==NULL) return ERR_CODE_INVALID_ARG;
+  if(temp == NULL) return ERR_CODE_INVALID_ARG;
 
-  uint8_t buf[2]={LM75BD_REG_TEMP,0};
+  uint8_t tempRegBuf = LM75BD_REG_TEMP;
+  uint8_t receiveBuf[2] = {0};
   
-  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr,buf,1));//selects internal temp. register
-  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr,buf,2));//receives temp. data from internal temp. register; stores in buf
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &tempRegBuf, 1));//selects internal temp. register
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, receiveBuf, 2));//receives temp. data from internal temp. register; stores in buf
 
-  int16_t tempData=buf[1]|(buf[0]<<8);//int16_t => signed value
+  int16_t tempData=receiveBuf[1] | (receiveBuf[0] << 8);//int16_t => signed value
   
-  *temp = (float)(tempData>>5)*0.125;//shift 5 right eliminates 5 LSBs
+  *temp = (float)(tempData >> 5) * 0.125;//shift 5 right eliminates 5 LSBs
 
   return ERR_CODE_SUCCESS;
 }
