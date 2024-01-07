@@ -26,16 +26,27 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-
+  error_code_t errCode;
+  
   if (temp == NULL) {
     return ERR_CODE_INVALID_ARG; 
   }
   
   uint8_t temp1 = TEMP_ADDR;
-  i2cSendTo(devAddr, &temp1, 1);
+  
+  errCode = i2cSendTo(devAddr, &temp1, 1);
+  if (errCode != ERR_CODE_SUCCESS)
+  {
+    return errCode; 
+  }
 
   uint8_t recTempBuff[2];
-  i2cReceiveFrom(devAddr, recTempBuff, 2);
+
+  errCode = i2cReceiveFrom(devAddr, recTempBuff, 2);
+  if (errCode != ERR_CODE_SUCCESS)
+  {
+    return errCode; 
+  }
 
   int16_t newTempValue = (recTempBuff[0] << 8) | recTempBuff[1]; 
   newTempValue = newTempValue >> 5; 
