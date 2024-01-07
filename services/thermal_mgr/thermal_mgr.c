@@ -62,12 +62,13 @@ void osHandlerLM75BD(void)
 static void thermalMgr(void *pvParameters)
 {
   if (pvParameters == NULL) {return;}
-  thermal_mgr_event_t event;
+
   /* Implement this task */
   while (1)
   {
     if (thermalMgrQueueHandle != NULL)
     {
+        thermal_mgr_event_t event;
       if (xQueueReceive(thermalMgrQueueHandle, &event, 10) == pdPASS)
       {
         if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD)

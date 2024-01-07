@@ -8,6 +8,7 @@
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
+#define LM75BD_TEMP_REGISTER 0x00U // temperature register
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
@@ -35,8 +36,8 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   if ( temp == NULL){
     return ERR_CODE_INVALID_ARG;
   }
-  uint8_t buff[1] = {0};
-  errCode = i2cSendTo(devAddr, buff, 1); // this sets the temp register, there is only one byte being passed in to set the pointer register
+  uint8_t buff= LM75BD_TEMP_REGISTER;
+  errCode = i2cSendTo(devAddr, &buff, 1); // this sets the temp register, there is only one byte being passed in to set the pointer register
   if (errCode != ERR_CODE_SUCCESS) return errCode;
 
   uint8_t tempData[2] = {0};
