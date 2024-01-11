@@ -33,7 +33,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   if ( temp == NULL){
     return ERR_CODE_INVALID_ARG;
   }
-  uint8_t buff= LM75BD_TEMP_REGISTER;
+  uint8_t buff= LM75BD_REG_TEMP_REGISTER;
   errCode = i2cSendTo(devAddr, &buff, 1); // this sets the temp register, there is only one byte being passed in to set the pointer register
   if (errCode != ERR_CODE_SUCCESS) return errCode;
 
