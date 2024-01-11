@@ -50,6 +50,11 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
     return ERR_CODE_INVALID_ARG; 
   }
 
+  if (thermalMgrQueueHandle == NULL)
+  {
+    return ERR_CODE_INVALID_STATE; 
+  }
+
   if (xQueueSend(thermalMgrQueueHandle, (void *) event, 0) == pdTRUE)
   {
     return ERR_CODE_SUCCESS;
@@ -60,14 +65,14 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
-  thermal_mgr_event_t interrupt;
-  interrupt.type = OVER_TEMPERATURE_SHUTDOWN;
+  thermal_mgr_event_t interrupt = {0};
+  interrupt.type = THERMAL_MGR_EVENT_OVER_TEMP_SHUTDOWN;
   thermalMgrSendEvent(&interrupt);
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */   
-  lm75bd_config_t data = *(lm75bd_config_t *) pvParameters;
+  lm75bd_config_t lm75bdConfig = *(lm75bd_config_t *) pvParameters;
 
 
   while (1) {
@@ -80,18 +85,22 @@ static void thermalMgr(void *pvParameters) {
         float currtemp;
         if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD)
         {
-          error_code_t errCode = readTempLM75BD(data.devAddr, &currtemp);
+          error_code_t errCode = readTempLM75BD(lm75bdConfig.devAddr, &currtemp);
           
           if (errCode == ERR_CODE_SUCCESS)
           {
             addTemperatureTelemetry(currtemp);
           }
-          LOG_IF_ERROR_CODE(errCode);
+
+          else if (errCode != ERR_CODE_SUCCESS)
+          {
+            LOG_IF_ERROR_CODE(errCode);
+          }
         }
 
-        if (event.type == OVER_TEMPERATURE_SHUTDOWN)
+        else if (event.type == THERMAL_MGR_EVENT_OVER_TEMP_SHUTDOWN)
         {
-          error_code_t errCode = readTempLM75BD(data.devAddr, &currtemp); 
+          error_code_t errCode = readTempLM75BD(lm75bdConfig.devAddr, &currtemp); 
 
           if (errCode == ERR_CODE_SUCCESS)
           {
@@ -104,7 +113,11 @@ static void thermalMgr(void *pvParameters) {
               safeOperatingConditions();
             }
           }
-          LOG_IF_ERROR_CODE(errCode);
+
+          else if (errCode != ERR_CODE_SUCCESS)
+          {
+            LOG_IF_ERROR_CODE(errCode);
+          }
         }
     }
   }

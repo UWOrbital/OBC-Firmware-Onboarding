@@ -9,7 +9,7 @@
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
-#define TEMP_ADDR 0x00
+#define LM75BD_REG_TEMP 0x00
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
 
@@ -32,33 +32,18 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     return ERR_CODE_INVALID_ARG; 
   }
   
-  uint8_t temp1 = TEMP_ADDR;
+  uint8_t tempRegAddr = LM75BD_REG_TEMP;
   
-  errCode = i2cSendTo(devAddr, &temp1, 1);
-  if (errCode != ERR_CODE_SUCCESS)
-  {
-    return errCode; 
-  }
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &tempRegAddr, 1));
 
-  uint8_t recTempBuff[2];
+  uint8_t recTempBuff[2] = {0};
 
-  errCode = i2cReceiveFrom(devAddr, recTempBuff, 2);
-  if (errCode != ERR_CODE_SUCCESS)
-  {
-    return errCode; 
-  }
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, recTempBuff, 2));
+
 
   int16_t newTempValue = (recTempBuff[0] << 8) | recTempBuff[1]; 
-  newTempValue = newTempValue >> 5; 
 
-  if ((recTempBuff[0] & (1 << 7)) == 0)
-  {
-    *temp = newTempValue * 0.125;
-  }
-  else 
-  {
-    *temp = -1 * ((~newTempValue) + 1) * 0.125;
-  }
+  *temp = (float)(newTempValue >> 5) * 0.125f;
   
   return ERR_CODE_SUCCESS;
 }

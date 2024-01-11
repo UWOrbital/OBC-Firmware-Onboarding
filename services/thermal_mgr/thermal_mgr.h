@@ -6,7 +6,7 @@
 typedef enum {
   THERMAL_MGR_EVENT_MEASURE_TEMP_CMD,
   
-  OVER_TEMPERATURE_SHUTDOWN,
+  THERMAL_MGR_EVENT_OVER_TEMP_SHUTDOWN,
   
 } thermal_mgr_event_type_t;
 
