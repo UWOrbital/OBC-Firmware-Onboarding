@@ -1,66 +1,40 @@
-# OBC Firmware Onboarding Challenge
+# Firmware Onboarding Challenge - CubeSat Temperature Management
 
-Welcome to Orbital's OBC Firmware Onboarding Challenge! Please visit [this Notion doc](https://www.notion.so/uworbital/Firmware-Onboarding-Challenge-Updated-24340dfccb0547a5a7246ce6d7207c28) for the challenge instructions. Remember to follow our style guide which is written below.
+## Overview
 
-## Style Guide
+This challenge involved developing a peripheral driver for the LM75BD temperature sensor, implementing a thermal management task, and handling OS interrupts. The goal was to provide a deeper understanding of embedded systems, real-time operating systems (FreeRTOS), and interfacing with sensors using the I2C protocol.
 
-### Comments
+## Background
 
-#### Single Line Comments
+### Embedded Systems
 
-Variable and function names should be descriptive enough to understand even without comments. Comments are needed to describe any complicated logic. You may use `//` or `/* */` for single line comments.
+Embedded systems are specialized computing systems designed for specific tasks within larger systems. They often operate in real-time and are embedded into devices like microcontrollers, ensuring efficient and dedicated functionality.
 
-#### Function Comments
+### Real-Time Operating Systems (RTOS)
 
-Function comments should exist in the .h file. For static functions, they should exist in the .c file. Function comments should follow the format shown below:
-```c
-/**
- * @brief Adds two numbers together
- *
- * @param num1 - The first number to add.
- * @param num2 - The second number to add.
- * @return Returns the sum of the two numbers.
- */
-uint8_t addNumbers(uint8_t num1, uint8_t num2);
-```
+RTOS is a specialized operating system designed for real-time applications, where timely and predictable responses to events are crucial. FreeRTOS is a popular open-source RTOS used in embedded systems.
 
-#### File Header Comments
+### I2C Protocol
 
-- File comments are not required
+I2C (Inter-Integrated Circuit) is a communication protocol commonly used to connect and communicate between integrated circuits. It enables data exchange between devices with a master-slave architecture, allowing efficient sensor integration.
 
-#### Header Guard
+## Completed Tasks
 
-We use `#pragma once` instead of include guards.
+### 1. LM75BD Sensor Driver
 
-### ****Naming and typing conventions****
+- **Implementation:**
+  - Developed C functions for the LM75BD sensor driver using the I2C protocol.
+  - Referenced the LM75BD datasheet for precise register selection and timing diagrams.
 
--   `variableNames` in camelCase
--   `functionNames()` in camelCase
--   `#define MACRO_NAME` in CAPITAL_SNAKE_CASE
--   `file_names` in snake_case
--   `type_defs` in snake_case with _t suffix
-    -   Ex:
-        ```c
-        typedef struct {
-          int a;
-          int b;
-        } struct_name_t
-        ```
--   Import statements should be grouped in the following order:
-    1.  Local imports (e.g. `#include "cc1120_driver.h`)
-    2.  External library imports (e.g. `#include <os_semphr.h>`)
-    3.  Standard library imports (e.g. `#include <stdint.h>`)
+### 2. Thermal Management Task
 
-### ****General Rules****
-Some of these rules don't apply in certain cases. Use your better judgement. To learn more about these rules, research NASA's Power of 10.
+- **Implementation:**
+  - Utilized FreeRTOS for task scheduling and telemetry collection.
+  - Ensured consistent temperature monitoring for CubeSat system safety.
 
-1. Avoid complex flow constructs, such as [goto](https://en.wikipedia.org/wiki/Goto) and [recursion](https://en.wikipedia.org/wiki/Recursion_(computer_science)).
-2. All loops must have fixed bounds. This prevents runaway code.
-3. Avoid [heap memory allocation](https://en.wikipedia.org/wiki/Memory_management#DYNAMIC).
-4. Use an average of two [runtime assertions](https://en.wikipedia.org/wiki/Assertion_(software_development)#Assertions_for_run-time_checking) per function.
-5. Restrict the scope of data to the smallest possible.
-6. Check the return value of all non-void functions, or cast to void to indicate the return value is useless.
-7. Limit pointer use to a single [dereference](https://en.wikipedia.org/wiki/Dereference_operator), and do not use [function pointers](https://en.wikipedia.org/wiki/Function_pointer).
-8. Compile with all possible warnings active; all warnings should then be addressed before release of the software.
-9. Use the preprocessor sparingly
-10. Restrict functions to a single printed page
+### 3. OS Interrupt Handling
+
+- **Implementation:**
+  - Designed interrupt functions aligning with LM75BD specifications.
+  - Enhanced CubeSat defense against overtemperature scenarios through RTOS mechanisms for the RM46 microcontroller.
+
