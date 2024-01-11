@@ -8,8 +8,7 @@
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
-#define LM75BD_TEMP_REGISTER 0x00U // temperature register
-
+#define LM75BD_REG_TEMP_REGISTER 0x00U // temperature register
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
 
@@ -26,8 +25,6 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
   return ERR_CODE_SUCCESS;
 }
-
-
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
   //sets the temp register
@@ -43,24 +40,8 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   uint8_t tempData[2] = {0};
   errCode = i2cReceiveFrom(devAddr, tempData, 2); // the size is set to two as the temperature device sends two bytes of data
   if (errCode != ERR_CODE_SUCCESS) return errCode;  
-  if ( tempData[0] >> 7 & 1)
-  {
-    int16_t tempConversion;
-    tempConversion = tempData[0]<<8;
-    tempConversion|=tempData[1];
-    tempConversion>>=5;
-    tempConversion = (~tempConversion)+1;
-    *temp = -tempConversion * 0.125;
-  }
-  else
-  {    
-    int16_t tempConversion;
-    tempConversion = tempData[0]<<8;
-    tempConversion|=tempData[1];
-    tempConversion>>=5;
-    *temp = tempConversion * 0.125;
-     
-  }
+  int16_t regVal = tempData[0]<<8 | tempData[1];
+  *temp = (float)(regVal>>5)*0.125;
   //go through the data sheet and test out if your calculations actually work
   return ERR_CODE_SUCCESS;
 }

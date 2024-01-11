@@ -61,28 +61,24 @@ void osHandlerLM75BD(void)
 
 static void thermalMgr(void *pvParameters)
 {
-  if (pvParameters == NULL) {return;}
-
   /* Implement this task */
   while (1)
   {
-    if (thermalMgrQueueHandle != NULL)
-    {
         thermal_mgr_event_t event;
-      if (xQueueReceive(thermalMgrQueueHandle, &event, 10) == pdPASS)
+      if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdPASS)
       {
         if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD)
         {
-          float temp = 0;
+          float temp = 0.0f;
           error_code_t errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
           if (errCode == ERR_CODE_SUCCESS)
           {
             addTemperatureTelemetry(temp);
           }
         }
-        if (event.type == THERMAL_MGR_EVENT_CHECK_TEMP_CMD)
+        else if (event.type == THERMAL_MGR_EVENT_CHECK_TEMP_CMD)
         {
-          float temp = 0;
+          float temp = 0.0f;
           error_code_t errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
           if (errCode == ERR_CODE_SUCCESS)
           {
@@ -97,7 +93,6 @@ static void thermalMgr(void *pvParameters)
             }
           }
         }
-      }
     }
   }
 }
