@@ -1,4 +1,4 @@
-# Firmware Onboarding Challenge - CubeSat Temperature Management
+# OBC Firmware Onboarding - CubeSat Temperature Management
 
 ## Overview
 
