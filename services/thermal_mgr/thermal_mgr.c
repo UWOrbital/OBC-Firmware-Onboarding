@@ -46,15 +46,20 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event)
   if (event == NULL)
     return ERR_CODE_INVALID_ARG;
   error_code_t errCode;
-  errCode = xQueueSend(thermalMgrQueueHandle, (void *)event, 10);
+  if (thermalMgrQueueHandle == NULL){
+    return ERR_CODE_INVALID_STATE;
+  }
+  errCode = xQueueSend(thermalMgrQueueHandle, (void *)event, 0);
+
   if (errCode != ERR_CODE_SUCCESS)
     return errCode;
+
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void)
 {
-  thermal_mgr_event_t overTemp;
+  thermal_mgr_event_t overTemp = {0};
   overTemp.type = THERMAL_MGR_EVENT_CHECK_TEMP_CMD;
   thermalMgrSendEvent(&overTemp);
 }
