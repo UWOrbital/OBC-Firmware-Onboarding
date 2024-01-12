@@ -82,17 +82,17 @@ static void thermalMgr(void *pvParameters) {
     {
     if (xQueueReceive(thermalMgrQueueHandle, &event, 5000/portTICK_PERIOD_MS) == pdPASS)
     {
-        float currtemp;
+        float currTemp;
         if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD)
         {
-          error_code_t errCode = readTempLM75BD(lm75bdConfig.devAddr, &currtemp);
+          error_code_t errCode = readTempLM75BD(lm75bdConfig.devAddr, &currTemp);
           
           if (errCode == ERR_CODE_SUCCESS)
           {
-            addTemperatureTelemetry(currtemp);
+            addTemperatureTelemetry(currTemp);
           }
 
-          else if (errCode != ERR_CODE_SUCCESS)
+          else
           {
             LOG_IF_ERROR_CODE(errCode);
           }
@@ -100,21 +100,21 @@ static void thermalMgr(void *pvParameters) {
 
         else if (event.type == THERMAL_MGR_EVENT_OVER_TEMP_SHUTDOWN)
         {
-          error_code_t errCode = readTempLM75BD(lm75bdConfig.devAddr, &currtemp); 
+          error_code_t errCode = readTempLM75BD(lm75bdConfig.devAddr, &currTemp); 
 
           if (errCode == ERR_CODE_SUCCESS)
           {
-            if (currtemp >= LM75BD_DEFAULT_OT_THRESH)
+            if (currTemp >= LM75BD_DEFAULT_OT_THRESH)
             {
               overTemperatureDetected();
             }
-            if (currtemp <= LM75BD_DEFAULT_HYST_THRESH)
+            if (currTemp <= LM75BD_DEFAULT_HYST_THRESH)
             {
               safeOperatingConditions();
             }
           }
 
-          else if (errCode != ERR_CODE_SUCCESS)
+          else
           {
             LOG_IF_ERROR_CODE(errCode);
           }
