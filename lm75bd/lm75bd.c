@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 #include <math.h>
 
 /* LM75BD Registers (p.8) */
@@ -26,8 +27,31 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
-  
+  error_code_t errCode;
+
+  /* Selecting temperature register */
+  uint8_t sendData = 0;
+  errCode = i2cSendTo(LM75BD_OBC_I2C_ADDR, &sendData, 1);
+  if (errCode != ERR_CODE_SUCCESS) return errCode;
+
+  /* Receive temp reading */
+  uint8_t buff[2] = {0, 0};
+  errCode = i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, buff, 2);
+  if (errCode != ERR_CODE_SUCCESS) return errCode;
+
+  /* Convert to celceus */
+  uint16_t readValue = 0;
+  readValue = ((uint16_t) buff[0] << 8) | buff[1];
+
+  /* Positive if 1st MSB is 0 */
+  if(buff[0] < 0b10000000){
+    readValue = readValue >> 5;
+    *temp = ((float) readValue) * 0.125;
+  } else {
+    readValue = ~readValue + 1;
+    readValue = readValue >> 5;
+    *temp =  ((float) readValue) * -0.125;
+  }
   return ERR_CODE_SUCCESS;
 }
 
