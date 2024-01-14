@@ -31,12 +31,12 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   /* Selecting temperature register */
   uint8_t sendData = 0;
-  errCode = i2cSendTo(LM75BD_OBC_I2C_ADDR, &sendData, 1);
+  errCode = i2cSendTo(devAddr, &sendData, 1);
   if (errCode != ERR_CODE_SUCCESS) return errCode;
 
   /* Receive temp reading */
   uint8_t buff[2] = {0, 0};
-  errCode = i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, buff, 2);
+  errCode = i2cReceiveFrom(devAddr, buff, 2);
   if (errCode != ERR_CODE_SUCCESS) return errCode;
 
   /* Convert to celceus */
