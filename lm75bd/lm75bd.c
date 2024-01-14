@@ -9,7 +9,7 @@
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U /* Configuration Register (R/W) */
-#define TEMP_REG 0x00
+#define LM75BD_REG_TEMP 0x00U /* Temperature Register (R) */
 
 error_code_t lm75bdInit(lm75bd_config_t *config)
 {
@@ -36,7 +36,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
     return ERR_CODE_INVALID_ARG;
   }
   // Write pointer data to select Temp Reg
-  uint8_t pointerData = TEMP_REG;
+  uint8_t pointerData = LM75BD_REG_TEMP;
   RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &pointerData, 1));
   // Read temp data from Temp Reg
   uint8_t tempData[2] = {0};
