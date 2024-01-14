@@ -48,7 +48,17 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 }
 
 void osHandlerLM75BD(void) {
-  /* Implement this function */
+
+  /* Get temp */
+  float temp;
+  readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+
+  if(temp >= LM75BD_DEFAULT_HYST_THRESH){
+    overTemperatureDetected();
+  } else {
+    safeOperatingConditions();
+  }
+
 }
 
 static void thermalMgr(void *pvParameters) {
