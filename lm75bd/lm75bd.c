@@ -39,19 +39,8 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   errCode = i2cReceiveFrom(devAddr, buff, 2);
   if (errCode != ERR_CODE_SUCCESS) return errCode;
 
-  /* Convert to celceus */
-  uint16_t readValue = 0;
-  readValue = ((uint16_t) buff[0] << 8) | buff[1];
-
-  /* Positive if 1st MSB is 0 */
-  if(buff[0] < 0b10000000){
-    readValue = readValue >> 5;
-    *temp = ((float) readValue) * 0.125;
-  } else {
-    readValue = ~readValue + 1;
-    readValue = readValue >> 5;
-    *temp =  ((float) readValue) * -0.125;
-  }
+  int16_t regVal = (buff[0] << 8) | buff[1]; 
+  *temp = (float)(regVal >> 5) * 0.125f;
   return ERR_CODE_SUCCESS;
 }
 
