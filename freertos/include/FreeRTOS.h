@@ -125,7 +125,7 @@ extern "C" {
 #endif
 
 #ifndef INCLUDE_vTaskSuspend
-#define INCLUDE_vTaskSuspend 1
+#define INCLUDE_vTaskSuspend 0
 #endif
 
 #ifdef INCLUDE_xTaskDelayUntil
