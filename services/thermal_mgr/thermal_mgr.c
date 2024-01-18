@@ -50,8 +50,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 }
 
 void osHandlerLM75BD(void) {
-  thermal_mgr_event_t event;
-  event.type = THERMAL_MGR_EVENT_OS_HANDLE;
+  thermal_mgr_event_t event = {.type = THERMAL_MGR_EVENT_OS_HANDLE};
   thermalMgrSendEvent(&event);
 }
 
