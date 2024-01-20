@@ -75,6 +75,8 @@ static void thermalMgr(void *pvParameters) {
           }
         }
       }
+    } else {
+      LOG_ERROR_CODE(ERR_CODE_QUEUE_FULL);
     }
   }
 }
