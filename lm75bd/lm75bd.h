@@ -19,11 +19,9 @@
 #define LM75BD_OS_OP_MODE_COMP 0x00U
 #define LM75BD_OS_OP_MODE_INT 0x01U
 
-/* LM75BD Pointer Register Mappings */ 
-#define LM75BD_POINTER_TEMP 0x00U   // Temperature register 
-#define LM75BD_POINTER_CONF 0x01U   // Configuration register
-#define LM75BD_POINTER_HIST 0x10U   // Hysteresis register 
-#define LM75BD_POINTER_OVER 0x11U   // Overtemperature register 
+/* LM75BD Register Mappings (p.8) */ 
+#define LM75BD_POINTER_TEMP 0x00U   /* Temperature register (RO) */
+#define LM75BD_POINTER_CONF 0x01U   /* Configuration register (R/W) */
 
 // Default temperature thresholds
 #define LM75BD_DEFAULT_OT_THRESH 80.0f

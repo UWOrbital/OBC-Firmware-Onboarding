@@ -44,7 +44,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     uint8_t readTempBuf[2] = {0};   
     LOG_IF_ERROR_CODE(i2cReceiveFrom(devAddr, readTempBuf, sizeof(readTempBuf)));  
     // MSB is top half of readTempBuf
-    uint16_t tempData =  readTempBuf[0] << 3 |      // TODO: Double check the byte ordering here 
+    uint16_t tempData =  readTempBuf[0] << 3 |      
                         (readTempBuf[1] >> 5);    
     
     // Check for out-of-range error
@@ -58,16 +58,17 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
      *  --------------------------------------------------------------------------------
      *  0    0    0    0    0    D10  D9  D8   D7   D6   D5   D4   D3   D2   D1   D0
      *  --------------------------------------------------------------------------------
-     *  
+     *                           ^ LM75BD_TEMP_RA_MSB_MASK
+     *
      */
     // Two's Complement
     if ((tempData & LM75BD_TEMP_RA_MSB_MASK) > 0) {
         // Result is negative, invert it and mask off top 5 bits    
-        result = -1.0 * (~tempData & LM75BD_TEMP_RA_MSB_MASK) * LM75BD_TEMP_LSB_TO_C;   // Calculate degrees C
+        result = -1.0 * (~tempData & LM75BD_TEMP_RA_10B_MASK) * LM75BD_TEMP_LSB_TO_C;   // Calculate degrees C
         result -= LM75BD_TEMP_LSB_TO_C;     // We lose a MSB due to 2s Complement
     } else {
         // Result is positive
-        result = (tempData & LM75BD_TEMP_RA_MSB_MASK) * LM75BD_TEMP_LSB_TO_C;   // Convert into float
+        result = (tempData & LM75BD_TEMP_RA_10B_MASK) * LM75BD_TEMP_LSB_TO_C;   // Convert into float
 
     }  
     // Store result;
