@@ -59,7 +59,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
      *  0    0    0    0    0    D10  D9  D8   D7   D6   D5   D4   D3   D2   D1   D0
      *  --------------------------------------------------------------------------------
      *                           ^ LM75BD_TEMP_RA_MSB_MASK
-     *
+     *                            |-----------LM75BD_TEMP_RA_10B_MASK--------------|
      */
     // Two's Complement
     if ((tempData & LM75BD_TEMP_RA_MSB_MASK) > 0) {
