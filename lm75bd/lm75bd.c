@@ -7,8 +7,20 @@
 #include <string.h>
 #include <math.h>
 
-/* LM75BD Registers (p.8) */
+/* LM75BD Register Mappings (p.8) */     
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
+#define LM75BD_POINTER_TEMP 0x00U   /* Temperature register (RO) */    
+#define LM75BD_POINTER_CONF 0x01U   /* Configuration register (R/W) */    
+    
+// Default temperature thresholds    
+#define LM75BD_DEFAULT_OT_THRESH 80.0f    
+#define LM75BD_DEFAULT_HYST_THRESH 75.0f    
+    
+// Used for temperature conversions    
+#define LM75BD_TEMP_LSB_TO_C 0.125f      
+#define LM75BD_TEMP_RA_10B_MASK 0x7FF      
+#define LM75BD_TEMP_RA_MSB_MASK 0x400    
+
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
@@ -33,16 +45,15 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
  *
  */
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {  
-    float result = 0.0;
     uint8_t targetRegister = LM75BD_POINTER_TEMP;
     error_code_t errCode;
     // Select sensors internal temperature register using pointer register    
-    LOG_IF_ERROR_CODE(i2cSendTo(devAddr, &targetRegister, sizeof(targetRegister)));
+    RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &targetRegister, sizeof(targetRegister)));
     // XXX: p.8 of datasheet suggests first temperature read is always incorrect
     
     // Perform an I2C read of the device
     uint8_t readTempBuf[2] = {0};   
-    LOG_IF_ERROR_CODE(i2cReceiveFrom(devAddr, readTempBuf, sizeof(readTempBuf)));  
+    RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, readTempBuf, sizeof(readTempBuf)));  
     // MSB is top half of readTempBuf
     uint16_t tempData =  readTempBuf[0] << 3 |      
                         (readTempBuf[1] >> 5);    
@@ -62,6 +73,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
      *                            |-----------LM75BD_TEMP_RA_10B_MASK--------------|
      */
     // Two's Complement
+   float result = 0.0;
     if ((tempData & LM75BD_TEMP_RA_MSB_MASK) > 0) {
         // Result is negative, invert it and mask off top 5 bits    
         result = -1.0 * (~tempData & LM75BD_TEMP_RA_10B_MASK) * LM75BD_TEMP_LSB_TO_C;   // Calculate degrees C
