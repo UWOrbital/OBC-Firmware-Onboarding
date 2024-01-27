@@ -59,9 +59,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
         return ERR_CODE_UNKNOWN;
     }
 
-    BaseType_t errorCode;
-    errorCode = xQueueSend( thermalMgrQueueHandle, (void *) event, 0 );
-    switch( errorCode ) {
+    switch( xQueueSend( thermalMgrQueueHandle, (void *) event, 0 ) ) {
         case pdTRUE:
             return ERR_CODE_SUCCESS; 
             break;
