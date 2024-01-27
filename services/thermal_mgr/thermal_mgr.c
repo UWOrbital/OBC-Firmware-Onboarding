@@ -24,7 +24,7 @@ static uint8_t thermalMgrQueueStorageArea[THERMAL_MGR_QUEUE_LENGTH * THERMAL_MGR
 
 static void thermalMgr(void *pvParameters);
 
-static volatile bool recomputeOTStateFlag = 0;    
+static volatile uint8_t recomputeOTStateFlag = 0;    
 
 void initThermalSystemManager(lm75bd_config_t *config) {
   memset(&thermalMgrTaskBuffer, 0, sizeof(thermalMgrTaskBuffer));
@@ -106,7 +106,7 @@ static void thermalMgr(void *pvParameters) {
                         // Only change overtemperature state if we had an interrupt raised recently
                         if (recomputeOTStateFlag) {  
 
-                            if ( temperatureResult > 80.0 ) { }
+                            if ( temperatureResult > 80.0 ) { 
                                 overTemperatureDetected();
                             } else {
                                 safeOperatingConditions();
