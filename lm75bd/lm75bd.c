@@ -8,8 +8,8 @@
 #include <math.h>
 
 /* LM75BD Registers (p.8) */
-#define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
-
+#define LM75BD_REG_CONF 0x01U /* Configuration Register (R/W) */
+#define LM75BD_REG_TEMP 0x00U /* Temperature Register (R) */
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
 
@@ -24,11 +24,29 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
   return ERR_CODE_SUCCESS;
 }
-
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
-  
+  error_code_t errCode;
+
+  /* Set pointer to the sensor's temperature register */
+  uint8_t tempPointer = LM75BD_REG_TEMP;
+
+  /* Selects sensor's temperature register */
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &tempPointer, 1));
+
+  uint8_t tempData[2] = {0};
+
+  /* Receives temperature data from the sensor, stores it in tempData */
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, tempData, 2));
+
+  /* Converts tempData to a signedValue int16_t */
+  int16_t tempVal = tempData[1] | (tempData[0] << 8);
+
+  /* Sets temp pointer to the decimal value of the sensor temperature, and eliminates 5 LSBytes to the right */
+  *temp = (float)(tempVal >> 5) * 0.125;
   return ERR_CODE_SUCCESS;
+  
+
 }
 
 #define CONF_WRITE_BUFF_SIZE 2U
