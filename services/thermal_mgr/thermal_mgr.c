@@ -24,7 +24,7 @@ static uint8_t thermalMgrQueueStorageArea[THERMAL_MGR_QUEUE_LENGTH * THERMAL_MGR
 
 static void thermalMgr(void *pvParameters);
 
-static float cachedTemperatureReading = 0.0;  
+static volatile bool recomputeOTStateFlag = 0;    
 
 void initThermalSystemManager(lm75bd_config_t *config) {
   memset(&thermalMgrTaskBuffer, 0, sizeof(thermalMgrTaskBuffer));
@@ -71,18 +71,10 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
     }
 }
 /* 
- * @brief Handles overtemperature events from temperature sensor. It is assumed a
- *          read event will cause the interrupt to be called (I.E cachedTemperatureReading
- *          is guarenteed to be updated)
+ * @brief Handles overtemperature events from temperature sensor. 
  */
-void osHandlerLM75BD() {     
-    if( cachedTemperatureReading > 80.0  ) {  
-        // We're over overtemp
-        overTemperatureDetected();  
-    } else {
-        // We're less than hysteresis  
-        safeOperatingConditions();
-    }
+void osHandlerLM75BD() {    
+    recomputeOTStateFlag = 1;
     // Reset overtemperature   
     thermal_mgr_event_t resetEvent;
     resetEvent.type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;  
@@ -110,10 +102,24 @@ static void thermalMgr(void *pvParameters) {
                         // Read temperature 
                         float temperatureResult = 0.0;   
                         errCode = readTempLM75BD( tempSensorConfig->devAddr, &temperatureResult );  
+                       
+                        // Only change overtemperature state if we had an interrupt raised recently
+                        if (recomputeOTStateFlag) {  
 
-                        cachedTemperatureReading = temperatureResult;
+                            if ( temperatureResult > 80.0 ) { }
+                                overTemperatureDetected();
+                            } else {
+                                safeOperatingConditions();
+                            }  
+                            // We've handled the flag, reset it
+                            recomputeOTStateFlag = 0;
+                        }
+
                         addTemperatureTelemetry( temperatureResult );
-                    break;  
+                    break; 
+                deafult:
+                    // We got an event we weren't expecting, do nothing
+                    break; 
             }
         }
     }
