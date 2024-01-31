@@ -44,7 +44,11 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
 
-  if(xQueueSend(thermalMgrQueueHandle, event, 0) != pdTRUE){
+  if(event == NULL){
+    return ERR_CODE_INVALID_ARG;
+  }else if(thermalMgrQueueHandle == NULL){
+    return ERR_CODE_INVALID_STATE;
+  }else if(xQueueSend(thermalMgrQueueHandle, event, 0) != pdTRUE){
     return ERR_CODE_QUEUE_FULL;
   }
   
@@ -73,6 +77,8 @@ static void thermalMgr(void *pvParameters) {
 
         if(readTempResult == ERR_CODE_SUCCESS){
           addTemperatureTelemetry(currentTemp);
+        }else{
+          printConsole("Failed to read temperature");
         }
       }else if(thermalEvent.type == THERMAL_MGR_EVENT_MEASURE_TEMP_INTERRUPT){
         readTempResult = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &currentTemp);
@@ -83,6 +89,8 @@ static void thermalMgr(void *pvParameters) {
           }else{
             safeOperatingConditions();
           }
+        }else{
+          printConsole("Failed to read temperature");
         }
       }
     }

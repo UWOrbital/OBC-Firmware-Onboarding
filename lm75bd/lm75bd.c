@@ -36,21 +36,23 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   uint8_t tempData[2] = {0};
   RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, tempData, 2));
 
-  uint8_t D10Bit = (tempData[0] & 0x80) >> 7;
+  uint8_t D10Bit = (tempData[0] & 0x80) >> 7; // Extract the most significant bit in the MSByte
   uint16_t tempVal = 0;
 
+  // Cast MSByte to uint16_t and left shift by 3 bits to make room for the 3 most significant bits in the LSByte
+  uint16_t tempMSByte = ((uint16_t)tempData[0] << 3); 
+
+  // Cast LSByte to uint16_t and right shift by 5 bits to remove unneeded bits (extract the relavant bits)
+  uint16_t tempLSByte = (uint16_t)((tempData[1] >> 5));
+
+  // Combine relavant bits in MSByte and LSByte to get the 11 bits for temperature value 
+  tempVal = tempMSByte | tempLSByte;
+
   if(D10Bit == 0){ // positive temperature
-    uint16_t tempMSB = ((uint16_t)tempData[0] << 3);
-    uint16_t tempLSB = (uint16_t)((tempData[1] >> 5) & 0x0007);
-    tempVal = tempMSB | tempLSB;
-
     *temp = tempVal * 0.125;
-  }else if(D10Bit == 1){
-    uint16_t tempMSB = ((uint16_t)tempData[0] << 3);
-    uint16_t tempLSB = (uint16_t)((tempData[1] >> 5) & 0x0007);
-    tempVal = tempMSB | tempLSB;
-    tempVal = (~tempVal) & 0x07FF;
-
+  }else if(D10Bit == 1){ // negative temperature
+    // Get the 2s complement of the temperature before converting to degrees °C 
+    tempVal = (~tempVal) & 0x07FF; // NOT temperature bits then AND the bits with 0x07FF to remove the irrelavant 5 most significant bits in the uint16_t
     *temp = -(float)((tempVal + 1) * 0.125);
   }
 
