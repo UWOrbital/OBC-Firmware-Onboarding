@@ -47,7 +47,7 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {    
     // Check that temp has been initalized
     if ( temp == NULL ) {
-        return ERR_CODE_UNKNOWN
+        return ERR_CODE_UNKNOWN;  
     }
     uint8_t targetRegister = LM75BD_POINTER_TEMP;
     error_code_t errCode;
@@ -61,7 +61,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     // Check for out-of-range error  
     if ( (readTempBuf[1] | 0xF8) > 1 ) {  
         // Any of the top 5 bits were set when they shouldn't have been
-        return ERR_CODE_UNKNOWN 
+        return ERR_CODE_UNKNOWN;
     }
     // MSB is top half of readTempBuf  
     uint16_t tempData =  readTempBuf[0] << 3 |      
