@@ -58,7 +58,8 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     uint16_t tempData =  readTempBuf[0] << 3 |      
                         (readTempBuf[1] >> 5);    
     
-    // Check for out-of-range error
+    // Check for out-of-range error  
+    // TODO: Change to left shift  
     if (tempData > (pow(2, 11) - 1)) {
         // Somehow we got erronious I2C data
         return ERR_CODE_UNKNOWN;
