@@ -54,16 +54,15 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     // Perform an I2C read of the device
     uint8_t readTempBuf[2] = {0};   
     RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, readTempBuf, sizeof(readTempBuf)));  
-    // MSB is top half of readTempBuf
+    // Check for out-of-range error  
+    if ( (readTempBuf[1] | 0xF8) > 1 ) {  
+        // Any of the top 5 bits were set when they shouldn't have been
+        return ERR_CODE_UNKNOWN 
+    }
+    // MSB is top half of readTempBuf  
     uint16_t tempData =  readTempBuf[0] << 3 |      
                         (readTempBuf[1] >> 5);    
     
-    // Check for out-of-range error  
-    // TODO: Change to left shift  
-    if (tempData > (pow(2, 11) - 1)) {
-        // Somehow we got erronious I2C data
-        return ERR_CODE_UNKNOWN;
-    }
     /*  uint16_t representation
      *  ________________________________________________________________________________
      *  15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 || B7 | B6 | B5 | B4 | B3 | B2 | B1 | B0 ||
