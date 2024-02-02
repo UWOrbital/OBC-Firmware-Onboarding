@@ -101,7 +101,11 @@ static void thermalMgr(void *pvParameters) {
                     // Read temperature 
                     float temperatureResult = 0.0;   
                     errCode = readTempLM75BD( temp_sensor_config->devAddr, &temperatureResult );  
-                       
+                   
+                    if ( errCode != ERR_CODE_SUCCESS ) {
+                        // We tried to read temperature, and something bad happened, break early
+                        break;
+                    }
                     // Only change overtemperature state if we had an interrupt raised recently
                     if (recomputeOTStateFlag) {  
 
