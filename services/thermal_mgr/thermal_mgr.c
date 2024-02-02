@@ -89,38 +89,36 @@ void osHandlerLM75BD() {
  */
 static void thermalMgr(void *pvParameters) {      
     // XXX: It is assumed we don't have to initialize temperature sensor
-    lm75bd_config_t *tempSensorConfig;  
+    lm75bd_config_t *temp_sensor_config;  
     error_code_t errCode;
-    tempSensorConfig = (lm75bd_config_t *) pvParameters;   
+    temp_sensor_config = (lm75bd_config_t *) pvParameters;   
 
-    while (1) {  
-        thermal_mgr_event_t *event_recieved;
-        if ( xQueueReceive( thermalMgrQueueHandle, (void *) event_recieved, 0) == pdTRUE ) {    
+    thermal_mgr_event_t *event_recieved;
+    while( xQueueReceive( thermalMgrQueueHandle, (void *) event_recieved, 0) == pdTRUE ) {    
             // We got an event from the thermalMgr queue, parse it
-            switch( event_recieved->type ){  
-                case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:    
-                        // Read temperature 
-                        float temperatureResult = 0.0;   
-                        errCode = readTempLM75BD( tempSensorConfig->devAddr, &temperatureResult );  
+        switch( event_recieved->type ){  
+            case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:    
+                    // Read temperature 
+                    float temperatureResult = 0.0;   
+                    errCode = readTempLM75BD( temp_sensor_config->devAddr, &temperatureResult );  
                        
-                        // Only change overtemperature state if we had an interrupt raised recently
-                        if (recomputeOTStateFlag) {  
+                    // Only change overtemperature state if we had an interrupt raised recently
+                    if (recomputeOTStateFlag) {  
 
-                            if ( temperatureResult > 80.0 ) { 
-                                overTemperatureDetected();
-                            } else {
-                                safeOperatingConditions();
-                            }  
-                            // We've handled the flag, reset it
-                            recomputeOTStateFlag = 0;
-                        }
+                        if ( temperatureResult > 80.0 ) { 
+                            overTemperatureDetected();
+                        } else {
+                            safeOperatingConditions();
+                        }  
+                        // We've handled the flag, reset it
+                        recomputeOTStateFlag = 0;
+                    }
 
-                        addTemperatureTelemetry( temperatureResult );
-                    break; 
-                deafult:
-                    // We got an event we weren't expecting, do nothing
-                    break; 
-            }
+                    addTemperatureTelemetry( temperatureResult );
+                break; 
+            default:
+                // We got an event we weren't expecting, do nothing
+                break; 
         }
     }
 }
