@@ -94,31 +94,31 @@ static void thermalMgr(void *pvParameters) {
     temp_sensor_config = (lm75bd_config_t *) pvParameters;   
 
     thermal_mgr_event_t event_recieved;
-    while( xQueueReceive( thermalMgrQueueHandle, &event_recieved, 0) == pdTRUE ) {    
+    while( xQueueReceive( thermalMgrQueueHandle, &event_recieved, portMAX_DELAY) == pdTRUE ) {    
             // We got an event from the thermalMgr queue, parse it
         switch( event_recieved.type ){  
             case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:    
-                    // Read temperature 
-                    float temperatureResult = 0.0;   
-                    errCode = readTempLM75BD( temp_sensor_config->devAddr, &temperatureResult );  
+                // Read temperature 
+                float temperatureResult = 0.0;   
+                errCode = readTempLM75BD( temp_sensor_config->devAddr, &temperatureResult );  
                    
-                    if ( errCode != ERR_CODE_SUCCESS ) {
-                        // We tried to read temperature, and something bad happened, break early
-                        break;
-                    }
-                    // Only change overtemperature state if we had an interrupt raised recently
-                    if (recomputeOTStateCounter > 0) {  
+                if ( errCode != ERR_CODE_SUCCESS ) {
+                    // We tried to read temperature, and something bad happened, break early
+                    break;
+                }
+                // Only change overtemperature state if we had an interrupt raised recently
+                if (recomputeOTStateCounter > 0) {  
 
-                        if ( temperatureResult > 80.0 ) { 
-                            overTemperatureDetected();      // Assume this is atomic
-                        } else {
-                            safeOperatingConditions();      // Assume this is atomic
-                        }  
-                        // We've handled a trigger 
-                        recomputeOTStateCounter -= 1;
-                    }
+                    if ( temperatureResult > 80.0 ) { 
+                        overTemperatureDetected();      // Assume this is atomic
+                    } else {
+                        safeOperatingConditions();      // Assume this is atomic
+                    }  
+                    // We've handled a trigger 
+                    recomputeOTStateCounter -= 1;
+                }
 
-                    addTemperatureTelemetry( temperatureResult );
+                addTemperatureTelemetry( temperatureResult );
                 break; 
             default:
                 // We got an event we weren't expecting, do nothing
