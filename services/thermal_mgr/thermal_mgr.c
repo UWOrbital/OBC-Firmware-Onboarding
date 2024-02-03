@@ -93,10 +93,10 @@ static void thermalMgr(void *pvParameters) {
     error_code_t errCode;
     temp_sensor_config = (lm75bd_config_t *) pvParameters;   
 
-    thermal_mgr_event_t *event_recieved;
-    while( xQueueReceive( thermalMgrQueueHandle, (void *) event_recieved, 0) == pdTRUE ) {    
+    thermal_mgr_event_t event_recieved;
+    while( xQueueReceive( thermalMgrQueueHandle, &event_recieved, 0) == pdTRUE ) {    
             // We got an event from the thermalMgr queue, parse it
-        switch( event_recieved->type ){  
+        switch( event_recieved.type ){  
             case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:    
                     // Read temperature 
                     float temperatureResult = 0.0;   
