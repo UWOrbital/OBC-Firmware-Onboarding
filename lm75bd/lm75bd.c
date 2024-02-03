@@ -59,7 +59,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     uint8_t readTempBuf[2] = {0};   
     RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, readTempBuf, sizeof(readTempBuf)));  
     // Check for out-of-range error  
-    if ( (readTempBuf[1] | 0xF8) > 1 ) {  
+    if ( (readTempBuf[1] & 0xF8) > 0 ) {  
         // Any of the top 5 bits were set when they shouldn't have been
         return ERR_CODE_UNKNOWN;
     }
@@ -68,16 +68,17 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
                         (readTempBuf[1] >> 5);    
     
     /*  uint16_t representation
-     *  ________________________________________________________________________________
+     *  readTempBuf[1]                        readTempBuf[0]
+     *  _______________________________________________________________________________
      *  15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 || B7 | B6 | B5 | B4 | B3 | B2 | B1 | B0 ||
-     *  --------------------------------------------------------------------------------
+     *  -------------------------------------------------------------------------------
      *  0    0    0    0    0    D10  D9  D8   D7   D6   D5   D4   D3   D2   D1   D0
      *  --------------------------------------------------------------------------------
      *                           ^ LM75BD_TEMP_RA_MSB_MASK
      *                            |-----------LM75BD_TEMP_RA_10B_MASK--------------|
      */
-    // Two's Complement
-   float result = 0.0;
+    // Two's Complement  
+    float result = 0.0;
     if ((tempData & LM75BD_TEMP_RA_MSB_MASK) > 0) {
         // Result is negative, invert it and mask off top 5 bits    
         result = -1.0 * (~tempData & LM75BD_TEMP_RA_10B_MASK) * LM75BD_TEMP_LSB_TO_C;   // Calculate degrees C
