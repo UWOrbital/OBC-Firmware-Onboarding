@@ -24,7 +24,7 @@ static uint8_t thermalMgrQueueStorageArea[THERMAL_MGR_QUEUE_LENGTH * THERMAL_MGR
 
 static void thermalMgr(void *pvParameters);
 
-static volatile uint8_t recomputeOTStateFlag = 0;    
+static volatile uint8_t recomputeOTStateCounter = 0;    
 
 void initThermalSystemManager(lm75bd_config_t *config) {
   memset(&thermalMgrTaskBuffer, 0, sizeof(thermalMgrTaskBuffer));
@@ -74,7 +74,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
  * @brief Handles overtemperature events from temperature sensor. 
  */
 void osHandlerLM75BD() {    
-    recomputeOTStateFlag = 1;
+    recomputeOTStateCounter  += 1;
     // Reset overtemperature   
     thermal_mgr_event_t resetEvent;
     resetEvent.type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;  
@@ -107,15 +107,15 @@ static void thermalMgr(void *pvParameters) {
                         break;
                     }
                     // Only change overtemperature state if we had an interrupt raised recently
-                    if (recomputeOTStateFlag) {  
+                    if (recomputeOTStateCounter > 0) {  
 
                         if ( temperatureResult > 80.0 ) { 
-                            overTemperatureDetected();
+                            overTemperatureDetected();      // Assume this is atomic
                         } else {
-                            safeOperatingConditions();
+                            safeOperatingConditions();      // Assume this is atomic
                         }  
-                        // We've handled the flag, reset it
-                        recomputeOTStateFlag = 0;
+                        // We've handled a trigger 
+                        recomputeOTStateCounter -= 1;
                     }
 
                     addTemperatureTelemetry( temperatureResult );
