@@ -59,7 +59,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     uint8_t readTempBuf[2] = {0};   
     RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, readTempBuf, sizeof(readTempBuf)));  
     // Check for out-of-range error  
-    if ( (readTempBuf[1] & 0xF8) > 0 ) {  
+    if ( (readTempBuf[1] & 0x1F) > 0 ) {  
         // Any of the top 5 bits were set when they shouldn't have been
         return ERR_CODE_UNKNOWN;
     }
