@@ -47,7 +47,7 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {    
     // Check that temp has been initalized
     if ( temp == NULL ) {
-        return ERR_CODE_UNKNOWN;  
+        return ERR_CODE_INVALID_ARG;    
     }
     uint8_t targetRegister = LM75BD_POINTER_TEMP;
     error_code_t errCode;
