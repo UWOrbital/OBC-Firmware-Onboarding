@@ -27,7 +27,21 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
-  
+  // Temperature pointer register: 0b00000000
+  //1. Send temp register
+  //2. Read from peripheral (buffer size = 2 bytes)
+  //3. Convert using 2s complement (check if MSB is 0 -> positive or 1 -> positive)
+  uint8_t temp_reg[1]= {0};
+  i2cSendTo(LM75BD_OBC_I2C_ADDR, temp_reg, 1);
+  uint8_t temp_data[2] = {0,0};
+  i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, temp_data, 2);
+  uint8_t temp_data[2]={0b11111111,0b11111111};
+  //combine the two 8 bits int into 16 bits int
+  int16_t temperature = (temp_data[0] << 8)|(temp_data[1]&(0b111<<5));
+  //2's complement
+  temperature = (~temperature) + 1;
+  //convert to Celsius
+  *temp = temperature * 0.125;
   return ERR_CODE_SUCCESS;
 }
 
