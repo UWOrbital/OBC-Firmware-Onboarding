@@ -9,6 +9,10 @@
 
 #include <string.h>
 
+#define BOOL char
+#define FALSE 0
+#define TRUE 1
+
 #define THERMAL_MGR_STACK_SIZE 256U
 
 static TaskHandle_t thermalMgrTaskHandle;
@@ -38,32 +42,47 @@ void initThermalSystemManager(lm75bd_config_t *config) {
   thermalMgrQueueHandle = xQueueCreateStatic(
     THERMAL_MGR_QUEUE_LENGTH, THERMAL_MGR_QUEUE_ITEM_SIZE,
     thermalMgrQueueStorageArea, &thermalMgrQueueBuffer);
-
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-  if (thermalMgrQueueHandle !=0){
+  if (event->type == OS_HANDLER_EVENT){
+    xQueueSendToFront(thermalMgrQueueHandle, event, ( TickType_t ) 0);
+  }  
+  else if (event->type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
     xQueueSend(thermalMgrQueueHandle, event, ( TickType_t ) 10 );
   }
   return ERR_CODE_SUCCESS;
 }
 
+BOOL readTempState = FALSE;
+
 void osHandlerLM75BD(void) {
   /* Implement this function */
-  //send event (fcn that reads temp) to queue? to thermalmgr? 
+  readTempState = TRUE;
+  thermal_mgr_event_t osHandlerEvent;
+  osHandlerEvent.type = OS_HANDLER_EVENT;
+  thermalMgrSendEvent(&osHandlerEvent);
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
-  thermal_mgr_event_type_t queue_buffer;
+  thermal_mgr_event_type_t queueBuffer;
+  //if 
   while (1) {
-    if( xQueueReceive(thermalMgrQueueHandle, &(queue_buffer),( TickType_t ) 10 ) == pdPASS ){
-      float current_temp = 0.0;
-      current_temp = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &current_temp);
-      addTemperatureTelemetry(current_temp);
-      //if tem > temp(th), run overTemperatureDetected
-      //if temp < temp(hys), run safeOperatingConditions
+    if( xQueueReceive(thermalMgrQueueHandle, &(queueBuffer),( TickType_t ) 10 ) == pdPASS ){
+      float currentTemp = 0.0;
+      readTempLM75BD(LM75BD_OBC_I2C_ADDR, &currentTemp); 
+      if (readTempState== TRUE){
+        if (currentTemp >= 80.0){
+        overTemperatureDetected();
+      }
+      else if(currentTemp <= 75.0){
+        safeOperatingConditions();
+      }
+      readTempState = FALSE;
+      }
+      addTemperatureTelemetry(currentTemp);
     }
   }
 }

@@ -7,6 +7,10 @@
 #include <string.h>
 #include <math.h>
 
+#define BOOL char
+#define FALSE 0
+#define TRUE 1
+
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
 
@@ -27,21 +31,26 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
-  // Temperature pointer register: 0b00000000
-  //1. Send temp register
-  //2. Read from peripheral (buffer size = 2 bytes)
-  //3. Convert using 2s complement (check if MSB is 0 -> positive or 1 -> positive)
-  uint8_t temp_reg[1]= {0};
-  i2cSendTo(LM75BD_OBC_I2C_ADDR, temp_reg, 1);
-  uint8_t temp_data[2] = {0,0};
-  i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, temp_data, 2);
-  uint8_t temp_data[2]={0b11111111,0b11111111};
-  //combine the two 8 bits int into 16 bits int
-  int16_t temperature = (temp_data[0] << 8)|(temp_data[1]&(0b111<<5));
-  //2's complement
-  temperature = (~temperature) + 1;
+  uint8_t tempReg[1]= {0};
+  i2cSendTo(LM75BD_OBC_I2C_ADDR, tempReg, 1);
+  uint8_t tempData[2] = {0,0};
+  i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, tempData, 2);
+  int16_t tempBin = ((tempData[0] << 8)|(tempData[1]))>>5;
+  int16_t tempDec = 0;
+  BOOL negative = FALSE;
+  
+  if (tempBin & (1 << 10)){
+      tempBin = (~tempBin)+1;
+      negative = TRUE;
+  }
+  for (uint16_t i=1; i < (1 << 10); i <<= 1){
+      tempDec += !!(tempBin & i)*i;
+  }
+  if (negative){
+      tempDec *= -1;
+  }
   //convert to Celsius
-  *temp = temperature * 0.125;
+  *temp = tempDec * 0.125;
   return ERR_CODE_SUCCESS;
 }
 
