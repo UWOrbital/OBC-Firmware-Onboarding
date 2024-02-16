@@ -68,7 +68,6 @@ void osHandlerLM75BD(void) {
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   thermal_mgr_event_type_t queueBuffer;
-  //if 
   while (1) {
     if( xQueueReceive(thermalMgrQueueHandle, &(queueBuffer),( TickType_t ) 10 ) == pdPASS ){
       float currentTemp = 0.0;
