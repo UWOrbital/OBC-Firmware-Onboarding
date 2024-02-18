@@ -73,12 +73,12 @@ static void thermalMgr(void *pvParameters) {
       float currentTemp = 0.0;
       readTempLM75BD(LM75BD_OBC_I2C_ADDR, &currentTemp); 
       if (readTempState== TRUE){
-        if (currentTemp >= 80.0){
-        overTemperatureDetected();
-      }
-      else if(currentTemp <= 75.0){
-        safeOperatingConditions();
-      }
+        if (currentTemp >= 80.0) {
+          overTemperatureDetected();
+        }
+        else if(currentTemp <= 75.0) {
+          safeOperatingConditions();
+        }
       readTempState = FALSE;
       }
       addTemperatureTelemetry(currentTemp);
