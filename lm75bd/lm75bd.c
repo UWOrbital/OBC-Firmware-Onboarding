@@ -6,13 +6,11 @@
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
-
-#define BOOL char
-#define FALSE 0
-#define TRUE 1
+#include <stdbool.h>
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
+#define TEMP_REG_ADDR 0x00U
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
@@ -31,26 +29,12 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
-  uint8_t tempReg[1]= {0};
+  uint8_t tempReg[1]= {TEMP_REG_ADDR};
   i2cSendTo(LM75BD_OBC_I2C_ADDR, tempReg, 1);
   uint8_t tempData[2] = {0,0};
   i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, tempData, 2);
-  int16_t tempBin = ((tempData[0] << 8)|(tempData[1]))>>5;
-  int16_t tempDec = 0;
-  BOOL negative = FALSE;
-  
-  if (tempBin & (1 << 10)){
-      tempBin = (~tempBin)+1;
-      negative = TRUE;
-  }
-  for (uint16_t i=1; i < (1 << 10); i <<= 1){
-      tempDec += !!(tempBin & i)*i;
-  }
-  if (negative){
-      tempDec *= -1;
-  }
-  //convert to Celsius
-  *temp = tempDec * 0.125;
+  int16_t regVal = tempData[0] << 8 | tempData[1];
+  *temp = (float)(regVal>>5) * 0.125;
   return ERR_CODE_SUCCESS;
 }
 

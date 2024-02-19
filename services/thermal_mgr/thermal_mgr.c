@@ -8,10 +8,7 @@
 #include <os_queue.h>
 
 #include <string.h>
-
-#define BOOL char
-#define FALSE 0
-#define TRUE 1
+#include <stdbool.h>
 
 #define THERMAL_MGR_STACK_SIZE 256U
 
@@ -46,7 +43,13 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-  if (event->type == OS_HANDLER_EVENT){
+  if (event == NULL) {
+    return ERR_CODE_INVALID_ARG;
+  }
+  if (thermalMgrQueueHandle == NULL) { // Check if queue has been created
+    return ERR_CODE_INVALID_STATE;
+  }
+  if (event->type == THERMAL_MGR_EVENT_OS_HANDLER_EVENT){
     xQueueSendToFront(thermalMgrQueueHandle, event, ( TickType_t ) 0);
   }  
   else if (event->type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
@@ -55,13 +58,10 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   return ERR_CODE_SUCCESS;
 }
 
-BOOL readTempState = FALSE;
-
 void osHandlerLM75BD(void) {
   /* Implement this function */
-  readTempState = TRUE;
   thermal_mgr_event_t osHandlerEvent;
-  osHandlerEvent.type = OS_HANDLER_EVENT;
+  osHandlerEvent.type = THERMAL_MGR_EVENT_OS_HANDLER_EVENT;
   thermalMgrSendEvent(&osHandlerEvent);
 }
 
@@ -69,17 +69,16 @@ static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   thermal_mgr_event_type_t queueBuffer;
   while (1) {
-    if( xQueueReceive(thermalMgrQueueHandle, &(queueBuffer),( TickType_t ) 10 ) == pdPASS ){
+    if( xQueueReceive(thermalMgrQueueHandle, &(queueBuffer), portMAX_DELAY) == pdPASS ){
       float currentTemp = 0.0;
       readTempLM75BD(LM75BD_OBC_I2C_ADDR, &currentTemp); 
-      if (readTempState== TRUE){
+      if (queueBuffer == THERMAL_MGR_EVENT_OS_HANDLER_EVENT){
         if (currentTemp >= 80.0){
         overTemperatureDetected();
       }
       else if(currentTemp <= 75.0){
         safeOperatingConditions();
       }
-      readTempState = FALSE;
       }
       addTemperatureTelemetry(currentTemp);
     }
