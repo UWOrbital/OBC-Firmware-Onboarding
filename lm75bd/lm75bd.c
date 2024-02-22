@@ -33,8 +33,8 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   i2cSendTo(LM75BD_OBC_I2C_ADDR, tempReg, 1);
   uint8_t tempData[2] = {0};
   i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, tempData, 2);
-  int16_t regVal = tempData[0] << 8 | tempData[1];
-  *temp = (float)(regVal>>5) * 0.125;
+  int16_t regVal = ((int16_t)(tempData[0] << 8 | tempData[1]))>>5;
+  *temp = (float)(regVal) * 0.125;
   return ERR_CODE_SUCCESS;
 }
 
