@@ -34,7 +34,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   error_code_t errCode;
 
-  uint8_t tempRegister = LM75BD_TEMP_REG;
+  uint8_t tempRegister = LM75BD_REG_TEMP;
 
   //read from sensor
   RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &tempRegister, 1));
