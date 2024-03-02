@@ -67,7 +67,7 @@ void osHandlerLM75BD(void) {
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   while (1) {
-    thermal_mgr_event_t recieved;
+    thermal_mgr_event_t received;
     float temp;
     error_code_t errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
 
