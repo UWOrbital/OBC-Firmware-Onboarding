@@ -17,6 +17,8 @@ static StackType_t thermalMgrTaskStack[THERMAL_MGR_STACK_SIZE];
 
 #define THERMAL_MGR_QUEUE_LENGTH 10U
 #define THERMAL_MGR_QUEUE_ITEM_SIZE sizeof(thermal_mgr_event_t)
+#define THERMAL_MGR_HYSTERESIS_TEMP 75U
+#define THERMAL_MGR_OVERTEMP 80U
 
 static QueueHandle_t thermalMgrQueueHandle;
 static StaticQueue_t thermalMgrQueueBuffer;
@@ -43,12 +45,13 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-  *event ;
+  xQueueSend(thermalMgrQueueHandle, event, (TickType_t) 0);
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
+
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -56,10 +59,12 @@ static void thermalMgr(void *pvParameters) {
   thermal_mgr_event_t *const buffer;
   float temp;
   while (1) {
-    if (xQueueReceive(thermalMgrQueueHandle, buffer, (TickType_t) portMAX_DELAY) == pdTRUE){
+    if (xQueueReceive(thermalMgrQueueHandle, buffer, (TickType_t) 0) == pdTRUE){
       readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+      if (buffer->type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
+        addTemperatureTelemetry(temp);
+      }
     }
-    addTemperatureTelemetry(temp);
   }
 }
 
