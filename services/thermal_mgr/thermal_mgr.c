@@ -53,6 +53,16 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 void osHandlerLM75BD(void) { // interrupt handler
   /* Implement this function */
+  thermal_mgr_event_t *event;
+  thermal_mgr_event_t *const buffer;
+  float temp;
+  readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+  if (temp > THERMAL_MGR_HYSTERESIS_TEMP){
+    event->type = THERMAL_MGR_EVENT_OVER_TEMP_CMD;
+  } else {
+    event->type = THERMAL_MGR_SAFE_OPERATING_CMD;
+  }
+  thermalMgrSendEvent(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
