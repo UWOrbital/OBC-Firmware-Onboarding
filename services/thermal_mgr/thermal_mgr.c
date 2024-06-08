@@ -52,12 +52,8 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 void osHandlerLM75BD(void) { // interrupt handler
   /* Implement this function */
   float temp;
-  readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
-  if (temp > THERMAL_MGR_HYSTERESIS_TEMP){
-    overTemperatureDetected();
-  } else {
-    safeOperatingConditions();
-  }
+  thermal_mgr_event_t event = {.type = THERMAL_MGR_EVENT_TEMP_CHANGE};
+  thermalMgrSendEvent(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -69,7 +65,15 @@ static void thermalMgr(void *pvParameters) {
       readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
       if (buffer->type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
         addTemperatureTelemetry(temp);
+      } else if (buffer->type == THERMAL_MGR_EVENT_TEMP_CHANGE){
+        if (temp > THERMAL_MGR_HYSTERESIS_TEMP){
+          overTemperatureDetected();
+        } else {
+          safeOperatingConditions();
+        }
       }
+    } else {
+      //windows stuff
     }
   }
 }
