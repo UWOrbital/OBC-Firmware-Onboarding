@@ -51,7 +51,7 @@ error_code_t logLog(log_level_t msgLevel, const char *file, uint32_t line, const
   if (ret < 0) return ERR_CODE_INVALID_ARG;
   if ((uint32_t)ret >= MAX_LOG_SIZE) return ERR_CODE_BUFF_TOO_SMALL;
 
-  printConsole((unsigned char *)buf);
+  printConsole((const char *)buf);
 
   return ERR_CODE_SUCCESS;
 }
