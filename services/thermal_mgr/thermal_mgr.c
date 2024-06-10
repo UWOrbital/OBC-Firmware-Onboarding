@@ -60,7 +60,7 @@ static void thermalMgr(void *pvParameters) {
   thermal_mgr_event_t *const buffer;
   float temp;
   while (1) {
-    if (xQueueReceive(thermalMgrQueueHandle, buffer, (TickType_t) 0) == pdTRUE){
+    if (xQueueReceive(thermalMgrQueueHandle, buffer, portMAX_DELAY) == pdTRUE){
       readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
       if (buffer->type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
         addTemperatureTelemetry(temp);
