@@ -9,6 +9,7 @@
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
+#define LM75BD_OBC_I2C_ADDR 0b1001111U /* Peripheral Address*/
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
@@ -24,10 +25,18 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
   return ERR_CODE_SUCCESS;
 }
-
+#define I2C_WRITE_BUFF_SIZE 1U
+#define I2C_READ_BUFF_SIZE 2U
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  uint8_t writeBuff[I2C_WRITE_BUFF_SIZE] = {0};
+  uint8_t readBuff[I2C_READ_BUFF_SIZE] = {0};
   
+  i2cSendTo(LM75BD_OBC_I2C_ADDR, writeBuff, I2C_WRITE_BUFF_SIZE);
+  i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, readBuff, I2C_READ_BUFF_SIZE);
+  
+  int16_t tempValues = ((readBuff[0] << 8) | readBuff[1]);
+  *temp = (float) (tempValues>>5)*0.125;
   return ERR_CODE_SUCCESS;
 }
 
