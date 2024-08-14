@@ -63,12 +63,6 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
     int32_t sum = 0;
 
     for (uint8_t i = 0; i <= arrayLength; i++) {
-        // int32_t sum = 0;
-        // sum += array[i];
-        if(array[i] = NULL){
-            return -1;
-        }
-
         sum += array[i];
     }
     return sum;
@@ -164,7 +158,7 @@ error_t q10(q10_t *q10) {
         return FAIL;
     }
     
-    return q9(&q10->a, &q10->b) == 0 ? SUCCESS : FAIL;
+    return q9(&(q10->a), &(q10->b)) == 0 ? SUCCESS : FAIL;
 }
 
 //-------------------------------------------------------------------------
@@ -201,7 +195,7 @@ error_t q11(q11_a_t *a, q11_b_t *b){
 // lesser value of the 2. The macro should return the result.
 //-------------------------------------------------------------------------
 
-#define MIN(a,b) (a < b ? a : b)
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
 
 //-------------------------------------------------------------------------
 // Question 13
