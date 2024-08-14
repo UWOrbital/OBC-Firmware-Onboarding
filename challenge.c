@@ -26,7 +26,7 @@ int q1A = 0, q1B = 1;
 // named `Q2_ARRAY_SIZE`.
 //-------------------------------------------------------------------------
 #define Q2_ARRAY_SIZE 10
-int a2Array[Q2_ARRAY_SIZE];
+int q2Array[Q2_ARRAY_SIZE];
 
 
 //-------------------------------------------------------------------------
@@ -120,7 +120,7 @@ typedef enum{
 // Define a macro called `MULTIPLY` that takes two parameters and multiplies
 // them together. The macro should return the result.
 //-------------------------------------------------------------------------
-#define MULTIPLY (a, b) (a*b)
+#define MULTIPLY(a, b) (a*b)
 
 //-------------------------------------------------------------------------
 // Question 9
