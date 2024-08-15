@@ -16,7 +16,8 @@
 // respectively. The value of `q1A` should be initialized to 0 and the value 
 // of `q1B`should be initialized to 1.
 //-------------------------------------------------------------------------
-int q1A = 0, q1B = 1;
+int q1A = 0; 
+int q1B = 1;
 
 
 //-------------------------------------------------------------------------
@@ -62,7 +63,7 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 
     int32_t sum = 0;
 
-    for (uint8_t i = 0; i <= arrayLength; i++) {
+    for (uint32_t i = 0; i <= arrayLength; i++) {
         sum += array[i];
     }
     return sum;
@@ -114,7 +115,7 @@ typedef enum{
 // Define a macro called `MULTIPLY` that takes two parameters and multiplies
 // them together. The macro should return the result.
 //-------------------------------------------------------------------------
-#define MULTIPLY(a, b) (a*b)
+#define MULTIPLY(a, b) ((a)*(b))
 
 //-------------------------------------------------------------------------
 // Question 9
@@ -212,12 +213,13 @@ void *q13(uint32_t *ptr1, uint16_t *ptr2){
         return (void *)-1;
     }
 
-    return (void *)(MIN(ptr1, ptr2) + 5);
+    return (void *)(MIN((uint8_t *)ptr1, (uint8_t *)ptr2) + 5);
 }
 //-------------------------------------------------------------------------
 // The following function is used to test your code. Do not remove any 
 // existing code. You may add additional tests if you wish.
 //-------------------------------------------------------------------------
+
 int main(void) {
     // Question 0 Test
     ASSERT(0 == 0);
