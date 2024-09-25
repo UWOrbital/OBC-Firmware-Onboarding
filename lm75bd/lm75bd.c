@@ -26,8 +26,25 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
-  
+  error_code_t errCode;  
+
+  uint8_t bufferTo[1] = {0x00U}; // Temperature Register
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, bufferTo, sizeof(bufferTo)));
+
+  uint8_t bufferFrom[2] = {0x00U};
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, bufferFrom, sizeof(bufferFrom)));
+
+  // The temp is only written in the first 11 bits
+  int16_t rawTemp = ((bufferFrom[0] << 8) | bufferFrom[1]) >> 5;
+ 
+
+  // Checking Two Complement, the next two lines were ChatGPT
+  // Checks the 10th bit for twos complement
+  if (rawTemp & 0x0400) {  
+    rawTemp |= 0xF800; // Correctly fills the twos complement in 16 bit int
+  }
+
+  *temp = rawTemp * 0.125; // C recognizes Twos Complement
   return ERR_CODE_SUCCESS;
 }
 
