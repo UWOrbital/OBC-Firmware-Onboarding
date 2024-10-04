@@ -22,12 +22,39 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
   // Hysteresis: 75 degrees Celsius
   // Overtemperature: 80 degrees Celsius
 
+
   return ERR_CODE_SUCCESS;
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  error_code_t errCode;
+  uint8_t regAddr = 0x00;
+  uint8_t tempData[2] = {0};
+
+  // Step 1: Set the pointer register to the temperature register (0x00)
+  errCode = i2cSendTo(devAddr, &regAddr, 1);
+  if (errCode != ERR_CODE_SUCCESS) {
+      return errCode;  // Handle error in sending the pointer register
+  }
+
+  // Step 2: Read two bytes from the temperature register
+  errCode = i2cReceiveFrom(devAddr, tempData, 2);
+  if (errCode != ERR_CODE_SUCCESS) {
+      return errCode;  // Handle error in reading temperature data
+  }
+
+  // Step 3: Combine the two bytes into a single 16-bit value
+  int16_t rawTemp = (int16_t)((tempData[0] << 8) | tempData[1]);
+
+  // Step 4: Shift right by 5 bits to get the 11-bit temperature value
+  rawTemp >>= 5;
+
+  // Step 5: Convert the 11-bit value to a temperature in degrees Celsius
+  *temp = rawTemp * 0.125;
+
   
+
   return ERR_CODE_SUCCESS;
 }
 
