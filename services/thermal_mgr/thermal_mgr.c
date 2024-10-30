@@ -51,6 +51,10 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
+  thermal_mgr_event_t osEvent = {0};
+  osEvent.type = THERMAL_MGR_EVENT_OS_CMD;
+
+  thermalMgrSendEvent(&osEvent);
 }
 
 static void thermalMgr(void *pvParameters) { // what is pvParameters used for?
@@ -60,12 +64,22 @@ static void thermalMgr(void *pvParameters) { // what is pvParameters used for?
 
   while (1) {
     
-    if (xQueueReceive(thermalMgrQueueHandle, &queueEventItemBuffer, (TickType_t) 10) == pdPASS
-      && queueEventItemBuffer.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+    if (xQueueReceive(thermalMgrQueueHandle, &queueEventItemBuffer, (TickType_t) 10) == pdPASS) {
+      
+      float tempC;
+      readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC);
 
-        float tempC;
-        readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC);
+      if (queueEventItemBuffer.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
         addTemperatureTelemetry(tempC);
+      } else if (queueEventItemBuffer.type == THERMAL_MGR_EVENT_OS_CMD) {
+        if (tempC > 75.0) {
+          overTemperatureDetected();
+        } else {
+          safeOperatingConditions();
+        }
+        // To reset the OS interrupt
+        readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC);
+      }
     }
   }
 }

@@ -43,8 +43,8 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   // if 11 bit is set, sign is -ve, so convert the 11 bit val to its equivalent 16 bit val
   // otherwise, sign is +ve, and the 11 bit val will be the same in 16 bits
   if (temp_reg_val & 0x0400U) {
-      // by simply setting everything above the 11 bits to 1 (top 5 bits here)
-    temp_reg_val |= 0xF800U; 
+    // by simply setting everything above the 11 bits to 1 (top 5 bits here)
+    temp_reg_val |= 0xF800U;
   }
   printf("Temperature Register Value: %i\n", temp_reg_val);
   
