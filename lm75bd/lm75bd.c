@@ -27,6 +27,29 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  if(temp == NULL) return ERR_CODE_INVALID_ARG;
+
+  uint8_t writeBuffer[1] = {0};
+  uint8_t readBuffer[2] = {0};
+
+  error_code_t errCode;
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, writeBuffer, sizeof(writeBuffer)));
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, readBuffer, sizeof(readBuffer)));
+
+//  Unsure if conversion from twos complement is neccessary, if we're only using this sensor to detect hight temp then it probably isn't?
+//  The code below works if we assume we wont recieve negative numbers, the active code includes twos complement conversions to cover edge cases
+//  uint16_t convertedTemp = (readBuffer[0] << 3) | (readBuffer[1] >> 5);
+//  *temp = convertedTemp * 0.125;
+
+//  Conversion from twos complement, and conversion to Celsius
+  uint16_t convertedTemp = (readBuffer[0] << 3) | (readBuffer[1] >> 5);
+  if(readBuffer[0] & 0x80){
+      convertedTemp = (convertedTemp ^ 0x07FF) + 1;
+      *temp = convertedTemp * -0.125;
+  }
+  else{
+      *temp = convertedTemp * 0.125;
+  }
   
   return ERR_CODE_SUCCESS;
 }
