@@ -38,7 +38,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   uint8_t tempPointerByte = 0x00U; // selects temp register at 00 LSB
 
   uint8_t *sendBuf = &tempPointerByte;
-  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, sendBuf, sizeof(sendBuf)));
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, sendBuf, sizeof(*sendBuf)));
 
   uint8_t receiveBuf[2] = {0};
   RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, receiveBuf, sizeof(receiveBuf)));
@@ -46,7 +46,10 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   uint16_t MSByte = (uint16_t) receiveBuf[0];
   uint16_t LSByte = (uint16_t) receiveBuf[1];
 
-  int16_t tempRegVal = ((MSByte << 8) | LSByte) >> 5;
+  int16_t tempRegVal = (MSByte << 3) + (LSByte >> 5);
+  if (tempRegVal & 0x0400U) {
+    tempRegVal |= 0xF800U;
+  }
   
   float finalTemp = ((float) tempRegVal) * 0.125f;
   *temp = finalTemp;

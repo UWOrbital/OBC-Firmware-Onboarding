@@ -46,23 +46,25 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
 
   if (thermalMgrQueueHandle == NULL || event == NULL) {
-    return ERR_CODE_INVALID_ARG;
+    return ERR_CODE_INVALID_STATE;
   }
 
-  xQueueSend(thermalMgrQueueHandle, event, (TickType_t) 0);
+  error_code_t sendErrorCode = xQueueSend(thermalMgrQueueHandle, event, (TickType_t) 0);
+  if (sendErrorCode != ERR_CODE_SUCCESS) {
+    return ERR_CODE_QUEUE_FULL;
+  }
 
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
-  thermal_mgr_event_t osEvent = {0};
-  osEvent.type = THERMAL_MGR_EVENT_OS_CMD;
+  thermal_mgr_event_t osEvent = {.type=THERMAL_MGR_EVENT_OS_CMD};
 
   thermalMgrSendEvent(&osEvent);
 }
 
-static void thermalMgr(void *pvParameters) { // what is pvParameters used for?
+static void thermalMgr(void *pvParameters) {
   /* Implement this task */
 
   error_code_t errCode;
@@ -77,6 +79,7 @@ static void thermalMgr(void *pvParameters) { // what is pvParameters used for?
 
         float tempC;
         LOG_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC));
+        if(errCode != ERR_CODE_SUCCESS) continue;
 
         addTemperatureTelemetry(tempC);
 
@@ -84,6 +87,7 @@ static void thermalMgr(void *pvParameters) { // what is pvParameters used for?
 
         float tempC;
         LOG_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC));
+        if(errCode != ERR_CODE_SUCCESS) continue;
 
         if (tempC > LM75BD_DEFAULT_HYST_THRESH) {
           overTemperatureDetected();
