@@ -49,8 +49,11 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
     return ERR_CODE_INVALID_STATE;
   }
 
-  error_code_t sendErrorCode = xQueueSend(thermalMgrQueueHandle, event, (TickType_t) 0);
-  if (sendErrorCode != ERR_CODE_SUCCESS) {
+  if (event == NULL) {
+    return ERR_CODE_INVALID_ARG;
+  }
+
+  if (xQueueSend(thermalMgrQueueHandle, event, (TickType_t) 0) != pdPASS) {
     return ERR_CODE_QUEUE_FULL;
   }
 
