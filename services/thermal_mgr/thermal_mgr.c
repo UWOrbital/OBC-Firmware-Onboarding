@@ -2,6 +2,7 @@
 #include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
+#include "logging.h"
 
 #include <FreeRTOS.h>
 #include <os_task.h>
@@ -48,7 +49,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
     return ERR_CODE_INVALID_STATE;
   }
   else if (&event == NULL){
-    return ERRR_CODE_INVALID_ARG;
+    return ERR_CODE_INVALID_ARG;
   }
 
   if (xQueueSend(thermalMgrQueueHandle, event, 0) == pdTRUE){
@@ -60,6 +61,15 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
+  
+  float *temp; 
+  if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, temp) > 75){
+    overTemperatureDetected();
+  }
+  else{
+    safeOperatingConditions();
+  }
+  
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -68,8 +78,15 @@ static void thermalMgr(void *pvParameters) {
   thermal_mgr_event_t event;
   while (1) {
     if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdTRUE){
+      float *tempData;
       if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
-        addTemperatureTelemetry(readTempLM75BD(&event, thermalMgrQueueHandle));
+        errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, tempData);
+        if (errCode != ERR_CODE_SUCCESS){
+          LOG_ERROR_CODE(errCode);
+        }
+        else{
+          addTemperatureTelemetry(*tempData);
+        }
       }
     }
   }
