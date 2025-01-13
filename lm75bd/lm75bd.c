@@ -34,7 +34,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
     return ERR_CODE_INVALID_ARG;
   }
 
-  uint8_t sendBuf = 0x00; // Temperature register
+  uint8_t sendBuf = 0x00;
   uint8_t recvBuf[2] = {0};
 
   // Send and receive data over I2C

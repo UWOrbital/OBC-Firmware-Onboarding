@@ -79,14 +79,14 @@ static void thermalMgr(void *pvParameters)
   while (1)
   {
 
-    thermal_mgr_event_t data = {0};
+    thermal_mgr_event_t event = {0};
 
-    BaseType_t errCodeEvent = xQueueReceive(thermalMgrQueueHandle, &data, portMAX_DELAY);
+    BaseType_t errCodeEvent = xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY);
 
     if (errCodeEvent == pdTRUE)
     {
       float temp;
-      if (data.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD)
+      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD)
       {
         error_code_t errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
         if (errCode != ERR_CODE_SUCCESS)
@@ -96,7 +96,7 @@ static void thermalMgr(void *pvParameters)
         }
         addTemperatureTelemetry(temp);
       }
-      else if (data.type == THERMAL_MGR_EVENT_OS_INTERRUPT)
+      else if (event.type == THERMAL_MGR_EVENT_OS_INTERRUPT)
       {
         error_code_t errCode = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
         if (errCode != ERR_CODE_SUCCESS)
