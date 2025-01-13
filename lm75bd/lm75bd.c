@@ -27,6 +27,19 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  error_code_t errCode;
+  uint8_t buff[2];
+  uint8_t pr = 0x00;
+  int16_t temperature;
+  errCode = i2cSendTo(devAddr, &pr, 1U);
+  if (errCode != ERR_CODE_SUCCESS) return errCode;
+  errCode = i2cReceiveFrom(devAddr, buff, 2U);
+  if (errCode != ERR_CODE_SUCCESS) return errCode;
+  temperature = (((buff[0] << 8) | buff[1]) >> 5);
+  if (temperature & 0x400) { // Check if the 12th bit (sign bit) is set
+      temperature |= 0xF800; // Extend the sign to 16 bits
+  }
+  *temp = (float)(temperature) * 0.125;
   
   return ERR_CODE_SUCCESS;
 }
