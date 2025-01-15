@@ -26,9 +26,25 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
-  
-  return ERR_CODE_SUCCESS;
+    error_code_t errCode;
+    uint8_t tempReg[2];
+    uint8_t pointerReg = 0x00;
+
+    if (temp == NULL) {
+        return ERR_CODE_INVALID_ARG;
+    }
+
+    RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &pointerReg, 1));
+
+    RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, tempReg, 2));
+
+    int16_t rawTemp = (tempReg[0] << 8) | tempReg[1];
+    
+    rawTemp >>= 7;
+
+    *temp = rawTemp * 0.5f;
+
+    return ERR_CODE_SUCCESS;
 }
 
 #define CONF_WRITE_BUFF_SIZE 2U
