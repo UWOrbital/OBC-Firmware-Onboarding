@@ -27,13 +27,15 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  if(temp == NULL)
+      return ERR_CODE_INVALID_ARG;
   error_code_t errCode;
-  uint8_t buf[2];
-  uint8_t tempReg = 0b00000000;
+  uint8_t buf[2] = {0x00};
+  uint8_t tempReg = 0x00;
   int16_t temperature;
 
-  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &tempReg, 1));
-  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, buf, 2));
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &tempReg, sizeof(tempReg)));
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, buf, sizeof(buf)));
 
   temperature = (buf[0] << 8) | buf[1]; //combines the two bytes into temperature variable
   temperature >>= 5; //right shift but why is there an error when I combine everything to one line?
