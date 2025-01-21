@@ -26,22 +26,24 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-    error_code_t errCode;
-    uint8_t tempReg[2];
-    uint8_t pointerReg = 0x00;
-
     if (temp == NULL) {
         return ERR_CODE_INVALID_ARG;
     }
+    error_code_t errCode;
+    uint8_t tempReg[2] = {0};
+    uint8_t pointerReg = 0x00;
 
-    RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &pointerReg, 1));
-
-    RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, tempReg, 2));
-
+    RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &pointerReg, sizeof(pointerReg)));
+    RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, tempReg, sizeof(tempReg)));
+    
+    // Combine 2 bytes into 16-bit value
     int16_t rawTemp = (tempReg[0] << 8) | tempReg[1];
     
+    // Temperature data is in 9-bit resolution (7 integer bits + 2 fractional bits)
+    // Right-shift by 7 to align with the temperature format
     rawTemp >>= 7;
 
+    // Convert to Celsius (each bit represents 0.5°C)
     *temp = rawTemp * 0.5f;
 
     return ERR_CODE_SUCCESS;

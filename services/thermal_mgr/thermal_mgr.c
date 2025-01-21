@@ -41,6 +41,14 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
+    if (event == NULL) {
+        return ERR_CODE_INVALID_ARG;
+    }
+    
+    if (thermalMgrQueueHandle == NULL) {
+        return ERR_CODE_INVALID_STATE;
+    }
+
     if (xQueueSend(thermalMgrQueueHandle, event, 0) != pdTRUE) {
         return ERR_CODE_QUEUE_FULL;
     }
@@ -49,7 +57,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 void osHandlerLM75BD(void) {
     thermal_mgr_event_t event;
-    event.type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;
+    event.type = THERMAL_MGR_EVENT_OS_INTERRUPT;
     thermalMgrSendEvent(&event);
 }
 
@@ -66,8 +74,11 @@ static void thermalMgr(void *pvParameters) {
                 errCode = readTempLM75BD(config->devAddr, &currentTemp);
                 if (errCode == ERR_CODE_SUCCESS) {
                     addTemperatureTelemetry(currentTemp);
-                    
-                    if (currentTemp > config->overTempThresholdCelsius && !isOverTemp) {
+                }
+            } else if (event.type == THERMAL_MGR_EVENT_OS_INTERRUPT) {
+                errCode = readTempLM75BD(config->devAddr, &currentTemp);
+                if (errCode == ERR_CODE_SUCCESS) {
+                    if (currentTemp > config->hysteresisThresholdCelsius && !isOverTemp) {
                         overTemperatureDetected();
                         isOverTemp = 1;
                     } else if (currentTemp < config->hysteresisThresholdCelsius && isOverTemp) {
