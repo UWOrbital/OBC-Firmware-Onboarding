@@ -71,12 +71,12 @@ static void thermalMgr(void *pvParameters) {
     while (1) {
         if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdTRUE) {
             if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
-                errCode = readTempLM75BD(config->devAddr, &currentTemp);
+                LOG_IF_ERROR_CODE(readTempLM75BD(config->devAddr, &currentTemp));
                 if (errCode == ERR_CODE_SUCCESS) {
                     addTemperatureTelemetry(currentTemp);
                 }
             } else if (event.type == THERMAL_MGR_EVENT_OS_INTERRUPT) {
-                errCode = readTempLM75BD(config->devAddr, &currentTemp);
+                LOG_IF_ERROR_CODE(readTempLM75BD(config->devAddr, &currentTemp));
                 if (errCode == ERR_CODE_SUCCESS) {
                     if (currentTemp > config->hysteresisThresholdCelsius && !isOverTemp) {
                         overTemperatureDetected();
