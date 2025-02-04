@@ -18,6 +18,7 @@ static StackType_t thermalMgrTaskStack[THERMAL_MGR_STACK_SIZE];
 
 #define THERMAL_MGR_QUEUE_LENGTH 10U
 #define THERMAL_MGR_QUEUE_ITEM_SIZE sizeof(thermal_mgr_event_t)
+#define INCLUDE_vTaskDelayUntil                 1
 
 static QueueHandle_t thermalMgrQueueHandle;
 static StaticQueue_t thermalMgrQueueBuffer;
@@ -66,20 +67,25 @@ void osHandlerLM75BD(void) {
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   while (1) {
-    error_code_t errCode;
     thermal_mgr_event_t cur_event;
-    if(xQueueReceive(thermalMgrQueueHandle, &cur_event, 1) == pdTRUE){
+    if(xQueueReceive(thermalMgrQueueHandle, &cur_event, portMAX_DELAY) == pdTRUE){
       if(cur_event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
         float temp;
+        error_code_t errCode;
         LOG_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR ,&temp));
-        addTemperatureTelemetry(temp);
+        if(errCode==ERR_CODE_SUCCESS){
+          addTemperatureTelemetry(temp);
+        }
       }else if(cur_event.type == OS_HANDLER_EVENT){
         float temp;
+        error_code_t errCode;
         LOG_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR ,&temp));
-        if(temp >= 75){
-          overTemperatureDetected();
-        }else{
-          safeOperatingConditions();
+        if(errCode==ERR_CODE_SUCCESS){
+          if(temp >= 75){
+            overTemperatureDetected();
+          }else{
+            safeOperatingConditions();
+          }
         }
       }
     }
