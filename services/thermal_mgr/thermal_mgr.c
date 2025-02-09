@@ -115,8 +115,6 @@ static void thermalMgr(void *pvParameters) {
 
 
 
-
-
 void addTemperatureTelemetry(float tempC) {
   printConsole("Temperature telemetry: %f deg C\n", tempC);
 }
