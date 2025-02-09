@@ -62,7 +62,7 @@ void logSetLevel(log_level_t newLogLevel);
 /**
  * @brief Log a message
  *
- * @param msgLevel				Level of the message
+ * @param msgLevel				level of the message
  * @param file					File of message
  * @param line					Line of message
  * @param s						Message to log
@@ -75,3 +75,6 @@ error_code_t logLog(log_level_t msgLevel, const char *file, uint32_t line, const
 #ifdef __cplusplus
 }
 #endif
+
+
+

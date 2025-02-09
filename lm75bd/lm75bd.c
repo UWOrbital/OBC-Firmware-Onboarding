@@ -2,10 +2,11 @@
 #include "i2c_io.h"
 #include "errors.h"
 #include "logging.h"
-
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
+#pragma once
+
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
@@ -25,11 +26,51 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
   return ERR_CODE_SUCCESS;
 }
 
-error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
+
+/* READ TEMPERATURE FUNCTION IMPLMENTATION FW ONBOARDING */
+
+
+error_code_t readTempLM75BD(uint8_t devAddr, float *temp) { //function to read the temperature from the LM75BD
+  error_code_t errCode;
+    if (temp == NULL) {
+      return ERR_CODE_INVALID_ARG; 
+    }
+
+  uint8_t pointer_byte = 0x00; //pointer register
+    errCode =  i2cSendTo(devAddr, &pointer_byte, 1); //sending the pointer register
   
+        if (errCode != ERR_CODE_SUCCESS) {
+          return errCode; 
+        }
+
+  uint8_t temp_data[2] = {0}; //array to store the temperature data
+    errCode = i2cReceiveFrom(devAddr, temp_data, 2); //recieving the temperature data
+
+        if (errCode != ERR_CODE_SUCCESS) {
+          return errCode; 
+        }
+
+  uint16_t final_temp_data = (temp_data[0] << 8) | temp_data[1]; //combining the two bytes of data
+
+        if (final_temp_data & 0x8000) { //checking if the number is negative
+          final_temp_data = ~final_temp_data + 1; //flipping number to positive
+          *temp = (float)(final_temp_data >> 5) * 0.125; //using the termpature algorithm
+          *temp *= -1;   //flipping number back to negative
+        }
+        else {
+          *temp = (float)(final_temp_data >> 5) * 0.125; //using the termpature algorithm
+        }
   return ERR_CODE_SUCCESS;
 }
+
+
+
+
+
+
+
+
+
 
 #define CONF_WRITE_BUFF_SIZE 2U
 error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_t osPolarity,
