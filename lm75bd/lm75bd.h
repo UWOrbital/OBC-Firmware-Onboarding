@@ -6,6 +6,7 @@
 
 /* LM75BD I2C Device Address */
 #define LM75BD_OBC_I2C_ADDR 0b1001111
+// the hex code the address is 0x4F
 
 /* Define the address here */
 

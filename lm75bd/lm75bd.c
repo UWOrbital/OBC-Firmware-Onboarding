@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
-#pragma once
 
 
 /* LM75BD Registers (p.8) */
@@ -62,8 +61,6 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) { //function to read t
         }
   return ERR_CODE_SUCCESS;
 }
-
-
 
 
 
