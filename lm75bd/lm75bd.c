@@ -26,13 +26,20 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
+  if (temp == NULL) {
+    return ERR_CODE_INVALID_ARG;
+  }
   uint8_t reqRegister = 0x00;
   uint8_t retRegister[2] = {};
   int16_t preTemp;
-  i2cSendTo(devAddr, &reqRegister, 1);
-  i2cReceiveFrom(devAddr, retRegister, 2);
+  if(i2cSendTo(devAddr, &reqRegister, 1)!= ERR_CODE_SUCCESS){
+    return i2cSendTo(devAddr, &reqRegister, 1);
+  }
+  if(i2cReceiveFrom(devAddr, retRegister, 2)!= ERR_CODE_SUCCESS){
+    return i2cReceiveFrom(devAddr, retRegister, 2);
+  }
   preTemp = ((retRegister[0]<<8) | (retRegister[1]));
-  preTemp = preTemp >> 5;
+  preTemp = preTemp >> 5; 
   if((preTemp&0x0400)==0){
     preTemp = preTemp*0.125;
     *temp = preTemp;
