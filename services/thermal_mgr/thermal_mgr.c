@@ -6,6 +6,7 @@
 #include <FreeRTOS.h>
 #include <os_task.h>
 #include <os_queue.h>
+#include <logging.h>
 
 #include <string.h>
 
@@ -71,16 +72,18 @@ static void thermalMgr(void *pvParameters) {
   float temp = 0.0;
   while (1) {
     if(xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdPASS){
+      error_code_t errCode = readTempLM75BD(config.devAddr, &temp);
+      if (errCode != ERR_CODE_SUCCESS) {
+        LOG_ERROR_CODE(errCode);
+        continue;
+      }
       if(event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
-        if (readTempLM75BD(config.devAddr, &temp) == ERR_CODE_SUCCESS) {
-          addTemperatureTelemetry(temp);
-        }
-        if(event.type == THERMAL_MGR_EVENT_OVER_TEMPERATURE){
-          if (temp >= 80.0) {
-            overTemperatureDetected();
-          } else if (temp <= 75.0) {
-            safeOperatingConditions();
-          }
+        addTemperatureTelemetry(temp);
+      }else if(event.type == THERMAL_MGR_EVENT_OVER_TEMPERATURE){
+        if (temp >= 80.0) {
+          overTemperatureDetected();
+        } else if (temp <= 75.0) {
+          safeOperatingConditions();
         }
       }
     }
