@@ -8,7 +8,7 @@
 // Question 0
 // Include the challenge.h header file
 //-------------------------------------------------------------------------
-
+#include <challenge.h>
 
 //-------------------------------------------------------------------------
 // Question 1
@@ -16,7 +16,8 @@
 // respectively. The value of `q1A` should be initialized to 0 and the value 
 // of `q1B`should be initialized to 1.
 //-------------------------------------------------------------------------
-
+int q1A = 0;
+int q1b = 1;
 
 //-------------------------------------------------------------------------
 // Question 2
@@ -24,7 +25,7 @@
 // the array should be `q2Array`. The size should be defined by a macro
 // named `Q2_ARRAY_SIZE`.
 //-------------------------------------------------------------------------
-
+int q2Array[Q2_ARRAY_SIZE]; 
 
 //-------------------------------------------------------------------------
 // Question 3
