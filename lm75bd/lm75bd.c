@@ -27,6 +27,36 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  // Read the current temperature from the LM75BD
+  // - select the sensor's internal temperature register using the pointer register
+
+  error_code_t errCode;
+  uint8_t tempReg = 0x00;
+  uint8_t tempBuff[2] = {0};  // This is 2 bytes because the temperature is 9 bits
+
+  // - send the register address to the sensor
+  errCode = i2cSendTo(devAddr, &tempReg, 1);
+  if (errCode != ERR_CODE_SUCCESS) return errCode;
+
+  // - read the temperature value from the sensor
+  errCode = i2cReceiveFrom(devAddr, tempBuff, 2);
+  if (errCode != ERR_CODE_SUCCESS) return errCode;
+
+  // In MSB, the 8th bit 0 if positive, 1 if negative
+  // In LSB, bits 1-5 is ignored, bits 6-8 is the temperature value along with the MSB
+
+  // Combine the MSB and LSB to get the temperature value
+  int16_t tempVal = (int16_t)(tempBuff[0] << 8) | tempBuff[1];
+
+  // Check if the temperature is negative
+  if (tempVal & 0x8000) {
+    // If the temperature is negative, convert it to a negative value
+    tempVal = ~tempVal + 1;
+    *temp = -(float)(tempVal >> 5) * 0.125f;
+  } else {
+    // Convert to Celsius
+    *temp = (float)(tempVal >> 5) * 0.125f;
+  }
   
   return ERR_CODE_SUCCESS;
 }

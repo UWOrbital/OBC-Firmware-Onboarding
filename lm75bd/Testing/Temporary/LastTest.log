@@ -1,0 +1,34 @@
+Start testing: Feb 17 16:32 EST
+----------------------------------------------------------
+1/1 Testing: onboarding-tests
+1/1 Test: onboarding-tests
+Command: "/Users/junzhangluo/Documents/OBC-Firmware-Onboarding/lm75bd/test/onboarding-tests"
+Directory: /Users/junzhangluo/Documents/OBC-Firmware-Onboarding/lm75bd/test
+"onboarding-tests" start time: Feb 17 16:32 EST
+Output:
+----------------------------------------------------------
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from TestLm75bdDriver
+[ RUN      ] TestLm75bdDriver.TestWriteConfigLm75bdSuccess
+[       OK ] TestLm75bdDriver.TestWriteConfigLm75bdSuccess (0 ms)
+[ RUN      ] TestLm75bdDriver.TestReadTempLm75bdPosTempSuccess
+[       OK ] TestLm75bdDriver.TestReadTempLm75bdPosTempSuccess (0 ms)
+[ RUN      ] TestLm75bdDriver.TestReadTempLm75bdNegTempSuccess
+[       OK ] TestLm75bdDriver.TestReadTempLm75bdNegTempSuccess (0 ms)
+[ RUN      ] TestLm75bdDriver.TestReadTempLm75bdCallSequence
+[       OK ] TestLm75bdDriver.TestReadTempLm75bdCallSequence (0 ms)
+[----------] 4 tests from TestLm75bdDriver (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (0 ms total)
+[  PASSED  ] 4 tests.
+<end of output>
+Test time =   0.20 sec
+----------------------------------------------------------
+Test Passed.
+"onboarding-tests" end time: Feb 17 16:32 EST
+"onboarding-tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Feb 17 16:32 EST

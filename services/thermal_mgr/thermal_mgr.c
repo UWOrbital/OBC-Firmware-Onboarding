@@ -43,18 +43,56 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-
+  if (xQueueSend(thermalMgrQueueHandle, event, 0) != pdTRUE) {
+    return ERR_CODE_QUEUE_FULL;
+  }
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
+  thermal_mgr_event_t event;
+  event.type = THERMAL_MGR_EVENT_OVER_TEMP;
+  // Send the event to the thermal manager queue
+  if (thermalMgrSendEvent(&event) != ERR_CODE_SUCCESS) {
+    printConsole("Failed to send over temperature event to thermal manager queue\n");
+  }
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
+  thermal_mgr_event_t event;  
+  lm75bd_config_t *config = (lm75bd_config_t *)pvParameters;  // Get the LM75BD configuration
   while (1) {
-    
+    if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdTRUE) {
+      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+        // Read the current temperature from the LM75BD
+        float currentTemp = 0.0f;
+        uint8_t devAddr = config->devAddr;
+        if (readTempLM75BD(devAddr, &currentTemp) == ERR_CODE_SUCCESS) {
+          addTemperatureTelemetry(currentTemp);
+        } else {
+          printConsole("Failed to read temperature from LM75BD\n");
+        }
+      } else if (event.type == THERMAL_MGR_EVENT_OVER_TEMP) {
+        // Read the current temperature from the LM75BD, and check if it is still above the threshold
+        float currentTemp = 0.0f;
+        uint8_t devAddr = LM75BD_OBC_I2C_ADDR;
+        if (readTempLM75BD(devAddr, &currentTemp) == ERR_CODE_SUCCESS) {
+          if (currentTemp > LM75BD_DEFAULT_HYST_THRESH) {
+            printConsole("Case 1");
+            overTemperatureDetected();
+          } else {
+            printConsole("Case 2");
+            safeOperatingConditions();
+          }
+        } else {
+          printConsole("Failed to read temperature from LM75BD\n");
+        }
+      } else {
+        printConsole("Invalid thermal manager event type\n");
+      }
+    }
   }
 }
 
