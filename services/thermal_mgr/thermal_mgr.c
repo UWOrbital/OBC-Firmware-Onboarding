@@ -2,6 +2,7 @@
 #include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
+#include "logging.h"
 
 #include <FreeRTOS.h>
 #include <os_task.h>
@@ -44,8 +45,11 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
   // Check if the event is null pointer
-  if (event == NULL || thermalMgrQueueHandle == NULL) {
+  if (event == NULL) {
     return ERR_CODE_INVALID_ARG;
+  }
+  if (thermalMgrQueueHandle == NULL) {
+    return ERR_CODE_INVALID_STATE;
   }
   if (xQueueSend(thermalMgrQueueHandle, event, 0) != pdTRUE) {
     return ERR_CODE_QUEUE_FULL;
@@ -72,16 +76,20 @@ static void thermalMgr(void *pvParameters) {
         float currentTemp = 0.0f;
         uint8_t devAddr = config->devAddr;
         error_code_t errCode = readTempLM75BD(devAddr, &currentTemp);
-        LOG_IF_ERROR_CODE(errCode);
-        RETURN_IF_ERROR_CODE(errCode);
+        if (errCode != ERR_CODE_SUCCESS) {
+          LOG_ERROR_CODE(errCode);
+          continue;
+        }
         addTemperatureTelemetry(currentTemp);
       } else if (event.type == THERMAL_MGR_EVENT_OVER_TEMP) {
         // Read the current temperature from the LM75BD, and check if it is still above the threshold
         float currentTemp = 0.0f;
         uint8_t devAddr = LM75BD_OBC_I2C_ADDR;
         error_code_t errCode = readTempLM75BD(devAddr, &currentTemp);
-        LOG_IF_ERROR_CODE(errCode);
-        RETURN_IF_ERROR_CODE(errCode);
+        if (errCode != ERR_CODE_SUCCESS) {
+          LOG_ERROR_CODE(errCode);
+          continue;
+        }
         addTemperatureTelemetry(currentTemp);
         if (currentTemp > LM75BD_DEFAULT_HYST_THRESH) {
           overTemperatureDetected();
