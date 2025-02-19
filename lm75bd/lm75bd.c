@@ -30,6 +30,9 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   // Read the current temperature from the LM75BD
   // - select the sensor's internal temperature register using the pointer register
 
+  // Check if temp is a null pointer
+  if (temp == NULL) return ERR_CODE_INVALID_ARG;
+
   error_code_t errCode;
   uint8_t tempReg = 0x00;
   uint8_t tempBuff[2] = {0};  // This is 2 bytes because the temperature is 9 bits

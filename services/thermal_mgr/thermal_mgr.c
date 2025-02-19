@@ -43,6 +43,10 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
+  // Check if the event is null pointer
+  if (event == NULL || thermalMgrQueueHandle == NULL) {
+    return ERR_CODE_INVALID_ARG;
+  }
   if (xQueueSend(thermalMgrQueueHandle, event, 0) != pdTRUE) {
     return ERR_CODE_QUEUE_FULL;
   }
@@ -54,9 +58,7 @@ void osHandlerLM75BD(void) {
   thermal_mgr_event_t event;
   event.type = THERMAL_MGR_EVENT_OVER_TEMP;
   // Send the event to the thermal manager queue
-  if (thermalMgrSendEvent(&event) != ERR_CODE_SUCCESS) {
-    printConsole("Failed to send over temperature event to thermal manager queue\n");
-  }
+  thermalMgrSendEvent(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -69,28 +71,25 @@ static void thermalMgr(void *pvParameters) {
         // Read the current temperature from the LM75BD
         float currentTemp = 0.0f;
         uint8_t devAddr = config->devAddr;
-        if (readTempLM75BD(devAddr, &currentTemp) == ERR_CODE_SUCCESS) {
-          addTemperatureTelemetry(currentTemp);
-        } else {
-          printConsole("Failed to read temperature from LM75BD\n");
-        }
+        error_code_t errCode = readTempLM75BD(devAddr, &currentTemp);
+        LOG_IF_ERROR_CODE(errCode);
+        RETURN_IF_ERROR_CODE(errCode);
+        addTemperatureTelemetry(currentTemp);
       } else if (event.type == THERMAL_MGR_EVENT_OVER_TEMP) {
         // Read the current temperature from the LM75BD, and check if it is still above the threshold
         float currentTemp = 0.0f;
         uint8_t devAddr = LM75BD_OBC_I2C_ADDR;
-        if (readTempLM75BD(devAddr, &currentTemp) == ERR_CODE_SUCCESS) {
-          if (currentTemp > LM75BD_DEFAULT_HYST_THRESH) {
-            printConsole("Case 1");
-            overTemperatureDetected();
-          } else {
-            printConsole("Case 2");
-            safeOperatingConditions();
-          }
+        error_code_t errCode = readTempLM75BD(devAddr, &currentTemp);
+        LOG_IF_ERROR_CODE(errCode);
+        RETURN_IF_ERROR_CODE(errCode);
+        addTemperatureTelemetry(currentTemp);
+        if (currentTemp > LM75BD_DEFAULT_HYST_THRESH) {
+          overTemperatureDetected();
         } else {
-          printConsole("Failed to read temperature from LM75BD\n");
+          safeOperatingConditions();
         }
       } else {
-        printConsole("Invalid thermal manager event type\n");
+        LOG_ERROR_CODE(ERR_CODE_INVALID_STATE);
       }
     }
   }
