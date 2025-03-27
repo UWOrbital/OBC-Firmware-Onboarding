@@ -2,6 +2,7 @@
 #include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
+#include "logging.h"
 
 #include <FreeRTOS.h>
 #include <os_task.h>
@@ -43,18 +44,61 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-
+  if (event == NULL) { return ERR_CODE_INVALID_ARG; } // event is null error
+  if (thermalMgrQueueHandle == NULL) { return ERR_CODE_INVALID_STATE; } // queue handle is null error
+  if (xQueueSend(thermalMgrQueueHandle, event, 0) != pdPASS) {
+    // checks if this returns pdpass, if not then error queue full
+    return ERR_CODE_QUEUE_FULL;
+  }
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
+  uint8_t devAddr = LM75BD_OBC_I2C_ADDR;
+  float cur_temp = 0;
+  error_code_t error_cur_temp = readTempLM75BD(devAddr, &cur_temp); // read current temp
+
+  float T_hys = 75.0; // T_hys
+  if (cur_temp > T_hys) {
+    overTemperatureDetected(); // temp > Thys, over temp.
+  } else {
+    safeOperatingConditions(); // otherwise, normal temp.
+  }
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
+  if (pvParameters == NULL) {
+    LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
+    return;
+  }
+  
+  if (thermalMgrQueueHandle == NULL) { 
+    LOG_ERROR_CODE(ERR_CODE_INVALID_STATE);
+    return;
+  }
+
+  thermal_mgr_event_t event;
+  float temp = 0;
+  lm75bd_config_t data = *(lm75bd_config_t *) pvParameters;
+  uint8_t devAddr = data.devAddr;
+
   while (1) {
-    
+    if (xQueueReceive(thermalMgrQueueHandle, &event, 0) == pdPASS) {
+      // received thermal_mgr_event_t
+      // check its .type value
+      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+        // measure current temp.
+        error_code_t result = readTempLM75BD(devAddr, &temp); 
+        // check if return success, if not then log errorcode
+        if (result == ERR_CODE_SUCCESS) {
+          addTemperatureTelemetry(temp);
+        } else {
+          LOG_ERROR_CODE(result);
+        }
+      } else { LOG_ERROR_CODE(ERR_CODE_INVALID_QUEUE_MSG); } // wrong event type in queue
+    }
   }
 }
 

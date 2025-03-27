@@ -25,9 +25,28 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
   return ERR_CODE_SUCCESS;
 }
 
+#define LM75BD_REG_TEMP 0x00U
+#define TEMP_WRITE_BUFF_SIZE 1U
+#define TEMP_READ_BUFF_SIZE 2U
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  error_code_t errCode;
+  uint8_t bufWrite[TEMP_WRITE_BUFF_SIZE] = {0};
+  bufWrite[0] = LM75BD_REG_TEMP;
+
+  uint8_t bufRead[TEMP_READ_BUFF_SIZE] = {0};
+
+  // TODO: check if this is done correctly
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, bufWrite, TEMP_WRITE_BUFF_SIZE));
   
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, bufRead, TEMP_READ_BUFF_SIZE));
+
+  // Perform byte conversion to celcius
+  uint16_t combined = (bufRead[0] << 8) | bufRead[1];
+  int16_t result = (int16_t)combined >> 5;
+
+  *temp = result*0.125;
+
   return ERR_CODE_SUCCESS;
 }
 
