@@ -155,7 +155,7 @@ typedef struct {
 
 error_t q10(q10_t *q10) {
     if (q10 == NULL) return FAIL; //edge case if q10 is empty
-    return (q9(q10->a, q10->b) == 0 ? SUCCESS : FAIL);
+    return (q9(&q10->a, &q10->b) == 0 ? SUCCESS : FAIL);
     /**
      * @brief Calls q9 to swap the values of a and b
      *
