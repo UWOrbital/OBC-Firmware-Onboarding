@@ -16,8 +16,8 @@
 // respectively. The value of `q1A` should be initialized to 0 and the value 
 // of `q1B`should be initialized to 1.
 //-------------------------------------------------------------------------
-int q1A = 0;
-int q1B = 1; //globally init
+int32_t q1A = 0;
+int32_t q1B = 1; //globally init
 
 //-------------------------------------------------------------------------
 // Question 2
@@ -27,7 +27,7 @@ int q1B = 1; //globally init
 //-------------------------------------------------------------------------
 
 #define Q2_ARRAY_SIZE 10 //macro define
-int q2Array[Q2_ARRAY_SIZE];
+int32_t q2Array[Q2_ARRAY_SIZE];
 
 //-------------------------------------------------------------------------
 // Question 3
