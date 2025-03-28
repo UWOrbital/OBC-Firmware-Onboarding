@@ -31,10 +31,10 @@ int q2Array[Q2_ARRAY_SIZE];
 
 //-------------------------------------------------------------------------
 // Question 3
-// Complete the following function. The function should flip the most 
+// Complete the following function. The function should flip the most
 // significant bit and the least significant bit of the input byte `x`.
 // The function should then return the y value appended to the new x value.
-// 
+//
 // Example: x = 0b10010010, y = 0b01100101
 //          x becomes 0b00010011
 //          The function should return 0b0001001101100101
@@ -56,18 +56,21 @@ uint16_t q3(uint8_t x, uint8_t y) {
 //-------------------------------------------------------------------------
 // Question 4
 // Fix all the issues with the following function, `q4`.
-// The function should return the sum of all the elements in the array 
+// The function should return the sum of all the elements in the array
 // pointed to by `array`. The length of the array is given by the parameter
-// `arrayLength`. Deal with all possible errors. It should return -1 if any 
+// `arrayLength`. Deal with all possible errors. It should return -1 if any
 // errors occur.
 //
 // Note: The array contains 8-bit unsigned integers.
 //-------------------------------------------------------------------------
 int32_t q4(uint8_t * array, uint32_t arrayLength) {
-    for (uint8_t i = 0; i <= arrayLength; i++) {
-        int32_t sum = 0;
+    if (array == NULL) return -1; //add edge case for empty array
+
+    int32_t sum = 0; //moved outside to be returned
+    for (uint8_t i = 0; i < arrayLength; i++) { //only less than as terminating condition
         sum += array[i];
     }
+    return sum; //return the sum
 }
 
 //-------------------------------------------------------------------------
@@ -77,6 +80,10 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - uint16_t b
 //-------------------------------------------------------------------------
 
+typedef union { //overlapping memory -> total size largest  member -> stores only 1 at a time
+    uint32_t a;
+    uint16_t b;
+} q5_t;
 
 //-------------------------------------------------------------------------
 // Question 6
@@ -86,6 +93,10 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - uint16_t y
 //-------------------------------------------------------------------------
 
+typedef struct {
+    uint32_t x;
+    uint16_t y;
+} q6_t;
 
 //-------------------------------------------------------------------------
 // Question 7
@@ -95,6 +106,10 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // - FAIL = 1
 //-------------------------------------------------------------------------
 
+typedef enum { //set of constants
+    SUCCESS,
+    FAIL
+}error_t;
 
 //-------------------------------------------------------------------------
 // Question 8
@@ -102,6 +117,7 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // them together. The macro should return the result.
 //-------------------------------------------------------------------------
 
+#define MULTIPLY(a, b) ((a) * (b))
 
 //-------------------------------------------------------------------------
 // Question 9
@@ -115,6 +131,11 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 // Now, x = 10 and y = 5
 //-------------------------------------------------------------------------
 int q9(int *a, int *b) {
+    if (a == NULL || b == NULL) return -1; //edge case if one DNE
+    int temp = *a; //temp to store dereference a
+    *a = *b;
+    *b = temp; //swapped
+    return 0;
 
 }
 
@@ -133,6 +154,14 @@ typedef struct {
 } q10_t;
 
 error_t q10(q10_t *q10) {
+    if (q10 == NULL) return FAIL; //edge case if q10 is empty
+    return (q9(q10->a, q10->b) == 0 ? SUCCESS : FAIL);
+    /**
+     * @brief Calls q9 to swap the values of a and b
+     *
+     * @return Returns result of q9, swapping 0 for SUCCESS, -1 for FAIL
+     *         inputting in the address of the dereffed struct
+     */
 
 }
 
@@ -156,7 +185,18 @@ typedef struct {
 } q11_b_t;
 
 error_t q11(q11_a_t *a, q11_b_t *b){
-
+    if (a == NULL || b == NULL) return FAIL;
+    memcpy(&b->array[1], a->array, sizeof(uint16_t) * 50);
+    /**
+    * @brief Fxn from <string.h> - copies memory
+    *
+    * @param *dest - where to copy data to
+    * @param *src - where to copy data from
+    * @param n - how many bytes to copy
+    * @return Returns result of q9, swapping 0 for SUCCESS, -1 for FAIL
+    *         inputting in the address of the dereffed struct
+    */
+    return SUCCESS;
 }
 
 //-------------------------------------------------------------------------
@@ -164,6 +204,8 @@ error_t q11(q11_a_t *a, q11_b_t *b){
 // Define a macro called `MIN` that takes two parameters and finds the
 // lesser value of the 2. The macro should return the result.
 //-------------------------------------------------------------------------
+
+#define MIN(a,b) (((a) < (b)) ? (a) : (b)) //assuming not equal
 
 //-------------------------------------------------------------------------
 // Question 13
@@ -175,7 +217,13 @@ error_t q11(q11_a_t *a, q11_b_t *b){
 //-------------------------------------------------------------------------
 
 void *q13(uint32_t *ptr1, uint16_t *ptr2){
+    if (ptr1 == NULL || ptr2 == NULL) return (void *)-1; //edge case if one DNE
 
+    uintptr_t p1 = (uintptr_t)ptr1 +5; //unsigned int large enough to store pointer, inc by 5
+    uintptr_t p2 = (uintptr_t)ptr2 +5;
+
+    return (void *)((p1 < p2) ? p1 : p2); //return the smallest inc by 5
+    //note: cannot compare unsigned *  -> (ptr1 < ptr2) is not allowed
 }
 //-------------------------------------------------------------------------
 // The following function is used to test your code. Do not remove any 
