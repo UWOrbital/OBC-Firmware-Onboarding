@@ -8,7 +8,7 @@
 // Question 0
 // Include the challenge.h header file
 //-------------------------------------------------------------------------
-
+#include "challenge.h"
 
 //-------------------------------------------------------------------------
 // Question 1
@@ -16,7 +16,8 @@
 // respectively. The value of `q1A` should be initialized to 0 and the value 
 // of `q1B`should be initialized to 1.
 //-------------------------------------------------------------------------
-
+int q1A = 0;
+int q1B = 1; //globally init
 
 //-------------------------------------------------------------------------
 // Question 2
@@ -25,6 +26,8 @@
 // named `Q2_ARRAY_SIZE`.
 //-------------------------------------------------------------------------
 
+#define Q2_ARRAY_SIZE 10 //macro define
+int q2Array[Q2_ARRAY_SIZE];
 
 //-------------------------------------------------------------------------
 // Question 3
@@ -37,6 +40,16 @@
 //          The function should return 0b0001001101100101
 //-------------------------------------------------------------------------
 uint16_t q3(uint8_t x, uint8_t y) {
+    x ^= (1 << 7); //flip MSB
+    // << shifts 00000001 7 spaces to get 10000000 (128)
+    //bitwise XOR -> if same then 0, diff then 1
+    x ^= (1 << 0); //flip LSB
+    //shifts 00000001 0 spaces
+
+    return ((uint16_t)x << 8) | y;
+    //shifts x to the left half of 16 bit num
+    // | bitwise OR to turn all the 0 into 1s
+
 
 }
 
