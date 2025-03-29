@@ -19,6 +19,8 @@ static StackType_t thermalMgrTaskStack[THERMAL_MGR_STACK_SIZE];
 #define THERMAL_MGR_QUEUE_LENGTH 10U
 #define THERMAL_MGR_QUEUE_ITEM_SIZE sizeof(thermal_mgr_event_t)
 
+#define TEMP_HYS 75U
+
 static QueueHandle_t thermalMgrQueueHandle;
 static StaticQueue_t thermalMgrQueueBuffer;
 static uint8_t thermalMgrQueueStorageArea[THERMAL_MGR_QUEUE_LENGTH * THERMAL_MGR_QUEUE_ITEM_SIZE];
@@ -56,15 +58,9 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 void osHandlerLM75BD(void) {
   /* Implement this function */
   uint8_t devAddr = LM75BD_OBC_I2C_ADDR;
-  float cur_temp = 0;
-  error_code_t error_cur_temp = readTempLM75BD(devAddr, &cur_temp); // read current temp
-
-  float T_hys = 75.0; // T_hys
-  if (cur_temp > T_hys) {
-    overTemperatureDetected(); // temp > Thys, over temp.
-  } else {
-    safeOperatingConditions(); // otherwise, normal temp.
-  }
+  thermal_mgr_event_t event = {THERMAL_MGR_EVENT_HANDLE_OS};
+  error_code_t errCode;
+  LOG_IF_ERROR_CODE(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -85,19 +81,27 @@ static void thermalMgr(void *pvParameters) {
   uint8_t devAddr = data.devAddr;
 
   while (1) {
-    if (xQueueReceive(thermalMgrQueueHandle, &event, 0) == pdPASS) {
+    if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdPASS) {
       // received thermal_mgr_event_t
       // check its .type value
+      // measure current temp.
+      error_code_t result = readTempLM75BD(devAddr, &temp); 
+      // check if return success, if not then log errorcode
+      if (result != ERR_CODE_SUCCESS) {
+        LOG_ERROR_CODE(result);
+        continue;
+      }
       if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
-        // measure current temp.
-        error_code_t result = readTempLM75BD(devAddr, &temp); 
-        // check if return success, if not then log errorcode
-        if (result == ERR_CODE_SUCCESS) {
-          addTemperatureTelemetry(temp);
+        addTemperatureTelemetry(temp);
+      } else if (event.type == THERMAL_MGR_EVENT_HANDLE_OS) {
+        if (temp > TEMP_HYS) {
+          overTemperatureDetected(); // temp > Thys, over temp.
         } else {
-          LOG_ERROR_CODE(result);
+          safeOperatingConditions(); // otherwise, normal temp.
         }
-      } else { LOG_ERROR_CODE(ERR_CODE_INVALID_QUEUE_MSG); } // wrong event type in queue
+      } else { 
+        LOG_ERROR_CODE(ERR_CODE_INVALID_QUEUE_MSG); // wrong event type in queue
+      }
     }
   }
 }
