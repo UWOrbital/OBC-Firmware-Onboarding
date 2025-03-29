@@ -63,18 +63,17 @@ uint16_t q3(uint8_t x, uint8_t y) {
 //
 // Note: The array contains 8-bit unsigned integers.
 //-------------------------------------------------------------------------
-int32_t q4(uint8_t * array, uint32_t arrayLength) {
-    if (array == NULL) return -1; //add edge case for empty array
+int32_t q4(uint8_t *array, uint32_t arrayLength) {
+    if (array == NULL) return -1;
 
-    int32_t sum = 0; //moved outside to be returned
-    for (uint8_t i = 0; i < arrayLength; i++) { //only less than as terminating condition
-        if (!array[i]) {
-            break; //if array[i] DNE
-        }
-        sum += array[i];
+    int32_t sum = 0;
+    for (uint32_t i = 0; i < arrayLength; i++) {
+        sum += array[i];  // yes, even if array[i] == 0
     }
-    return sum; //return the sum
+
+    return sum;
 }
+
 
 //-------------------------------------------------------------------------
 // Question 5
@@ -189,7 +188,7 @@ typedef struct {
 
 error_t q11(q11_a_t *a, q11_b_t *b){
     if (a == NULL || b == NULL) return FAIL;
-    memcpy(&b->array[1], a->array, sizeof(uint16_t) * 50);
+    memcpy(b->array + 1, a->array, sizeof(uint16_t) * 50);
     /**
     * @brief Fxn from <string.h> - copies memory
     *
@@ -219,14 +218,10 @@ error_t q11(q11_a_t *a, q11_b_t *b){
 // 0x00000009 or -1 if there is an error.
 //-------------------------------------------------------------------------
 
-void *q13(uint32_t *ptr1, uint16_t *ptr2){
-    if (ptr1 == NULL || ptr2 == NULL) return (void *)-1; //edge case if one DNE
+void *q13(uint32_t *ptr1, uint16_t *ptr2) {
+    if (ptr1 == NULL || ptr2 == NULL) return (void *)-1; //edge case; -1 if error
 
-    uintptr_t p1 = (uintptr_t)ptr1 +5; //unsigned int large enough to store pointer, inc by 5
-    uintptr_t p2 = (uintptr_t)ptr2 +5;
-
-    return (void *)((p1 < p2) ? p1 : p2); //return the smallest inc by 5
-    //note: cannot compare unsigned *  -> (ptr1 < ptr2) is not allowed
+    return (void *)MIN((uint8_t *)ptr1 + 5, (uint8_t *)ptr2 + 5); //return min address inced by 5
 }
 //-------------------------------------------------------------------------
 // The following function is used to test your code. Do not remove any 
