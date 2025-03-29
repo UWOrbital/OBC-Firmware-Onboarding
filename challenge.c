@@ -68,6 +68,9 @@ int32_t q4(uint8_t * array, uint32_t arrayLength) {
 
     int32_t sum = 0; //moved outside to be returned
     for (uint8_t i = 0; i < arrayLength; i++) { //only less than as terminating condition
+        if (!array[i]) {
+            break; //if array[i] DNE
+        }
         sum += array[i];
     }
     return sum; //return the sum
