@@ -60,7 +60,7 @@ void osHandlerLM75BD(void) {
   uint8_t devAddr = LM75BD_OBC_I2C_ADDR;
   thermal_mgr_event_t event = {THERMAL_MGR_EVENT_HANDLE_OS};
   error_code_t errCode;
-  LOG_IF_ERROR_CODE(&event);
+  LOG_IF_ERROR_CODE(thermalMgrSendEvent(&event));
 }
 
 static void thermalMgr(void *pvParameters) {
