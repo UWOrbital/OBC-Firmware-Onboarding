@@ -8,6 +8,7 @@
 #include <os_queue.h>
 
 #include <string.h>
+#include <logging.h>
 
 #define THERMAL_MGR_STACK_SIZE 256U
 
@@ -75,16 +76,19 @@ static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   while (1) {
     thermal_mgr_event_t data = {0};
+    float previous;
     if(xQueueReceive(thermalMgrQueueHandle, &data, portMAX_DELAY) == pdTRUE && data.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
       float temperature;
       error_code_t result = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temperature);
       if(result != ERR_CODE_SUCCESS) LOG_ERROR_CODE(result);
       else addTemperatureTelemetry(temperature);
 
-      if(temperature > LM75BD_DEFAULT_HYST_THRESH){ // only below T hys is safe
+      if(temperature > LM75BD_DEFAULT_HYST_THRESH && previous < LM75BD_DEFAULT_HYST_THRESH) // only below T hys is safe
         overTemperatureDetected();
-      }
-      else safeOperatingConditions();
+      
+      else if(temperature < LM75BD_DEFAULT_HYST_THRESH && previous > LM75BD_DEFAULT_HYST_THRESH)
+        safeOperatingConditions();
+      previous = temperature;
     }
   }
 }

@@ -33,6 +33,8 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
  * @return ERR_CODE_SUCCESS if reading and conversion succeed
  */
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
+  error_code_t errCode;
+  
   // Check for null temp
   if(temp == NULL) return ERR_CODE_INVALID_ARG;
 
