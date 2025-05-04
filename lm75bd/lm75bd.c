@@ -36,6 +36,9 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   // Check for null temp
   if(temp == NULL) return ERR_CODE_INVALID_ARG;
 
+  uint8_t sendBuffer = 0x0U;
+  uint8_t buffer[2] = {0,0};
+
   // Use pointer register to select internal temperature register
   RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &sendBuffer, sizeof(sendBuffer)));
 
@@ -43,13 +46,11 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, buffer, sizeof(buffer)));
 
   // Stores temperature register value
-  uint8_t sendBuffer = 0x0U;
-  uint8_t buffer[2] = {0,0};
-  int16_t temperature = 0;
+  uint16_t temperature = 0;
 
   // Convert buffer to one binary integer
   temperature = ((buffer[0] << 8) | buffer[1]) >> 5;
-  *temp = (float)(temperature * 0.125);
+  *temp=(float)(temperature * 0.125);
 
   return ERR_CODE_SUCCESS;
 }

@@ -50,7 +50,8 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
   if(event == NULL) return ERR_CODE_INVALID_ARG;
-  
+  if(thermalMgrQueueHandle == NULL) return ERR_CODE_INVALID_ARG;
+
   xQueueSend(thermalMgrQueueHandle, event, 0);
   return ERR_CODE_SUCCESS;
 }
@@ -62,7 +63,6 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 void osHandlerLM75BD(void) {
   /* Implement this function */
   thermal_mgr_event_t event = {0};
-  //readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temperature);
   thermalMgrSendEvent(&event);
 }
 
