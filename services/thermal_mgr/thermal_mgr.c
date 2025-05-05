@@ -42,6 +42,14 @@ void initThermalSystemManager(lm75bd_config_t *config) {
   thermalMgrQueueHandle =
       xQueueCreateStatic(THERMAL_MGR_QUEUE_LENGTH, THERMAL_MGR_QUEUE_ITEM_SIZE,
                          thermalMgrQueueStorageArea, &thermalMgrQueueBuffer);
+
+  if (thermalMgrQueueHandle == NULL) {
+    printConsole("Queue creation was unsucessful");
+  }
+
+  if (thermalMgrTaskHandle == NULL) {
+    printConsole("Task creation was unsucessful");
+  }
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
@@ -51,12 +59,8 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   if (xQueueSend(thermalMgrQueueHandle, event, 0) == pdPASS) {
     return ERR_CODE_SUCCESS;
     // We check if the queue is full and return accordingly
-  } else if (xQueueIsQueueFullFromISR(thermalMgrQueueHandle) == pdFALSE) {
-    return ERR_CODE_QUEUE_FULL;
-    // If none of the previous cases occured, then we do not know the error and
-    // we return an ERR_CODE_UNKNOWN
   } else {
-    return ERR_CODE_UNKNOWN;
+    return ERR_CODE_QUEUE_FULL;
   }
 }
 
@@ -70,11 +74,9 @@ void osHandlerLM75BD(void) {
   // We create a new type of event to send into the queue since we want to
   // minimize the execution time of this function, so let's offload the work to
   // our thermal manager function
-  thermal_mgr_event_t osInterrupt;
-
   // From the header we define a new type of event to look for in our thermal
   // manager
-  osInterrupt.type = THERMAL_MGR_EVENT_HYS_TEMP;
+  thermal_mgr_event_t osInterrupt = {.type = THERMAL_MGR_EVENT_HYS_TEMP};
 
   // With some error handling, we send the event into the queue
   LOG_IF_ERROR_CODE(thermalMgrSendEvent(&osInterrupt));
@@ -116,6 +118,8 @@ static void thermalMgr(void *pvParameters) {
           // Check for hysteresis and call the appropriate function
         } else if (temp < 75) {
           safeOperatingConditions();
+        } else {
+          printConsole("Unknown Event was recieved");
         }
       }
     } else {

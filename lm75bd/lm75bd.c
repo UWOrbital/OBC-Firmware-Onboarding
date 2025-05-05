@@ -29,6 +29,10 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
+  // Check if temp is null
+  if (temp == NULL) {
+    return ERR_CODE_INVALID_ARG;
+  }
   // Define errCode for error macros
   error_code_t errCode;
 
@@ -49,21 +53,8 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   // signed integer and deleting off the last five bits as they are useless
   int16_t tempVal = (int16_t)((readBuff[0] << 8) | readBuff[1]) >> 5;
 
-  printf("Val: %d", tempVal);
-  // Check if the first bit is a 1 or 0 and follow datasheet instructions
-  // accordingly
-  if (readBuff[0] & 0x80) {
-    // The signed integer will store 2s complement but that won't work well with
-    // floats. So we take the original unsigned binary representation by using
-    // two's complement again. We convert the unsigned value to a float and then
-    // multiply by the required constant and negative which makes the float
-    // encoding correct!
-    *temp = (float)(~(tempVal) + 1) * -0.125;
-  } else {
-    // If the number was positive to begin with, then it is already represented
-    // as an unsigned and no coverting is needed.
-    *temp = (float)(tempVal) * 0.125;
-  }
+  // Using the fact that int16_t is already in 2s, we can do the following
+  *temp = ((float)(tempVal)) * 0.125;
 
   return ERR_CODE_SUCCESS;
 }
