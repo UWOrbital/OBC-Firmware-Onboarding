@@ -21,6 +21,10 @@
 #define LM75BD_DEFAULT_OT_THRESH 80.0f
 #define LM75BD_DEFAULT_HYST_THRESH 75.0f
 
+// LM75BD Registor Addresses
+#define LM75BD_REG_TEMP 0x00U
+#define LM75BD_REG_CONFIG 0x01U
+
 /**
  * @struct Configuration struct for LM75BD,118 temperature sensor
  *
