@@ -51,8 +51,8 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   int16_t temperature = 0;
 
   // Convert buffer to one binary integer
-  temperature = ((buffer[0] << 8) | buffer[1]) >> 5;
-  *temp=(float)(temperature * 0.125);
+  temperature = (int16_t)((buffer[0] << 8) | buffer[1]) >> 5;
+  *temp=((float)temperature) * 0.125;
 
   return ERR_CODE_SUCCESS;
 }
