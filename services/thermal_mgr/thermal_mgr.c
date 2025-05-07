@@ -43,6 +43,9 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
+  if (!event) return ERR_CODE_INVALID_ARG;
+  if (!thermalMgrQueueHandle) return ERR_CODE_INVALID_STATE;
+  if (!xQueueSend(thermalMgrQueueHandle, event, 0)) return ERR_CODE_QUEUE_FULL;
 
   return ERR_CODE_SUCCESS;
 }
@@ -53,8 +56,42 @@ void osHandlerLM75BD(void) {
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
+  if (!pvParameters) {
+  	LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
+  return;
+  } else if (!thermalMgrQueueHandle) {
+    LOG_ERROR_CODE(ERR_CODE_INVALID_STATE);
+    return;
+  }
+
+  thermal_mgr_event_t event;
+  error_code_t errCode;
+  float temp = 0;
+
+  lm75bd_config_t data = *(lm75bd_config_t *) pvParameters;
+  uint8_t devAddr = data.devAddr;
+
   while (1) {
-    
+    if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY)) {
+      errCode = readTempLM75BD(devAddr, &temp);
+
+      if (errCode != ERR_CODE_SUCCESS) {
+        LOG_ERROR_CODE(errCode);
+        continue;
+      }
+      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+        addTemperatureTelemetry(temp);
+
+      } else if (event.type == THERMAL_MGR_EVENT_HANDLE_OS) {
+        if (temp > TEMP_HYS) {
+          overTemperatureDetected();
+        } else {
+          safeOperatingConditions();
+        }
+      } else {
+        LOG_ERROR_CODE(ERR_CODE_INVALID_QUEUE_MSG);
+      }
+    }
   }
 }
 

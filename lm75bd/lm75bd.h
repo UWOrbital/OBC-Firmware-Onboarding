@@ -25,6 +25,9 @@
 #define LM75BD_REG_TEMP 0x00U
 #define LM75BD_REG_CONFIG 0x01U
 
+// Define Temperature Hysteresis Threshold
+#define TEMP_HYS 75U
+
 /**
  * @struct Configuration struct for LM75BD,118 temperature sensor
  *
