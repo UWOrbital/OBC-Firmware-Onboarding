@@ -52,6 +52,8 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
+  thermal_mgr_event_t event = {.type = THERMAL_MGR_EVENT_HANDLE_OS};
+  thermalMgrSendEvent(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -72,7 +74,7 @@ static void thermalMgr(void *pvParameters) {
   uint8_t devAddr = data.devAddr;
 
   while (1) {
-    if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY)) {
+    if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY)) { //pdTrue
       errCode = readTempLM75BD(devAddr, &temp);
 
       if (errCode != ERR_CODE_SUCCESS) {
