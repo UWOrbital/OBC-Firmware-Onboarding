@@ -80,18 +80,27 @@ static void thermalMgr(void *pvParameters) {
     thermal_mgr_event_t data = {0};
 
     if(xQueueReceive(thermalMgrQueueHandle, &data, portMAX_DELAY) == pdTRUE){
-      
-      if(data.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
-        error_code_t result = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temperature);
-        if(result != ERR_CODE_SUCCESS)
-          LOG_ERROR_CODE(result);
-        else
-          addTemperatureTelemetry(temperature);
+      error_code_t result = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temperature);
+
+      if(result != ERR_CODE_SUCCESS){
+        LOG_ERROR_CODE(result);
+        continue;
       }
-      else if(data.type == THERMAL_MGR_EVENT_INTERRUPT_TRIGGERED){
+
+      switch (data.type)
+      {
+      case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
+        addTemperatureTelemetry(temperature);
+        break;
+      
+      case THERMAL_MGR_EVENT_INTERRUPT_TRIGGERED:
         if(temperature > LM75BD_DEFAULT_HYST_THRESH) // only below T hys is safe
           overTemperatureDetected();
         else safeOperatingConditions();
+        break;
+      
+      default:
+        break;
       }
     }
   }
