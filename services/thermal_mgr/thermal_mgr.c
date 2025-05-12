@@ -2,6 +2,8 @@
 #include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
+#include "logging.h"
+
 
 #include <FreeRTOS.h>
 #include <os_task.h>
