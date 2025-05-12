@@ -45,9 +45,9 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 	RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, buf, sizeof(buf))); //2 bytes
 
     //convert to Celsius
-    uint16_t rawTemp = (buf[0] << 8) | buf[1];    // Combine the two terms
-	int16_t tempSigned = (int16_t)(rawTemp >> 5); // Remove extra terms on right (since rawTemp is 11 digits)
-	*temp = tempSigned * 0.125f;              	  //To Celsius
+int16_t raw = (int16_t)((buf[0] << 8) | buf[1]);  // Combine bytes into signed int
+raw >>= 5;                                        // Right shift
+*temp = raw * 0.125f;                             // Convert to Celsius
 
   return ERR_CODE_SUCCESS;
 }
