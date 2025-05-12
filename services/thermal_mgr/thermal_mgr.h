@@ -3,6 +3,9 @@
 #include "lm75bd.h"
 #include "errors.h"
 
+// Define Temperature Hysteresis Threshold
+#define TEMP_HYS 75U
+
 typedef enum {
   THERMAL_MGR_EVENT_MEASURE_TEMP_CMD,
   THERMAL_MGR_EVENT_HANDLE_OS

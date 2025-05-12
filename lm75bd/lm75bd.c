@@ -25,24 +25,28 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
   return ERR_CODE_SUCCESS;
 }
 
+/**
+ * @brief Reads temperature from LM75BD sensor and translates into Celsius
+ *
+ * @param devAddr - I2C sensor device address
+ * @param temp - Pointer of resultant temperature value
+ * @return error_code_t - Success || error code
+ */
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
+  /* Implemented this driver function */
 
-    //edge case check
-    if (temp == NULL) return ERR_CODE_INVALID_ARG;
+    if (!temp) return ERR_CODE_INVALID_ARG;
 
     uint8_t regVal = LM75BD_REG_TEMP; //0x00
-    //send temp sensor address
 	RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &regVal, sizeof(regVal))); //1 byte
 
-    //redieve data from sensor
-    uint8_t buf[2] = {0};//2 bytes
-	RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, buf, sizeof(buf)));
+    uint8_t buf[2] = {0};
+	RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, buf, sizeof(buf))); //2 bytes
 
     //convert to Celsius
-    uint16_t rawTemp = (buf[0] << 8) | buf[1];    // combine the two terms
-	int16_t tempSigned = (int16_t)(rawTemp >> 5); // remove extra terms on right
-	*temp = tempSigned * 0.125f;              	  //to Celsius
+    uint16_t rawTemp = (buf[0] << 8) | buf[1];    // Combine the two terms
+	int16_t tempSigned = (int16_t)(rawTemp >> 5); // Remove extra terms on right (since rawTemp is 11 digits)
+	*temp = tempSigned * 0.125f;              	  //To Celsius
 
   return ERR_CODE_SUCCESS;
 }
