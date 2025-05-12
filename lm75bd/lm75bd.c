@@ -34,6 +34,7 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
  */
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implemented this driver function */
+	error_code_t errCode;
 
     if (!temp) return ERR_CODE_INVALID_ARG;
 
