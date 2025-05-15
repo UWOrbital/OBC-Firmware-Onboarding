@@ -53,8 +53,9 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   if(event == NULL) return ERR_CODE_INVALID_ARG;
   if(thermalMgrQueueHandle == NULL) return ERR_CODE_INVALID_ARG;
 
-  xQueueSend(thermalMgrQueueHandle, event, 0);
-  return ERR_CODE_SUCCESS;
+  if(xQueueSend(thermalMgrQueueHandle, event, 0) == pdTRUE)
+    return ERR_CODE_SUCCESS;
+  else return ERR_CODE_QUEUE_FULL;
 }
 
 /**
@@ -87,20 +88,20 @@ static void thermalMgr(void *pvParameters) {
         continue;
       }
 
-      switch (data.type)
-      {
-      case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
-        addTemperatureTelemetry(temperature);
-        break;
-      
-      case THERMAL_MGR_EVENT_INTERRUPT_TRIGGERED:
-        if(temperature > LM75BD_DEFAULT_HYST_THRESH) // only below T hys is safe
-          overTemperatureDetected();
-        else safeOperatingConditions();
-        break;
-      
-      default:
-        break;
+      switch (data.type){
+        case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
+          addTemperatureTelemetry(temperature);
+          break;
+        
+        case THERMAL_MGR_EVENT_INTERRUPT_TRIGGERED:
+          if(temperature > LM75BD_DEFAULT_HYST_THRESH) // only below T hys is safe
+            overTemperatureDetected();
+          else
+            safeOperatingConditions();
+          break;
+        
+        default:
+          break;
       }
     }
   }
