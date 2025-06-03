@@ -27,6 +27,10 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
+  if (temp == NULL){
+    return ERR_CODE_UNKNOWN;
+  }
+
   uint8_t registerAddress = 0x00;
 
   error_code_t errCode = i2cSendTo(devAddr, &registerAddress,1);

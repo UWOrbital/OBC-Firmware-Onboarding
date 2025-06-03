@@ -45,8 +45,15 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
   /* Send an event to the thermal manager queue */
 
-  if(xQueueSend(thermalMgrQueueHandle, event, 0) == pdPASS) {
-    return ERR_CODE_SUCCESS;
+  if(event != NULL && thermalMgrQueueHandle != NULL) { 
+  
+    if(xQueueSend(thermalMgrQueueHandle, event, 0) == pdPASS) {
+
+      return ERR_CODE_SUCCESS;
+    }
+
+    printConsole("Queue is full.");
+  
   }
   
   return ERR_CODE_UNKNOWN;
@@ -96,6 +103,8 @@ void thermalMgr(void *pvParameters) {
 
         if (readTempLM75BD(config.devAddr,&temp) == ERR_CODE_SUCCESS){
           addTemperatureTelemetry(temp);
+        } else {
+          printConsole("Measure temp event: readTempLM75BD failed");
         }
 
       } else if (event.type == THERMAL_MGR_EVENT_OS_INTERRUPT) {
@@ -108,6 +117,8 @@ void thermalMgr(void *pvParameters) {
               } else if (temp < 75.0f) {
                   safeOperatingConditions();
               }
+          } else {
+            printConsole("OS interrupt event: readTempLM75BD failed");
           }
       }
 
