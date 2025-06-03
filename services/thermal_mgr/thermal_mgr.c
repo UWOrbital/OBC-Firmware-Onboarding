@@ -50,13 +50,12 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
     if(xQueueSend(thermalMgrQueueHandle, event, 0) == pdPASS) {
 
       return ERR_CODE_SUCCESS;
+    } else {
+      return ERR_CODE_QUEUE_FULL;
     }
-
-    printConsole("Queue is full.");
   
   }
   
-  return ERR_CODE_UNKNOWN;
 }
 
 void osHandlerLM75BD(void) {
