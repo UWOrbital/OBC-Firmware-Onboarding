@@ -1,5 +1,6 @@
 #include "thermal_mgr.h"
 #include "errors.h"
+#include "logging.h"
 #include "lm75bd.h"
 #include "console.h"
 
@@ -96,29 +97,30 @@ void thermalMgr(void *pvParameters) {
  
     if(xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdPASS){
 
+      error_code_t errCode;
+
       if(event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
 
         float temp;
+        
+        LOG_IF_ERROR_CODE(readTempLM75BD(config.devAddr, &temp));
 
-        if (readTempLM75BD(config.devAddr,&temp) == ERR_CODE_SUCCESS){
+        if (errCode == ERR_CODE_SUCCESS){
           addTemperatureTelemetry(temp);
-        } else {
-          printConsole("Measure temp event: readTempLM75BD failed");
-        }
+        } 
 
       } else if (event.type == THERMAL_MGR_EVENT_OS_INTERRUPT) {
 
           float temp;
+          LOG_IF_ERROR_CODE(readTempLM75BD(config.devAddr, &temp));
           
-          if (readTempLM75BD(config.devAddr, &temp) == ERR_CODE_SUCCESS) {
+          if (errCode == ERR_CODE_SUCCESS) {
               if (temp > 80.0f) {
                   overTemperatureDetected();
               } else if (temp < 75.0f) {
                   safeOperatingConditions();
               }
-          } else {
-            printConsole("OS interrupt event: readTempLM75BD failed");
-          }
+          } 
       }
 
     }
