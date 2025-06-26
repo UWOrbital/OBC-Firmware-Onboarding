@@ -31,7 +31,7 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 #define CONF_READ_BUFF_SIZE 2U
 #define LM75BD_PTR_BYTE 0x00U //should just be 0 as we want to read from the temp register. Thus this technically is not neccisary
 #define LM75BD_PTR_SEND 2U
-#define LM75BD_TEMP_READ 1U
+#define LM75BD_TEMP_READ 2U //changed to 2 as we need to read in MSB then LSB
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
 
