@@ -7,6 +7,7 @@
 #include <string.h>
 #include <math.h>
 
+static uint8_t buffer[2] = {0x0U};
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
 
@@ -27,7 +28,28 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  //Send the pointer byte
+  i2cSendTo(devAddr, buffer, 1);
+  //Receive temp register data in the buffer
+  i2cReceiveFrom(devAddr, buffer,2);
   
+  //Shift MSB by 3 since last 5 bits are ignored. Shift LSB by 5 bits to ignore last 5 bits
+  uint16_t tmp_value = (buffer[0] << 3) + (buffer[1] >> 5); 
+
+  if ((buffer[0] & 0x80) != 0){
+    //2's complement calculation. Flip all 11 bits and then add 1
+    tmp_value ^= 0x7FF;
+    tmp_value += 0x1U;
+    *temp = -tmp_value*0.125;
+  }
+
+  else{
+    *temp = tmp_value * 0.125;
+  }
+
+  //reinitialize buffer
+  buffer[0] = 0x0U;
+  buffer[1] = 0x0U;
   return ERR_CODE_SUCCESS;
 }
 

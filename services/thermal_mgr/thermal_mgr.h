@@ -5,7 +5,10 @@
 
 typedef enum {
   THERMAL_MGR_EVENT_MEASURE_TEMP_CMD,
-  
+  //os event
+  THERMAL_MGR_EVENT_OS,
+  //safe operations event
+  THERMAL_MGR_EVENT_SAFE_OP
 } thermal_mgr_event_type_t;
 
 typedef struct {
