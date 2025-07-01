@@ -59,14 +59,17 @@ void osHandlerLM75BD(void) {
   -We must reset it by reading a register, but how to read a register without using the driver function??
   -Appears that this is not beign called as I never see the printconsole message
   */
-  printConsole("In Interrupt osHandler");
 
-  float temp = 0;
-  readTempLM75BD(LM75BD_OBC_I2C_ADDR,&temp);//will this block?
+
+  float temp = -1;
+  readTempLM75BD(LM75BD_OBC_I2C_ADDR,&temp);//will this block?(using the driver function I wrote)
+
+  //debugging
+  printConsole("temp: %f celcius\n",temp);
 
   if( temp >  LM75BD_DEFAULT_HYST_THRESH){
     overTemperatureDetected();
-  }else{
+  }else{//if the interrupt happened and we are not over temp, that means we just returned to regular temps
     safeOperatingConditions();
   }
 
@@ -79,25 +82,31 @@ static void thermalMgr(void *pvParameters) {
   -reveive event thru thermal manager queue 
   -check if it's type is set to THERMAL_MGR_EVENT_MEASURE_TEMP_CMD
   -Not doing any error handling as no return value?
+  -Thermal manager is printing out too many of the same temp
+  -Need to see if all values from the queue are being read correctly
   */
   uint8_t i = 0;//for keeping track of where we are in the buffer.
   //create buffer to read into
   thermal_mgr_event_t buffer[THERMAL_MGR_QUEUE_LENGTH]; //create a buffer to read into, not sure how to initialize
 
-  while (1) {//infinite loop that should be broken out of at some point
-  xQueueReceive(thermalMgrQueueHandle, &buffer, 0);//removed error checking
+  while (1) {//infinite loop that should be broken out of at some point(interrupts)
+  if(xQueueReceive(thermalMgrQueueHandle, &buffer, 0) == pdTRUE){//if we successfully read from queue
 
 
-  if(buffer[i].type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){//if the current element in the buffer is of the correct type
-    float temp = 0; //initialize temp var
-    readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp); //pass in the temp variable we just made.
-    addTemperatureTelemetry(temp);//send temp over
-  }
-  i++;
+    if(buffer[i].type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){//if the current element in the buffer is of the correct type
+      float temp = 0; //initialize temp var
+      readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp); //pass in the temp variable we just made.
+      addTemperatureTelemetry(temp);//send temp over
+    }
+    i++;
 
-  if(i == THERMAL_MGR_QUEUE_LENGTH){
-    i = 0;//reset buffer if it has reached the end
-  }
+    if(i == THERMAL_MGR_QUEUE_LENGTH){
+      i = 0;//reset index to 0 and start rewriting over the oldest temp value
+    }
+
+
+
+  };
 
 
   }
