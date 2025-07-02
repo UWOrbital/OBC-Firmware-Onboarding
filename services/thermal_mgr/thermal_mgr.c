@@ -57,15 +57,13 @@ void osHandlerLM75BD(void) {
   /* Notes
   -Interrupts when going above Tth or below Thys. So we don't know weather its been called after going over Tth or below Thys.
   -We must reset it by reading a register, but how to read a register without using the driver function??
-  -Appears that this is not beign called as I never see the printconsole message
   */
 
 
   float temp = -1;
   readTempLM75BD(LM75BD_OBC_I2C_ADDR,&temp);//will this block?(using the driver function I wrote)
 
-  //debugging
-  printConsole("temp: %f celcius\n",temp);
+
 
   if( temp >  LM75BD_DEFAULT_HYST_THRESH){
     overTemperatureDetected();
@@ -84,34 +82,28 @@ static void thermalMgr(void *pvParameters) {
   -Not doing any error handling as no return value?
   -Thermal manager is printing out too many of the same temp
   -Need to see if all values from the queue are being read correctly
+  -Should have 36 temps printed? if all of them were to have the thermal handle
+  -Does the buffer just need to be of length 1 for the current queue length
   */
-  uint8_t i = 0;//for keeping track of where we are in the buffer.
-  //create buffer to read into
-  thermal_mgr_event_t buffer[THERMAL_MGR_QUEUE_LENGTH]; //create a buffer to read into, not sure how to initialize
+
+
+  //create buffer to read into(just of 1 element)
+  thermal_mgr_event_t buffer; //create a buffer to read into
 
   while (1) {//infinite loop that should be broken out of at some point(interrupts)
   if(xQueueReceive(thermalMgrQueueHandle, &buffer, 0) == pdTRUE){//if we successfully read from queue
 
 
-    if(buffer[i].type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){//if the current element in the buffer is of the correct type
+    if(buffer.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){//if the current element in the buffer is of the correct type
       float temp = 0; //initialize temp var
       readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp); //pass in the temp variable we just made.
-      addTemperatureTelemetry(temp);//send temp over
+      addTemperatureTelemetry(temp);//send temp over to telemetry
     }
-    i++;
-
-    if(i == THERMAL_MGR_QUEUE_LENGTH){
-      i = 0;//reset index to 0 and start rewriting over the oldest temp value
-    }
-
-
-
+    
   };
-
 
   }
    
-
 }
 
 void addTemperatureTelemetry(float tempC) {
