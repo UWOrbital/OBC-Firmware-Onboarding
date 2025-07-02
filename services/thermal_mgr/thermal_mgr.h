@@ -18,6 +18,14 @@ extern "C" {
 
 void initThermalSystemManager(lm75bd_config_t *config);
 
+
+/**
+ * @brief Sends a thermal_mgr_event_t to the thermalMgrQueue
+ *
+ * @param event pointer to the event to send to the thermal manager queue
+
+ * @return Returns ERR_CODE_SUCCESS if the event was successfully added to the queue, errQUEUE_FULL otherwise.
+ */
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event);
 
 void addTemperatureTelemetry(float tempC);

@@ -29,31 +29,19 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 //removed as this was being re-defined and we only need to write the pointer byte, don't need a buffer
 #define WRITE_BUFF_SIZE 1U
 #define CONF_READ_BUFF_SIZE 2U
-#define LM75BD_PTR_BYTE 0x00U //should just be 0 as we want to read from the temp register. Thus this technically is not neccisary
-#define LM75BD_PTR_SEND 2U
-#define LM75BD_TEMP_READ 2U //changed to 2 as we need to read in MSB then LSB
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
 
   error_code_t errCode; //declare error code for use in i2c send and recieve
   
-  /*Plan
-  -As per fig 11, we need to write the device addr then the poiner byte to indicate we are reading temp
-  -need to throw away first temp reading? maybe that should be implemented outside this function.
-  -
-  
-  
-  */
-
 
   uint8_t writeBuff[WRITE_BUFF_SIZE] = {0}; //for reading from LM75BD, should hold 2 bytes 
-  uint8_t ReadBuff[CONF_READ_BUFF_SIZE] = {0}; //for reading from LM75BD, should hold 2 bytes 
+  uint8_t readBuff[CONF_READ_BUFF_SIZE] = {0}; //for reading from LM75BD, should hold 2 bytes 
 
   
 
-  ReadBuff[1] = LM75BD_PTR_BYTE;//Just 0 as we want to read
+  readBuff[1] = 0x00;//Just 0 as we want to read
 
-  writeBuff[0] = LM75BD_PTR_BYTE;
+  writeBuff[0] = 0x00;
 
 
   errCode = i2cSendTo(LM75BD_OBC_I2C_ADDR, writeBuff, 1);//Send the pointer byte, the address should already be sent by the function itsself
@@ -61,19 +49,18 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   //ack and restart should happen after this.
 
-  errCode = i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, ReadBuff, LM75BD_TEMP_READ);//Recieve the temp data (this will be backwards as the device send MSB first)
+  errCode = i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, readBuff, 2);//Recieve the temp data (this will be backwards as the device send MSB first), recieving 2 bytes
   if(errCode != ERR_CODE_SUCCESS) return errCode;// if we failed
 
   //need to perform conversion on read in data(7.4.3), also msb in in index 0 and lsb is in index 1
 
 
-  uint16_t preTemp = ReadBuff[1] | (ReadBuff[0] << 8);//this is to put the MSB and LSB back into the correct places.
-  //preTemp = preTemp >> 5;//shift right by 5 as 5 lowest bits not being used
+  uint16_t preTemp = readBuff[1] | (readBuff[0] << 8);//this is to put the MSB and LSB back into the correct places.
   
-  float convTemp = 0;
+  float convTemp = 0; //initializing variable for final temp
 
 
-  if((preTemp & (1 << 15)) != 0){//shift 1 left 15 bits to test d10 if it's a 1 || We are never getting here
+  if((preTemp & (1 << 15)) != 0){//shift 1 left 15 bits to test d10 if it's a 1
     //negative temp, take twos compliment
     preTemp = ~preTemp;//invert bits
     preTemp++;//add 1 to pretemp

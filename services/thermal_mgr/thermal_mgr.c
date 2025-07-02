@@ -41,31 +41,26 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 }
 
-error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {//unsure how many ticks to wait.
+error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
 
-  if(xQueueSend(thermalMgrQueueHandle,event,0) != pdTRUE){//unsure what needs to be done if this fails, no error code for FREERTOS errQUEUE_EMPTY
-    return errQUEUE_FULL; //this is a round about way of doing it as xQueueSend already gives this value, should fix later
-  };//if we could not send to queue
+  if(xQueueSend(thermalMgrQueueHandle,event,0) != pdTRUE){
+    return errQUEUE_FULL; //this is a round about way of doing it as xQueueSend already gives this value?
+  };
 
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
-  /* Implement this function */
-
-  /* Notes
-  -Interrupts when going above Tth or below Thys. So we don't know weather its been called after going over Tth or below Thys.
-  -We must reset it by reading a register, but how to read a register without using the driver function??
-  */
 
 
-  float temp = -1;
+  float temp = __FLT_MAX__; //for catching any read temp errors
   readTempLM75BD(LM75BD_OBC_I2C_ADDR,&temp);//will this block?(using the driver function I wrote)
 
 
 
   if( temp >  LM75BD_DEFAULT_HYST_THRESH){
+    //interupt was called because we are over temp
     overTemperatureDetected();
   }else{//if the interrupt happened and we are not over temp, that means we just returned to regular temps
     safeOperatingConditions();
@@ -74,18 +69,6 @@ void osHandlerLM75BD(void) {
 }
 
 static void thermalMgr(void *pvParameters) {
-  /* Implement this task */
-
-  /* Notes
-  -reveive event thru thermal manager queue 
-  -check if it's type is set to THERMAL_MGR_EVENT_MEASURE_TEMP_CMD
-  -Not doing any error handling as no return value?
-  -Thermal manager is printing out too many of the same temp
-  -Need to see if all values from the queue are being read correctly
-  -Should have 36 temps printed? if all of them were to have the thermal handle
-  -Does the buffer just need to be of length 1 for the current queue length
-  */
-
 
   //create buffer to read into(just of 1 element)
   thermal_mgr_event_t buffer; //create a buffer to read into
@@ -95,7 +78,7 @@ static void thermalMgr(void *pvParameters) {
 
 
     if(buffer.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){//if the current element in the buffer is of the correct type
-      float temp = 0; //initialize temp var
+      float temp = __FLT_MAX__; //initialize temp var
       readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp); //pass in the temp variable we just made.
       addTemperatureTelemetry(temp);//send temp over to telemetry
     }
