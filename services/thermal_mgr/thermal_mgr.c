@@ -2,7 +2,7 @@
 #include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
-
+#include "logging.h"
 #include <FreeRTOS.h>
 #include <os_task.h>
 #include <os_queue.h>
@@ -25,17 +25,6 @@ static uint8_t thermalMgrQueueStorageArea[THERMAL_MGR_QUEUE_LENGTH * THERMAL_MGR
 //event buffer to check event type
 static thermal_mgr_event_t messageBuffer;
 
-// variable to store temperature
-static float temp;
-
-//OS event
-static thermal_mgr_event_t os ={
-  THERMAL_MGR_EVENT_OS
-};
-//Safe operations event
-static thermal_mgr_event_t safe = {
-  THERMAL_MGR_EVENT_SAFE_OP
-};
 static void thermalMgr(void *pvParameters);
 
 void initThermalSystemManager(lm75bd_config_t *config) {
@@ -56,14 +45,15 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
-  /* Send an event to the thermal manager queue */
-  if (xQueueSend(thermalMgrQueueHandle, event, (TickType_t) 0) == pdPASS){
-    if (event == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD || event == THERMAL_MGR_EVENT_OS || event == THERMAL_MGR_EVENT_SAFE_OP){
-    return ERR_CODE_SUCCESS;
-    }
-    else{
+  if (event == NULL){
+    return ERR_CODE_INVALID_ARG;
+  }
+  if (event -> type != THERMAL_MGR_EVENT_MEASURE_TEMP_CMD && event -> type != THERMAL_MGR_EVENT_OS){
       return ERR_CODE_INVALID_QUEUE_MSG;
     }
+  /* Send an event to the thermal manager queue */
+  if (xQueueSend(thermalMgrQueueHandle, event, (TickType_t) 0) == pdPASS){
+    return ERR_CODE_SUCCESS; 
   }
 
   else{
@@ -76,35 +66,33 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
-  //Check if OS threshold was crossed
-  if (temp > LM75BD_DEFAULT_OT_THRESH){
-    thermalMgrSendEvent(&os);
-  }
-
-  //Check if hysteresis threshold was crossed
-  else if (temp < LM75BD_DEFAULT_HYST_THRESH ){
-    thermalMgrSendEvent(&safe);
-  }
-
+  
+  //OS threshold was crossed or temp dropped below hysteresis 
+  thermalMgrSendEvent(&os);
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   while (1) {
+    // variable to store temperature
+    float temp;
     //receive event from queue
-    if(xQueueReceive(thermalMgrQueueHandle, &messageBuffer, (TickType_t) 0) == pdPASS){
+    if(xQueueReceive(thermalMgrQueueHandle, &messageBuffer, portMAX_DELAY) == pdPASS){
+      error_code_t errCode;
       //update temp variable/reset OS 
-      readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+      LOG_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp));
       if (messageBuffer.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
       addTemperatureTelemetry(temp);
       }
 
       else if(messageBuffer.type == THERMAL_MGR_EVENT_OS){
-        overTemperatureDetected();
-      }
+         if (temp > LM75BD_DEFAULT_OT_THRESH){
+          overTemperatureDetected();
+         }
 
-      else if(messageBuffer.type == THERMAL_MGR_EVENT_SAFE_OP){
-        safeOperatingConditions();
+         else if(temp < LM75BD_DEFAULT_HYST_THRESH){
+          safeOperatingConditions();
+         }
       }
     }
   }

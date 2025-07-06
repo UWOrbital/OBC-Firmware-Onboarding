@@ -7,8 +7,6 @@ typedef enum {
   THERMAL_MGR_EVENT_MEASURE_TEMP_CMD,
   //os event
   THERMAL_MGR_EVENT_OS,
-  //safe operations event
-  THERMAL_MGR_EVENT_SAFE_OP
 } thermal_mgr_event_type_t;
 
 typedef struct {
@@ -18,6 +16,10 @@ typedef struct {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static thermal_mgr_event_t os = {
+  THERMAL_MGR_EVENT_OS
+};
 
 void initThermalSystemManager(lm75bd_config_t *config);
 
