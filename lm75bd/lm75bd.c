@@ -30,6 +30,7 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 #define WRITE_BUFF_SIZE 1U
 #define CONF_READ_BUFF_SIZE 2U
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
+  /* Implement this driver function */
 
   error_code_t errCode; //declare error code for use in i2c send and recieve
   
@@ -43,14 +44,13 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   writeBuff[0] = 0x00;
 
+  LOG_IF_ERROR_CODE(i2cSendTo(LM75BD_OBC_I2C_ADDR, writeBuff, 1));  //Send the pointer byte, the address should already be sent by the function itsself
 
-  errCode = i2cSendTo(LM75BD_OBC_I2C_ADDR, writeBuff, 1);//Send the pointer byte, the address should already be sent by the function itsself
-  if(errCode != ERR_CODE_SUCCESS) return errCode;// if we failed
+  
 
-  //ack and restart should happen after this.
 
-  errCode = i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, readBuff, 2);//Recieve the temp data (this will be backwards as the device send MSB first), recieving 2 bytes
-  if(errCode != ERR_CODE_SUCCESS) return errCode;// if we failed
+  LOG_IF_ERROR_CODE(i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, readBuff, 2));//read in 2 bytes back from the LM75BD
+
 
   //need to perform conversion on read in data(7.4.3), also msb in in index 0 and lsb is in index 1
 
@@ -60,7 +60,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   float convTemp = 0; //initializing variable for final temp
 
 
-  if((preTemp & (1 << 15)) != 0){//shift 1 left 15 bits to test d10 if it's a 1
+  if((preTemp & (1 << 15)) != 0){//shift 1 left 15 bits to test d10 if it's a 1 as per datasheet
     //negative temp, take twos compliment
     preTemp = ~preTemp;//invert bits
     preTemp++;//add 1 to pretemp
@@ -71,8 +71,12 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     convTemp = preTemp*0.125;
   }
 
+  if(temp){//dereference only if not nullptr
+    *temp = convTemp;
+  }else{
+    return ERR_CODE_INVALID_ARG;//return invalid argument as temp was nullptr
+  }
 
-  *temp = convTemp;
   
 
   return ERR_CODE_SUCCESS;

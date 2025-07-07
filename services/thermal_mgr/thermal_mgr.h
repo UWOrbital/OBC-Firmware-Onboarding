@@ -5,7 +5,7 @@
 
 typedef enum {
   THERMAL_MGR_EVENT_MEASURE_TEMP_CMD,
-  
+  THERMAL_MGR_EVENT_MEASURE_TEMP_OS, //created for osHandler interrupt to send to queue
 } thermal_mgr_event_type_t;
 
 typedef struct {
