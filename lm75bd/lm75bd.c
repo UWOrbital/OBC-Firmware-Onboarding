@@ -31,6 +31,9 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 #define CONF_READ_BUFF_SIZE 2U
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  if(!temp){//check for null ptr at beginning of function
+    return ERR_CODE_INVALID_ARG;
+  }
 
   error_code_t errCode; //declare error code for use in i2c send and recieve
   
@@ -44,12 +47,12 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   writeBuff[0] = 0x00;
 
-  LOG_IF_ERROR_CODE(i2cSendTo(LM75BD_OBC_I2C_ADDR, writeBuff, 1));  //Send the pointer byte, the address should already be sent by the function itsself
+  RETURN_IF_ERROR_CODE(i2cSendTo(LM75BD_OBC_I2C_ADDR, writeBuff, 1));  //Send the pointer byte, the address should already be sent by the function itsself
 
   
 
 
-  LOG_IF_ERROR_CODE(i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, readBuff, 2));//read in 2 bytes back from the LM75BD
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, readBuff, 2));//read in 2 bytes back from the LM75BD
 
 
   //need to perform conversion on read in data(7.4.3), also msb in in index 0 and lsb is in index 1
@@ -71,11 +74,9 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     convTemp = preTemp*0.125;
   }
 
-  if(temp){//dereference only if not nullptr
-    *temp = convTemp;
-  }else{
-    return ERR_CODE_INVALID_ARG;//return invalid argument as temp was nullptr
-  }
+
+  *temp = convTemp;
+
 
   
 

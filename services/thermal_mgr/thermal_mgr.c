@@ -83,25 +83,31 @@ static void thermalMgr(void *pvParameters) {
       
       float temp = __FLT_MAX__;
       
-      LOG_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp));//pass in the temp variable we just made.
+      if(readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp) == ERR_CODE_SUCCESS){//check success before continuing.
 
-      if(buffer.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){addTemperatureTelemetry(temp);}//send temp over to telemetry if its of CMD type
+        if(buffer.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){addTemperatureTelemetry(temp);}//send temp over to telemetry if its of CMD type
 
-      else if(buffer.type == THERMAL_MGR_EVENT_MEASURE_TEMP_OS){//if temp read was prompted by the osHandler
+        else if(buffer.type == THERMAL_MGR_EVENT_MEASURE_TEMP_OS){//if temp read was prompted by the osHandler
 
-        if( temp >  LM75BD_DEFAULT_HYST_THRESH){
+          if( temp >  LM75BD_DEFAULT_HYST_THRESH){
 
-          //interupt was called because we are over temp
-          overTemperatureDetected();
+            //interupt was called because we are over temp
+            overTemperatureDetected();
 
-        }else{//if the interrupt happened and we are not over temp, that means we just returned to regular temps
+          }else{//if the interrupt happened and we are not over temp, that means we just returned to regular temps
 
-          safeOperatingConditions();
+            safeOperatingConditions();
+            
+          }
+
           
         }
 
-        
+
+
       }
+
+
 
     }
     
