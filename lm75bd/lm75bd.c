@@ -35,10 +35,10 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   error_code_t errCode;
 
-  //Send the pointer byte
- LOG_IF_ERROR_CODE(i2cSendTo(devAddr, buffer, 1));
-  //Receive temp register data in the buffer
- LOG_IF_ERROR_CODE(i2cReceiveFrom(devAddr, buffer,2));
+  //Send the pointer byte, break operation if an error is detected
+ RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, buffer, 1));
+  //Receive temp register data in the buffer, break operation if an error is detected
+ RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, buffer,2));
   
   //Shift MSB by 3 since last 5 bits are ignored. Shift LSB by 5 bits to ignore last 5 bits
   uint16_t tmp_value = (buffer[0] << 3) + (buffer[1] >> 5); 

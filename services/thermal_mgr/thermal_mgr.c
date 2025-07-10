@@ -66,7 +66,9 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
-  
+  thermal_mgr_event_t os = {
+  THERMAL_MGR_EVENT_OS
+};
   //OS threshold was crossed or temp dropped below hysteresis 
   thermalMgrSendEvent(&os);
 }
@@ -81,6 +83,9 @@ static void thermalMgr(void *pvParameters) {
       error_code_t errCode;
       //update temp variable/reset OS 
       LOG_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp));
+      if (errCode != ERR_CODE_SUCCESS){
+        continue;
+      }
       if (messageBuffer.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
       addTemperatureTelemetry(temp);
       }

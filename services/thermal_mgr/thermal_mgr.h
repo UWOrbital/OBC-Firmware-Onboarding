@@ -17,10 +17,6 @@ typedef struct {
 extern "C" {
 #endif
 
-static thermal_mgr_event_t os = {
-  THERMAL_MGR_EVENT_OS
-};
-
 void initThermalSystemManager(lm75bd_config_t *config);
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event);
