@@ -54,8 +54,6 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event)
     return ERR_CODE_QUEUE_FULL;
   }
 
-  xQueueSend(thermalMgrQueueHandle, event, portMAX_DELAY);
-
   return ERR_CODE_SUCCESS;
 }
 
