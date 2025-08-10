@@ -44,8 +44,9 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-  event -> type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;
-  if (xQueueSend(thermalMgrQueueHandle, event, (TickType_t) 10) != pdPASS){
+  if (!event) return ERR_CODE_INVALID_ARG;
+
+  if (xQueueSend(thermalMgrQueueHandle, event, (TickType_t) 0) != pdPASS){
     // Failed to post message even after 10 ticks
     return ERR_CODE_INVALID_STATE;
   }
@@ -54,6 +55,9 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
+  thermal_mgr_event_t event;
+  event.type = THERMAL_MGR_EVENT_OS_HANDLER;
+  thermalMgrSendEvent(&event); 
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -61,18 +65,24 @@ static void thermalMgr(void *pvParameters) {
   lm75bd_config_t config = *(lm75bd_config_t *)pvParameters;
   while (1) {
     thermal_mgr_event_t tme;
-    if (xQueueReceive(thermalMgrQueueHandle, &tme, (TickType_t) 10 ) == pdPASS){
+    if (xQueueReceive(thermalMgrQueueHandle, &tme, (TickType_t) 0 ) == pdPASS){
+      float tempC = 0.0f;
+      error_code_t errCode;
+      LOG_IF_ERROR_CODE(
+        readTempLM75BD(config.devAddr, &tempC);
+      );
       if (tme.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
-          float tempC;
-          error_code_t errCode;
-          LOG_IF_ERROR_CODE(
-            readTempLM75BD(config.devAddr, &tempC);
-          );
-          printConsole("Temperature read: %f C\n", tempC);
           addTemperatureTelemetry(tempC);
       }
+      if (tme.type == THERMAL_MGR_EVENT_OS_HANDLER){
+          if (tempC > config.overTempThresholdCelsius){
+            overTemperatureDetected();
+          }
+          else if (tempC < config.hysteresisThresholdCelsius) {
+            safeOperatingConditions();
+          }
+      }
     }
-
   }
 }
 
