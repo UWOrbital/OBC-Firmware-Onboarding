@@ -57,6 +57,7 @@ error_code_t lm75bdInit(lm75bd_config_t *config);
 /**
  * @brief Read the temperature from the LM75BD
  *
+ * @param devAddr Address of device to read temperature from
  * @param temp Pointer to float to store the temperature in degrees Celsius
  * @return ERR_CODE_SUCCESS if successful, error code otherwise
  */
