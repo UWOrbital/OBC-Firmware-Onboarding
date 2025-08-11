@@ -25,11 +25,9 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
   return ERR_CODE_SUCCESS;
 }
 
-float convertToCelcius(uint16_t finalTemp){
-    finalTemp &= (1<<11) - 1; // keep lowest 11 bits
-
+float convertToCelcius(int16_t finalTemp){
     return (finalTemp & (1<<10))? 
-        -1*(~(finalTemp | ~(((1<<16) - 1)>>5)) + 1) * 0.125f :
+        -1*(-finalTemp) * 0.125f :
         finalTemp * 0.125f;
 }
 
@@ -48,12 +46,12 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   // temperature[0] stores MSByte
   // temperature[1] stores LSByte
-  uint8_t temperature[2] = {0, 0};
+  int8_t temperature[2] = {0, 0};
   RETURN_IF_ERROR_CODE(
     i2cReceiveFrom(devAddr, temperature, sizeof(temperature));
   );
 
-  uint16_t finalTemp = 0;
+  int16_t finalTemp = 0;
   finalTemp += (temperature[0] << 3);
   finalTemp += (temperature[1] >> 5);
 

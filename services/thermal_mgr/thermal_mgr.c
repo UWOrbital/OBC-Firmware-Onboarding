@@ -44,9 +44,9 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-  if (!event) return ERR_CODE_INVALID_ARG;
+  if (event == NULL) return ERR_CODE_INVALID_ARG;
 
-  if (xQueueSend(thermalMgrQueueHandle, event, (TickType_t) 0) != pdPASS){
+  if (xQueueSend(thermalMgrQueueHandle, event, (TickType_t) 10) != pdPASS){
     // Failed to post message even after 10 ticks
     return ERR_CODE_INVALID_STATE;
   }
@@ -65,22 +65,34 @@ static void thermalMgr(void *pvParameters) {
   lm75bd_config_t config = *(lm75bd_config_t *)pvParameters;
   while (1) {
     thermal_mgr_event_t tme;
-    if (xQueueReceive(thermalMgrQueueHandle, &tme, (TickType_t) 0 ) == pdPASS){
+    // Indefinitely delay until something is received from the queue
+    if (xQueueReceive(thermalMgrQueueHandle, &tme, (TickType_t) portMAX_DELAY) == pdPASS){
       float tempC = 0.0f;
       error_code_t errCode;
       LOG_IF_ERROR_CODE(
-        readTempLM75BD(config.devAddr, &tempC);
+          readTempLM75BD(config.devAddr, &tempC);
       );
-      if (tme.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
-          addTemperatureTelemetry(tempC);
+
+      // If readTemp fails, move to the next iteration
+      if (errCode != ERR_CODE_SUCCESS){
+          LOG_ERROR("Temperature read from device failed. Continuing.");
+          continue;
       }
-      if (tme.type == THERMAL_MGR_EVENT_OS_HANDLER){
-          if (tempC > config.overTempThresholdCelsius){
-            overTemperatureDetected();
-          }
-          else if (tempC < config.hysteresisThresholdCelsius) {
-            safeOperatingConditions();
-          }
+
+      switch (tme.type){
+        case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
+            addTemperatureTelemetry(tempC);
+            break;
+        case THERMAL_MGR_EVENT_OS_HANDLER:
+            if (tempC > config.overTempThresholdCelsius){
+              overTemperatureDetected();
+            }
+            else if (tempC < config.hysteresisThresholdCelsius) {
+              safeOperatingConditions();
+            }
+            break;
+        default:
+            LOG_ERROR("Event received from queue has unsupported type.");
       }
     }
   }
