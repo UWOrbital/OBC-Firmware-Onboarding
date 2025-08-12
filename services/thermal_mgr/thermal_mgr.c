@@ -46,6 +46,8 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
   if (event == NULL) return ERR_CODE_INVALID_ARG;
 
+  if (thermalMgrQueueHandle == NULL) return ERR_CODE_INVALID_STATE;
+
   if (xQueueSend(thermalMgrQueueHandle, event, (TickType_t) 10) != pdPASS){
     // Failed to post message even after 10 ticks
     return ERR_CODE_INVALID_STATE;
@@ -65,7 +67,8 @@ static void thermalMgr(void *pvParameters) {
   lm75bd_config_t config = *(lm75bd_config_t *)pvParameters;
   while (1) {
     thermal_mgr_event_t tme;
-    // Indefinitely delay until something is received from the queue
+
+    // Indefinitely block until something is received from the queue
     if (xQueueReceive(thermalMgrQueueHandle, &tme, (TickType_t) portMAX_DELAY) == pdPASS){
       float tempC = 0.0f;
       error_code_t errCode;

@@ -25,16 +25,18 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
   return ERR_CODE_SUCCESS;
 }
 
-float convertToCelcius(int16_t finalTemp){
-    return (finalTemp & (1<<10))? 
-        -1*(-finalTemp) * 0.125f :
-        finalTemp * 0.125f;
+float convertToCelcius(int16_t tempData){
+  if (tempData & (1<<10)){           // if D10=1, make it -(2's complement of temp)
+      tempData |= (1<<16) - (1<<11); // make top 5 MSB's 1
+      tempData = -1*(-tempData);
+  }
+  return tempData * 0.125f;
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
 
-  if (!temp) return ERR_CODE_INVALID_ARG;
+  if (temp == NULL) return ERR_CODE_INVALID_ARG;
 
   error_code_t errCode;
 
@@ -46,16 +48,16 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   // temperature[0] stores MSByte
   // temperature[1] stores LSByte
-  int8_t temperature[2] = {0, 0};
+  uint8_t temperature[2] = {0, 0};
   RETURN_IF_ERROR_CODE(
     i2cReceiveFrom(devAddr, temperature, sizeof(temperature));
   );
 
-  int16_t finalTemp = 0;
-  finalTemp += (temperature[0] << 3);
-  finalTemp += (temperature[1] >> 5);
+  int16_t MSByte = (int16_t) temperature[0];
+  int16_t LSByte = (int16_t) temperature[1];
+  int16_t tempData = (MSByte << 3) | (LSByte >> 5);
 
-  *temp = convertToCelcius(finalTemp);
+  *temp = convertToCelcius(tempData);
   
   return ERR_CODE_SUCCESS;
 }
