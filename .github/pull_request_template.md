@@ -1,11 +1,10 @@
-# Purpose
-Explain the purpose of the PR here, including references to any existing Notion tasks.
+# Firmware Onboarding
+This is a PR for the firmware onboarding. Please do not delete this template, and make sure to fill it out before requesting a review!
 
-# New Changes
-- Explain new changes
+# Completed Tasks
+Please check the tasks you have completed
+- [ ] Thermal Management Task
+- [ ] OS Handler
 
 # Testing
-- Explain tests that you ran to verify code functionality.
-
-# Outstanding Changes
-- If there are non-critical changes (i.e. additional features) that can be made to this feature in the future, indicate them here.
+Attach a screenshot below of the temperature logs!
