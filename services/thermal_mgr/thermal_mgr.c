@@ -38,23 +38,45 @@ void initThermalSystemManager(lm75bd_config_t *config) {
   thermalMgrQueueHandle = xQueueCreateStatic(
     THERMAL_MGR_QUEUE_LENGTH, THERMAL_MGR_QUEUE_ITEM_SIZE,
     thermalMgrQueueStorageArea, &thermalMgrQueueBuffer);
-
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
-  /* Send an event to the thermal manager queue */
-
+  if (event == NULL){
+    return ERR_CODE_INVALID_ARG;
+  }
+  if (xQueueSend(thermalMgrQueueHandle, event, (TickType_t)10) == errQUEUE_FULL){
+    return ERR_CODE_QUEUE_FULL;
+  }
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
-  /* Implement this function */
+  thermal_mgr_event_t event;
+  event.type = THERMAL_MGR_EVENT_OS_INTERRUPT;
+  thermalMgrSendEvent(&event);
 }
 
-static void thermalMgr(void *pvParameters) {
-  /* Implement this task */
+static void thermalMgr(void *pvParameters){
+  lm75bd_config_t config = *(lm75bd_config_t*)pvParameters;
   while (1) {
-    
+    thermal_mgr_event_t eventBuf;
+    if (xQueueReceive(thermalMgrQueueHandle, &eventBuf, 0) != errQUEUE_EMPTY){
+      if (eventBuf.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
+        float temp;
+        readTempLM75BD(config.devAddr, &temp);
+        addTemperatureTelemetry(temp);
+      }
+      else if (eventBuf.type == THERMAL_MGR_EVENT_OS_INTERRUPT){
+        float temp;
+        readTempLM75BD(config.devAddr, &temp);
+        if (temp > config.hysteresisThresholdCelsius){
+          overTemperatureDetected();
+        }
+        else {
+          safeOperatingConditions();
+        }
+      }
+    }
   }
 }
 
