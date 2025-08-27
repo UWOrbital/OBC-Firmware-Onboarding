@@ -42,19 +42,46 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
-  /* Send an event to the thermal manager queue */
+  // Send an event to the thermal manager queue 
+
+  // if event is null 
+  if (event == NULL) return ERR_CODE_INVALID_ARG;
+
+  // if queue is full return error
+  if (xQueueSend(thermalMgrQueueHandle, ( void * ) &event, portMAX_DELAY) == errQUEUE_FULL) {
+    return ERR_CODE_QUEUE_FULL;
+  }
 
   return ERR_CODE_SUCCESS;
 }
 
-void osHandlerLM75BD(void) {
-  /* Implement this function */
+void osHandlerLM75BD(void) { 
+  // create a new OS Interrupt notice
+  thermal_mgr_event_t event;
+  event.type = THERMAL_MGR_EVENT_OS_INTERRUPT;
+  thermalMgrSendEvent(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
-  /* Implement this task */
-  while (1) {
-    
+  lm75bd_config_t config = *(lm75bd_config_t *)pvParameters;
+  while (1) { // constant check
+    thermal_mgr_event_t *event;
+    if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdPASS) { // upon successful event
+      float tempC;
+      if (*event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {  // if measure temperature command
+        if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC) == ERR_CODE_SUCCESS) { // if successful temperature value
+          addTemperatureTelemetry(tempC);
+        }
+      } else {
+        if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC) == ERR_CODE_SUCCESS) {
+          if (tempC >= config.overTempThresholdCelsius) { // if over temperature threshold
+            overTemperatureDetected();
+          } else if (tempC <= config.hysteresisThresholdCelsius) { // safe temperature threshold
+            safeOperatingConditions();
+          }
+        }
+      }
+		}
   }
 }
 
