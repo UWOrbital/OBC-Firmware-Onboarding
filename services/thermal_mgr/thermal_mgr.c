@@ -70,13 +70,13 @@ static void thermalMgr(void *pvParameters) {
     float tempC;
     if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdPASS) { //upon successful event
 
-        error_code_t readTemp = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC);
+      error_code_t readTemp = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC);
 
-        if (readTemp == ERR_CODE_SUCCESS) {
+      if (readTemp == ERR_CODE_SUCCESS) {
 
-          if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {  // if measure temperature command
-            addTemperatureTelemetry(tempC);
-          } else {
+        if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {  // if measure temperature command
+          addTemperatureTelemetry(tempC);
+        } else {
 
           if (tempC >= config.overTempThresholdCelsius) { // if over temperature threshold
             overTemperatureDetected();
