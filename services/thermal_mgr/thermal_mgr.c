@@ -46,7 +46,9 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   // Send an event to the thermal manager queue 
 
   // if event is null 
-  if (event == NULL || thermalMgrQueueHandle == NULL) return ERR_CODE_INVALID_ARG;
+  if (event == NULL) return ERR_CODE_INVALID_ARG;
+
+  if (thermalMgrQueueHandle == NULL) return ERR_CODE_INVALID_QUEUE_MSG;
 
   // if queue is full return error
   if (xQueueSend(thermalMgrQueueHandle, event, portMAX_DELAY) == errQUEUE_FULL) {
