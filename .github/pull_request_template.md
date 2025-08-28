@@ -3,11 +3,11 @@ The following is a template for UW Orbital's Firmware Onboarding challenge. Plea
 
 ## Completed Challenges
 Check the tasks that you have completed below
+- [ ] LM75BD Driver Task
 - [ ] Thermal Management Task
-- [ ] OS Handler
 
 > [!NOTE]
-> Before requesting a review, you must complete all three challenges. If you need help, you can always ask questions on Discord!
+> Before requesting a review, you must complete both tasks. If you need help, you can always ask questions on Discord!
 
 ## Testing Screenshots
 Please attach a screenshot of the temperature log running below.
