@@ -3,7 +3,6 @@ The following is a template for UW Orbital's Firmware Onboarding challenge. Plea
 
 ## Completed Challenges
 Check the tasks that you have completed below
-- [ ] Temperature Sensor Driver
 - [ ] Thermal Management Task
 - [ ] OS Handler
 
