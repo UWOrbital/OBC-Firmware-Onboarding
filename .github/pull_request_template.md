@@ -1,11 +1,14 @@
-# Purpose
-Explain the purpose of the PR here, including references to any existing Notion tasks.
+# Firmware Onboarding Challenge
+The following is a template for UW Orbital's Firmware Onboarding challenge. Please complete the following sections.
 
-# New Changes
-- Explain new changes
+## Completed Challenges
+Check the tasks that you have completed below
+- [ ] Temperature Sensor Driver
+- [ ] Thermal Management Task
+- [ ] OS Handler
 
-# Testing
-- Explain tests that you ran to verify code functionality.
+> [!NOTE]
+> Before requesting a review, you must complete all three challenges. If you need help, you can always ask questions on Discord!
 
-# Outstanding Changes
-- If there are non-critical changes (i.e. additional features) that can be made to this feature in the future, indicate them here.
+## Testing Screenshots
+Please attach a screenshot of the temperature log running below.
