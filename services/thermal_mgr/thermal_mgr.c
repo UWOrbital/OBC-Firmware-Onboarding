@@ -51,7 +51,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   if (thermalMgrQueueHandle == NULL) return ERR_CODE_INVALID_QUEUE_MSG;
 
   // if queue is full return error
-  if (xQueueSend(thermalMgrQueueHandle, event, portMAX_DELAY) == errQUEUE_FULL) {
+  if (xQueueSend(thermalMgrQueueHandle, event, pdMS_TO_TICKS(10)) == errQUEUE_FULL) {
     return ERR_CODE_QUEUE_FULL;
   }
 
@@ -78,17 +78,16 @@ static void thermalMgr(void *pvParameters) {
 
         if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {  // if measure temperature command
           addTemperatureTelemetry(tempC);
-        } else {
+        } else if (event.type == THERMAL_MGR_EVENT_OS_INTERRUPT) { // if OS interrupt event
 
           if (tempC >= config.overTempThresholdCelsius) { // if over temperature threshold
             overTemperatureDetected();
           } else if (tempC <= config.hysteresisThresholdCelsius) { // safe temperature threshold
             safeOperatingConditions();
-          } else {
-            error_code_t errCode = ERR_CODE_UNKNOWN;
-            LOG_ERROR_CODE(errCode); // log error if unknown event type
           }
-
+          
+        } else {
+          LOG_ERROR_CODE(ERR_CODE_UNKNOWN); // log error if unknown event type
         }
 
       } else {
