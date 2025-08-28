@@ -2,6 +2,7 @@
 #include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
+#include "logging.h"
 
 #include <FreeRTOS.h>
 #include <os_task.h>
@@ -45,10 +46,10 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   // Send an event to the thermal manager queue 
 
   // if event is null 
-  if (event == NULL) return ERR_CODE_INVALID_ARG;
+  if (event == NULL || thermalMgrQueueHandle == NULL) return ERR_CODE_INVALID_ARG;
 
   // if queue is full return error
-  if (xQueueSend(thermalMgrQueueHandle, ( void * ) &event, portMAX_DELAY) == errQUEUE_FULL) {
+  if (xQueueSend(thermalMgrQueueHandle, event, portMAX_DELAY) == errQUEUE_FULL) {
     return ERR_CODE_QUEUE_FULL;
   }
 
@@ -65,23 +66,33 @@ void osHandlerLM75BD(void) {
 static void thermalMgr(void *pvParameters) {
   lm75bd_config_t config = *(lm75bd_config_t *)pvParameters;
   while (1) { // constant check
-    thermal_mgr_event_t *event;
-    if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdPASS) { // upon successful event
-      float tempC;
-      if (*event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {  // if measure temperature command
-        if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC) == ERR_CODE_SUCCESS) { // if successful temperature value
-          addTemperatureTelemetry(tempC);
-        }
-      } else {
-        if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC) == ERR_CODE_SUCCESS) {
+    thermal_mgr_event_t event;
+    float tempC;
+    if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdPASS) { //upon successful event
+
+        error_code_t readTemp = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC);
+
+        if (readTemp == ERR_CODE_SUCCESS) {
+
+          if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {  // if measure temperature command
+            addTemperatureTelemetry(tempC);
+          } else {
+
           if (tempC >= config.overTempThresholdCelsius) { // if over temperature threshold
             overTemperatureDetected();
           } else if (tempC <= config.hysteresisThresholdCelsius) { // safe temperature threshold
             safeOperatingConditions();
+          } else {
+            error_code_t errCode = ERR_CODE_UNKNOWN;
+            LOG_ERROR_CODE(errCode); // log error if unknown event type
           }
+
         }
+
+      } else {
+        LOG_ERROR_CODE(readTemp); // log error if readTempLM75BD fails
       }
-		}
+    }
   }
 }
 

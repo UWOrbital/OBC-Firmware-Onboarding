@@ -46,7 +46,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     rawTemp |= 0xF800; // sign extend to 16 bits, masking with 1111 1000 0000 0000
   } 
 
-  *temp = rawTemp * 0.125;
+  *temp = rawTemp * 0.125; // assign value to temperature
 
   return ERR_CODE_SUCCESS;
 }
