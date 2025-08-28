@@ -87,6 +87,7 @@ static void thermalMgr(void *pvParameters){
           }
         }
         else {
+          error_code_t errCode = ERR_CODE_INVALID_STATE;
           LOG_ERROR_CODE(errCode);
         }
       }
