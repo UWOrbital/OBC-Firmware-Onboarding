@@ -46,8 +46,7 @@ static void controller(void *pvParameters) {
   config.devAddr = LM75BD_OBC_I2C_ADDR;
   config.osFaultQueueSize = 1;
   config.osPolarity = LM75BD_OS_POL_ACTIVE_LOW;
-  config.osOperationMode = LM75BD_OS_OP_MODE_INT;
-  config.devOperationMode = LM75BD_DEV_OP_MODE_NORMAL;
+  config.osOperationMode = LM75BD_OS_OP_MODE_INT; config.devOperationMode = LM75BD_DEV_OP_MODE_NORMAL;
 
   // Use the sensor's default overtemperature and hysteresis thresholds
   config.overTempThresholdCelsius = 80.0f;
