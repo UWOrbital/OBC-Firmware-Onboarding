@@ -28,6 +28,17 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
   
+  uint8_t address = 0x0U;
+  uint8_t data_buffer[2] = {0x0U};
+
+  i2cSendTo(devAddr, &address, 1); 
+
+  i2cReceiveFrom(devAddr, data_buffer, 2);
+ 
+  // Help:
+  int16_t temp_val = (int16_t)((data_buffer[0] << 8) | data_buffer[1]) >> 5;  
+  *temp = ((float)(temp_val)) * 0.125;
+
   return ERR_CODE_SUCCESS;
 }
 
@@ -42,6 +53,7 @@ error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_
   uint8_t buff[CONF_WRITE_BUFF_SIZE] = {0};
 
   buff[0] = LM75BD_REG_CONF;
+
 
   uint8_t osFaltQueueRegData = 0;
   switch (osFaultQueueSize) {
