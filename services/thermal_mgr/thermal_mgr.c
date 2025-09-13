@@ -2,6 +2,7 @@
 #include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
+#include "logging.h"
 
 #include <FreeRTOS.h>
 #include <os_task.h>
@@ -42,7 +43,21 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
-  xQueueSend(thermalMgrQueueHandle, event, 10);
+  if (event == NULL) {
+    error_code_t err = ERR_CODE_NULL_VALUE;
+
+    LOG_ERROR_CODE(err);
+  }
+
+  if(thermalMgrQueueHandle == NULL) {
+    error_code_t err = ERR_CODE_NULL_VALUE;
+    
+    LOG_ERROR_CODE(err);
+  }
+
+  if(xQueueSend(thermalMgrQueueHandle, event, 10) != pdPASS) {
+    return ERR_CODE_QUEUE_FULL;
+  }
 
   return ERR_CODE_SUCCESS;
 }
@@ -58,21 +73,32 @@ static void thermalMgr(void *pvParameters) {
   float localTemp = {0}; 
   thermal_mgr_event_t event;
 
-  while (1) {
-    if (xQueueReceive(thermalMgrQueueHandle, &event, 10) == pdPASS) {
-      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
-        readTempLM75BD(data.devAddr, &localTemp); 
-      } 
+  while (1) { // Lots of nesting, what is the proper convention to format this?
+    error_code_t errCode;
 
-      if (event.type == THERMAL_MGR_EVENT_INTERRUPT_CMD) {
-        readTempLM75BD(data.devAddr, &localTemp); 
-        if(localTemp >= 80) {
+    if (xQueueReceive(thermalMgrQueueHandle, &event, 10) == pdPASS) {
+      if(&event == NULL) {
+        LOG_ERROR_CODE(ERR_CODE_NULL_VALUE);
+        continue;
+
+      } else if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+        LOG_IF_ERROR_CODE(readTempLM75BD(data.devAddr, &localTemp)); 
+
+      } else if (event.type == THERMAL_MGR_EVENT_INTERRUPT_CMD) {
+        LOG_IF_ERROR_CODE(readTempLM75BD(data.devAddr, &localTemp)); 
+
+        if(localTemp >= 80) { 
           overTemperatureDetected();
+
         } else {
           safeOperatingConditions();
+
         }
+      } else {
+        LOG_ERROR_CODE(ERR_CODE_INVALID_EVENT);
+
       }
-    }
+    } 
   }
 }
 
