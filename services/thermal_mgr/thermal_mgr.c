@@ -44,13 +44,13 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   if (event == NULL) {
-    error_code_t err = ERR_CODE_NULL_VALUE;
+    error_code_t err = ERR_CODE_INVALID_ARG;
 
     LOG_ERROR_CODE(err);
   }
 
   if(thermalMgrQueueHandle == NULL) {
-    error_code_t err = ERR_CODE_NULL_VALUE;
+    error_code_t err = ERR_CODE_INVALID_ARG;
     
     LOG_ERROR_CODE(err);
   }
@@ -77,17 +77,14 @@ static void thermalMgr(void *pvParameters) {
     error_code_t errCode;
 
     if (xQueueReceive(thermalMgrQueueHandle, &event, 10) == pdPASS) {
-      if(&event == NULL) {
-        LOG_ERROR_CODE(ERR_CODE_NULL_VALUE);
-        continue;
 
-      } else if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
         LOG_IF_ERROR_CODE(readTempLM75BD(data.devAddr, &localTemp)); 
 
       } else if (event.type == THERMAL_MGR_EVENT_INTERRUPT_CMD) {
         LOG_IF_ERROR_CODE(readTempLM75BD(data.devAddr, &localTemp)); 
 
-        if(localTemp >= 80) { 
+        if(localTemp >= data.overTempThresholdCelsius) { 
           overTemperatureDetected();
 
         } else {
@@ -95,7 +92,7 @@ static void thermalMgr(void *pvParameters) {
 
         }
       } else {
-        LOG_ERROR_CODE(ERR_CODE_INVALID_EVENT);
+        LOG_ERROR_CODE(ERR_CODE_INVALID_STATE);
 
       }
     } 
