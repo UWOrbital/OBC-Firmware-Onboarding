@@ -22,8 +22,8 @@ static QueueHandle_t thermalMgrQueueHandle;
 static StaticQueue_t thermalMgrQueueBuffer;
 static uint8_t thermalMgrQueueStorageArea[THERMAL_MGR_QUEUE_LENGTH * THERMAL_MGR_QUEUE_ITEM_SIZE];
 
-static float tempTh = 80;
-static float tempHys = 75;
+#define TEMPERATURE_THRESHOLD 80
+#define TEMPERATURE_HYSTERESIS 75
 
 static void thermalMgr(void *pvParameters);
 
@@ -46,6 +46,9 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
+  if (thermalMgrQueueHandle == NULL || event == NULL) return ERR_CODE_INVALID_ARG;
+  if (uxQueueSpacesAvailable(thermalMgrQueueHandle) == 0) return ERR_CODE_QUEUE_FULL;
+
   xQueueSend(thermalMgrQueueHandle, event, (TickType_t) portMAX_DELAY);
   return ERR_CODE_SUCCESS;
 }
@@ -54,7 +57,7 @@ void osHandlerLM75BD(void) {
   /* Implement this function */
   thermal_mgr_event_t event;
   event.type = THERMAL_MGR_EVENT_OS_INTERRUPT;
-  xQueueSend(thermalMgrQueueHandle, &event, (TickType_t) portMAX_DELAY);
+  thermalMgrSendEvent(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -63,16 +66,17 @@ static void thermalMgr(void *pvParameters) {
   uint8_t devAddr = *(uint8_t*)pvParameters;
   float temp;
 
-  while(1){
-    if(xQueueReceive(thermalMgrQueueHandle, &event, (TickType_t) portMAX_DELAY) == pdPASS){
-      if(event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
+  while (1) {
+    if (uxQueueSpacesAvailable(thermalMgrQueueHandle) != 0 && xQueueReceive(thermalMgrQueueHandle, &event, (TickType_t) portMAX_DELAY) == pdPASS) {
+      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
         readTempLM75BD(devAddr, &temp);
         addTemperatureTelemetry(temp);
       }
-      else if(event.type == THERMAL_MGR_EVENT_OS_INTERRUPT){
-        if(temp > tempHys){
+      else if (event.type == THERMAL_MGR_EVENT_OS_INTERRUPT) {
+        readTempLM75BD(devAddr, &temp);
+        if (temp > TEMPERATURE_HYSTERESIS) {
           overTemperatureDetected();
-        }else{
+        } else {
           safeOperatingConditions();
         }
       }

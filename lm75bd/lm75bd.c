@@ -28,11 +28,17 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
   //Temperature Register
+  error_code_t errCode;
   uint8_t tempReg = 0x00;
-  i2cSendTo(devAddr, &tempReg, 1);
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &tempReg, 1));
 
   uint8_t bufReceived[2];
   i2cReceiveFrom(devAddr, bufReceived, 2);
+
+  //Check if the data received is NULL (therefore temp is Null)
+  if (bufReceived == NULL) {
+    return ERR_CODE_INVALID_ARG;
+  }
 
   //Converting to Proper format + Two's Complement Implementation:
   uint16_t rawData = ((uint16_t)bufReceived[0] << 8) | bufReceived[1];
@@ -40,10 +46,11 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   //Temp Conversion:
   uint16_t msb = (dataPrep >> 10) & 0x01;
-  if(msb == 0x00){
-    *temp = (float)dataPrep * 0.125;
-  }else{
-    *temp = ((float)dataPrep - (2048)) * 0.125;
+  
+  if (msb == 0x00) {
+    *temp = (float) dataPrep * 0.125;
+  } else {
+    *temp = ((float) dataPrep - (2048)) * 0.125;
   }
 
   return ERR_CODE_SUCCESS;
