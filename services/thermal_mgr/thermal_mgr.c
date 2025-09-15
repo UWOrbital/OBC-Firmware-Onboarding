@@ -22,6 +22,9 @@ static QueueHandle_t thermalMgrQueueHandle;
 static StaticQueue_t thermalMgrQueueBuffer;
 static uint8_t thermalMgrQueueStorageArea[THERMAL_MGR_QUEUE_LENGTH * THERMAL_MGR_QUEUE_ITEM_SIZE];
 
+static float tempTh = 80;
+static float tempHys = 75;
+
 static void thermalMgr(void *pvParameters);
 
 void initThermalSystemManager(lm75bd_config_t *config) {
@@ -43,18 +46,37 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-
+  xQueueSend(thermalMgrQueueHandle, event, (TickType_t) portMAX_DELAY);
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
+  thermal_mgr_event_t event;
+  event.type = THERMAL_MGR_EVENT_OS_INTERRUPT;
+  xQueueSend(thermalMgrQueueHandle, &event, (TickType_t) portMAX_DELAY);
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
-  while (1) {
-    
+  thermal_mgr_event_t event;
+  uint8_t devAddr = *(uint8_t*)pvParameters;
+  float temp;
+
+  while(1){
+    if(xQueueReceive(thermalMgrQueueHandle, &event, (TickType_t) portMAX_DELAY) == pdPASS){
+      if(event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
+        readTempLM75BD(devAddr, &temp);
+        addTemperatureTelemetry(temp);
+      }
+      else if(event.type == THERMAL_MGR_EVENT_OS_INTERRUPT){
+        if(temp > tempHys){
+          overTemperatureDetected();
+        }else{
+          safeOperatingConditions();
+        }
+      }
+    }
   }
 }
 
