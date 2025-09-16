@@ -32,12 +32,17 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   uint8_t tempReg = 0x00;
   RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &tempReg, 1));
 
-  uint8_t bufReceived[2];
-  i2cReceiveFrom(devAddr, bufReceived, 2);
+  if (errCode != ERR_CODE_SUCCESS) {
+    LOG_ERROR_CODE(errCode);
+    return ERR_CODE_UNKNOWN;
+  }
 
-  //Check if the data received is NULL (therefore temp is Null)
-  if (bufReceived == NULL) {
-    return ERR_CODE_INVALID_ARG;
+  uint8_t bufReceived[2];
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, bufReceived, 2));
+
+  if (errCode != ERR_CODE_SUCCESS) {
+    LOG_ERROR_CODE(errCode);
+    return ERR_CODE_UNKNOWN;
   }
 
   //Converting to Proper format + Two's Complement Implementation:
@@ -47,13 +52,18 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   //Temp Conversion:
   uint16_t msb = (dataPrep >> 10) & 0x01;
   
-  if (msb == 0x00) {
-    *temp = (float) dataPrep * 0.125;
+  if (temp == NULL) {
+    return ERR_CODE_INVALID_ARG;
   } else {
-    *temp = ((float) dataPrep - (2048)) * 0.125;
-  }
 
-  return ERR_CODE_SUCCESS;
+    if (msb == 0x00) {
+      *temp = (float) dataPrep * 0.125;
+    } else {
+      *temp = ((float) dataPrep - (2048)) * 0.125;
+    }
+
+    return ERR_CODE_SUCCESS;
+  }
 }
 
 #define CONF_WRITE_BUFF_SIZE 2U
