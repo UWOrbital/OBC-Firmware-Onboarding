@@ -1,7 +1,7 @@
 #include "lm75bd.h"
 #include "i2c_io.h"
-#include "errors.h"
 #include "logging.h"
+#include "errors.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -27,7 +27,24 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  error_code_t ERR_CODE_SUCCESS;
   
+  uint8_t buf[2];
+  uint8_t tAddr[1] = {0x00};
+
+  i2cSendTo(devAddr, tAddr, 1); 
+  i2cReceiveFrom(devAddr, buf, 2);
+
+  uint16_t rawTemp = buf[0] << 8 + buf[1];
+  uint16_t mask = 0b1111111111100000;
+  rawTemp = rawTemp & mask;
+  mask = 0b1000000000000000;
+  if (rawTemp & mask == 0x00){ //if first digit of rawTemp is 0
+    *temp = ((rawTemp & ~mask) >> 5) * 0.125;
+  } else { //if first digit of rawTemp is 1
+    *temp = ((rawTemp & ~mask) >> 5) * -0.125;
+  }
+
   return ERR_CODE_SUCCESS;
 }
 
