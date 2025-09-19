@@ -75,7 +75,7 @@ static void thermalMgr(void *pvParameters) {
     }
     if(result == pdPASS && event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
       readTempLM75BD(LM75BD_OBC_I2C_ADDR, temp);
-        if(*temp > 80){ //if temperature is greater than 80
+      if(*temp > 80){ //if temperature is greater than 80
         overTemperatureDetected();
       } else if (*temp < 75) { //if temperature is less than 75
         safeOperatingConditions(); 
