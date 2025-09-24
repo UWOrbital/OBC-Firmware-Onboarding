@@ -60,7 +60,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
-  thermal_mgr_event_t event = { .type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD };
+  thermal_mgr_event_t event = { .type = THERMAL_MGR_EVENT_INTERRUPT_CHECK_TEMP };
   thermalMgrSendEvent(&event);
 }
 
@@ -75,20 +75,19 @@ static void thermalMgr(void *pvParameters) {
     
     if(result == pdPASS){
       switch(event.type){
-        case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
+        case THERMAL_MGR_EVENT_INTERRUPT_CHECK_TEMP:
           thermal_mgr_event_t event;
           readTempLM75BD(config->devAddr, &temp);
           if(temp > config->overTempThresholdCelsius){ //if temperature is greater than 80
-            event.type = THERMAL_MGR_EVENT_OVER_TEMP;
+            overTemperatureDetected();
           } else if (temp < config->hysteresisThresholdCelsius) { //if temperature is less than 75
-            event.type = THERMAL_MGR_EVENT_UNDER_TEMP; 
+            safeOperatingConditions(); 
           }
-          thermalMgrSendEvent(&event);
           break;
-        case THERMAL_MGR_EVENT_OVER_TEMP:
-          overTemperatureDetected();
-        case THERMAL_MGR_EVENT_UNDER_TEMP:
-          safeOperatingConditions(); 
+        case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
+          readTempLM75BD(config->devAddr, &temp);
+          addTemperatureTelemetry(temp);
+          break;
         default:
           LOG_ERROR_CODE(ERR_CODE_INVALID_STATE);
       }
