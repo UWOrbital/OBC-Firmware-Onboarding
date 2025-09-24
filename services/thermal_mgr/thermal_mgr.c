@@ -72,9 +72,7 @@ static void thermalMgr(void *pvParameters) {
   float temp;
   while (1) {
     BaseType_t result = xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY);
-    if (&event == NULL){
-      return; 
-    }
+    
     if(result == pdPASS && event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
       readTempLM75BD(config->devAddr, &temp);
       if(temp > config->overTempThresholdCelsius){ //if temperature is greater than 80
