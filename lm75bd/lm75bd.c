@@ -2,6 +2,7 @@
 #include "i2c_io.h"
 #include "logging.h"
 #include "errors.h"
+#include "thermal_mgr.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -33,7 +34,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   uint8_t buf[2];
   uint8_t tAddr[1] = {0x00};
-  error_code_t err;
+  error_code_t errCode;
 
   RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, buf, 2));
   RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, buf, 2));
@@ -48,7 +49,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     *temp = ((rawTemp & ~mask) >> 5) * -0.125;
   }
 
-  addTemperatureTelemetry(temp);
+  addTemperatureTelemetry(*temp);
 
   return ERR_CODE_SUCCESS;
 }
