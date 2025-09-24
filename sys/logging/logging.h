@@ -74,4 +74,5 @@ error_code_t logLog(log_level_t msgLevel, const char *file, uint32_t line, const
 
 #ifdef __cplusplus
 }
+
 #endif
