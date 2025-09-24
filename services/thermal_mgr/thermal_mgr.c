@@ -74,11 +74,23 @@ static void thermalMgr(void *pvParameters) {
     BaseType_t result = xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY);
     
     if(result == pdPASS && event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
-      readTempLM75BD(config->devAddr, &temp);
-      if(temp > config->overTempThresholdCelsius){ //if temperature is greater than 80
-        overTemperatureDetected();
-      } else if (temp < config->hysteresisThresholdCelsius) { //if temperature is less than 75
-        safeOperatingConditions(); 
+      switch(event.type){
+        case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
+          thermal_mgr_event_t event;
+          readTempLM75BD(config->devAddr, &temp);
+          if(temp > config->overTempThresholdCelsius){ //if temperature is greater than 80
+            event.type = THERMAL_MGR_EVENT_OVER_TEMP;
+          } else if (temp < config->hysteresisThresholdCelsius) { //if temperature is less than 75
+            event.type = THERMAL_MGR_EVENT_UNDER_TEMP; 
+          }
+          thermalMgrSendEvent(&event);
+          break;
+        case THERMAL_MGR_EVENT_OVER_TEMP:
+          overTemperatureDetected();
+        case THERMAL_MGR_EVENT_UNDER_TEMP:
+          safeOperatingConditions(); 
+        default:
+          
       }
     }
   }
