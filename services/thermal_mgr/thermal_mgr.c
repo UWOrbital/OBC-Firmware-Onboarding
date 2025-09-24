@@ -73,7 +73,7 @@ static void thermalMgr(void *pvParameters) {
   while (1) {
     BaseType_t result = xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY);
     
-    if(result == pdPASS && event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
+    if(result == pdPASS){
       switch(event.type){
         case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
           thermal_mgr_event_t event;
@@ -90,7 +90,7 @@ static void thermalMgr(void *pvParameters) {
         case THERMAL_MGR_EVENT_UNDER_TEMP:
           safeOperatingConditions(); 
         default:
-          
+          LOG_ERROR_CODE(ERR_CODE_INVALID_STATE);
       }
     }
   }
