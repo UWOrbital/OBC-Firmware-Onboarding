@@ -2,6 +2,7 @@
 #include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
+#include "i2c_io.h"
 
 #include <FreeRTOS.h>
 #include <os_task.h>
@@ -51,7 +52,11 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 }
 
 void osHandlerLM75BD(void) {
-  /* Implement this function */
+  thermal_mgr_event_t osEvent = {
+    .type = THERMAL_MGR_EVENT_OS_INTERRUPT
+  };
+
+  thermalMgrSendEvent(&osEvent);
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -64,6 +69,12 @@ static void thermalMgr(void *pvParameters) {
         float temperature;
         if (readTempLM75BD (config.devAddr, &temperature) == ERR_CODE_SUCCESS) {
           addTemperatureTelemetry(temperature);
+        }
+      } else if (event.type == THERMAL_MGR_EVENT_OS_INTERRUPT) {
+        if (getOsActive()) {
+          overTemperatureDetected();
+        } else {
+          safeOperatingConditions();
         }
       }
     }
