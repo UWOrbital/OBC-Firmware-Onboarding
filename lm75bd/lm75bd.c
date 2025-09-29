@@ -9,6 +9,7 @@
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
+uint8_t LM75BD_OBC_I2C_ADDR;
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
@@ -27,6 +28,26 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  error_code_t errCode;
+  uint8_t pointerReg = 0x00;
+  uint8_t tempData[2];
+  
+  LOG_IF_ERROR_CODE(i2cSendTo(devAddr, &pointerReg, 1));
+  LOG_IF_ERROR_CODE(i2cReceiveFrom(devAddr, tempData, 2));
+
+  //aligns the data in the same format as data sheet
+  uint16_t tempRaw = (tempData[0] << 8) | tempData[1];
+
+  if((tempData[0] & 128) == 128) //meaning D10 is 1 thus temp is negative
+  {
+    tempRaw >>= 5;
+    tempRaw |= 0b1111100000000000;
+    *temp = -0.125*tempRaw;
+  }
+  else{
+    tempRaw >>= 5;
+    *temp = 0.125*tempRaw;
+  }
   
   return ERR_CODE_SUCCESS;
 }
