@@ -2,6 +2,7 @@
 #include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
+#include "logging.h"
 
 #include <FreeRTOS.h>
 #include <os_task.h>
@@ -59,7 +60,7 @@ void osHandlerLM75BD(void) {
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   error_code_t errCode;
-  float *temp = nullptr;
+  float *temp;
   thermal_mgr_event_t receiveBuffer;
   while (1) {
     if(xQueueReceive(thermalMgrQueueHandle, &receiveBuffer, (TickType_t)10) == pdPASS){
@@ -72,7 +73,7 @@ static void thermalMgr(void *pvParameters) {
 
         //will reset the OS output for either case
         RETURN_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, temp));
-        if(*temp > LM75BD_DEFAULT_HYST_THRESH)
+        if(*temp >= LM75BD_DEFAULT_HYST_THRESH)
           overTemperatureDetected();
         else
           safeOperatingConditions();
