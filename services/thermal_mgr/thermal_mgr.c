@@ -43,18 +43,21 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
-  /* Send an event to the thermal manager queue */  
-  if(xQueueSend(thermalMgrQueueHandle, event, (TickType_t)10) == pdPASS)
+  /* Send an event to the thermal manager queue */
+  error_code_t errCode;
+  if(event == NULL)
+    return ERR_CODE_INVALID_QUEUE_MSG;
+  if(xQueueSend(thermalMgrQueueHandle, event, pdMS_TO_TICKS(10)) == pdPASS)
     return ERR_CODE_SUCCESS;
-  return ERR_CODE_INVALID_ARG;
+  return ERR_CODE_QUEUE_FULL;
 }
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
   error_code_t errCode;
-  thermal_mgr_event_t OsEvent;
-  OsEvent.type = THERMAL_MGR_EVENT_OS_TEMP_CMD;
-  RETURN_IF_ERROR_CODE(thermalMgrSendEvent(&OsEvent));
+  thermal_mgr_event_t osEvent;
+  osEvent.type = THERMAL_MGR_EVENT_OS_TEMP_CMD;
+  RETURN_IF_ERROR_CODE(thermalMgrSendEvent(&osEvent));
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -62,10 +65,11 @@ static void thermalMgr(void *pvParameters) {
   error_code_t errCode;
   float *temp;
   thermal_mgr_event_t receiveBuffer;
+
   while (1) {
-    if(xQueueReceive(thermalMgrQueueHandle, &receiveBuffer, (TickType_t)10) == pdPASS){
+    if(xQueueReceive(thermalMgrQueueHandle, &receiveBuffer, pdMS_TO_TICKS(10)) == pdPASS){
       if(receiveBuffer.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
-        readTempLM75BD(LM75BD_OBC_I2C_ADDR, temp);
+        LOG_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, temp));
         addTemperatureTelemetry(*temp);
       }
       //If the recieved item from queue was an OS event
@@ -78,6 +82,8 @@ static void thermalMgr(void *pvParameters) {
         else
           safeOperatingConditions();
       }
+      else
+        return ERR_CODE_INVALID_QUEUE_MSG;
     }
   }
 }
