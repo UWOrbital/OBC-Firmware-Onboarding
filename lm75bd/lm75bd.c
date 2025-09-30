@@ -28,16 +28,16 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  error_code_t errCode;
 
   //checks if temperature pointer parameter is null to prevent crash
   if(temp == NULL)
     return ERR_CODE_INVALID_ARG;
 
-  error_code_t errCode;
-  uint8_t pointerReg = 0x00;
   uint8_t tempData[2];
+  uint8_t reg = pointerReg;
   
-  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &pointerReg, 1));
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &reg, 1));
   RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, tempData, 2));
 
   //aligns the data in the same format as data sheet
