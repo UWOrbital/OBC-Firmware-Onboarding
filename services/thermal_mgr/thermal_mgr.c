@@ -67,7 +67,7 @@ static void thermalMgr(void *pvParameters) {
   thermal_mgr_event_t receiveBuffer;
 
   while (1) {
-    if(xQueueReceive(thermalMgrQueueHandle, &receiveBuffer, pdMS_TO_TICKS(10)) == pdPASS){
+    if(xQueueReceive(thermalMgrQueueHandle, &receiveBuffer, portMAX_DELAY) == pdPASS){
       if(receiveBuffer.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
         LOG_IF_ERROR_CODE(readTempLM75BD(LM75BD_OBC_I2C_ADDR, temp));
         addTemperatureTelemetry(*temp);
@@ -83,7 +83,7 @@ static void thermalMgr(void *pvParameters) {
           safeOperatingConditions();
       }
       else
-        return ERR_CODE_INVALID_QUEUE_MSG;
+        LOG_ERROR_CODE(ERR_CODE_INVALID_QUEUE_MSG);
     }
   }
 }
