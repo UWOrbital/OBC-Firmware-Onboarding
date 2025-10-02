@@ -35,10 +35,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   // Set pointer register to temperature register
   uint8_t pointerReg = LM75BD_REG_TEMP;
-  errCode = i2cSendTo(devAddr, &pointerReg, 1U);
-  if (errCode != ERR_CODE_SUCCESS) {
-    return errCode;
-  }
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &pointerReg, 1U));
 
   // Read temperature data
   uint8_t tempData[2] = {0};
