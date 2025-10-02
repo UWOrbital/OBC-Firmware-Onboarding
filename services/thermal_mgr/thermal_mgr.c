@@ -3,6 +3,7 @@
 #include "lm75bd.h"
 #include "console.h"
 #include "i2c_io.h"
+#include "logging.h"
 
 #include <FreeRTOS.h>
 #include <os_task.h>
