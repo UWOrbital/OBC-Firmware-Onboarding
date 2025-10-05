@@ -90,6 +90,8 @@ static void thermalMgr(void *pvParameters) {
             } else {
               safeOperatingConditions();
             }
+        } else {
+          LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
         }
       }
     } 
