@@ -13,7 +13,6 @@
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
-
   if (config == NULL) return ERR_CODE_INVALID_ARG;
 
   RETURN_IF_ERROR_CODE(writeConfigLM75BD(config->devAddr, config->osFaultQueueSize, config->osPolarity,
@@ -29,13 +28,14 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
   error_code_t errCode;
+  if (temp == NULL) {
+    LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
+    return ERR_CODE_INVALID_ARG;
+  }
   uint8_t tempreg = LM75BD_REG_TEMP; //
-  errCode = i2cSendTo(devAddr, &tempreg, 1);
-  if (errCode != ERR_CODE_SUCCESS) return errCode;
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &tempreg, 1));
   uint8_t buff[2] = {0};
-  errCode = i2cReceiveFrom(devAddr, buff, 2);
-  if (errCode != ERR_CODE_SUCCESS) return errCode;
-
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, buff, 2));
   uint16_t rawTemp = 0;
   rawTemp = rawTemp | (buff[0] << 8);
   rawTemp = rawTemp | (buff[1]);

@@ -9,6 +9,8 @@
 
 #include <string.h>
 
+#include <logging.h>
+
 #define THERMAL_MGR_STACK_SIZE 256U
 
 static TaskHandle_t thermalMgrTaskHandle;
@@ -43,7 +45,10 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-  event->type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;
+  if (event == NULL || thermalMgrQueueHandle == NULL) {
+    LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
+    return ERR_CODE_INVALID_ARG;
+  }
   if (xQueueSend(thermalMgrQueueHandle, event, 0) == pdPASS) {
      return ERR_CODE_SUCCESS;
   } else {
@@ -53,14 +58,9 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 void osHandlerLM75BD(void) { //function only runs when an interrupt happens
   /* Implement this function */
-  float tempC = 0.0f;
-  if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC) == ERR_CODE_SUCCESS) {
-    if (tempC >= 75.0f) { //if an interrupt happens and the temp is above 75you
-      overTemperatureDetected();
-    }  else {
-      safeOperatingConditions();
-    }
-  }
+  thermal_mgr_event_t event;
+  event.type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;
+  thermalMgrSendEvent(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -68,13 +68,29 @@ static void thermalMgr(void *pvParameters) {
   lm75bd_config_t *config = (lm75bd_config_t *)pvParameters;
   thermal_mgr_event_t event;
   float temperatureC = 0.0f;
+  static float lastTempC = 0.0f;
+  if (thermalMgrQueueHandle == NULL) {
+    LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
+  }
   while (1) {
     if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdTRUE) {
       if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
         if (readTempLM75BD(config->devAddr, &temperatureC) == ERR_CODE_SUCCESS) {
           addTemperatureTelemetry(temperatureC);
+          if (temperatureC >= config->overTempThresholdCelsius && lastTempC < config->overTempThresholdCelsius) {
+            overTemperatureDetected();
+          } else if (temperatureC <= config->hysteresisThresholdCelsius  && lastTempC > config->hysteresisThresholdCelsius) {
+            safeOperatingConditions();
+          }
+          lastTempC = temperatureC;
+        } else {
+          LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
         }
+      } else {
+        LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
       }
+    } else {
+      LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
     }
  }
 }
