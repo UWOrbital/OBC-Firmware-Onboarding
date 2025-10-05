@@ -45,9 +45,13 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-  if (event == NULL || thermalMgrQueueHandle == NULL) {
+  if (event == NULL) {
     LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
     return ERR_CODE_INVALID_ARG;
+  }
+  if (thermalMgrQueueHandle == NULL) {
+    LOG_ERROR_CODE(ERR_CODE_INVALID_STATE);
+    return ERR_CODE_INVALID_STATE;
   }
   if (xQueueSend(thermalMgrQueueHandle, event, 0) == pdPASS) {
      return ERR_CODE_SUCCESS;
@@ -59,7 +63,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 void osHandlerLM75BD(void) { //function only runs when an interrupt happens
   /* Implement this function */
   thermal_mgr_event_t event;
-  event.type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;
+  event.type = THERMAL_MGR_EVENT_ALERT_ACTIVE;
   thermalMgrSendEvent(&event);
 }
 
@@ -68,30 +72,27 @@ static void thermalMgr(void *pvParameters) {
   lm75bd_config_t *config = (lm75bd_config_t *)pvParameters;
   thermal_mgr_event_t event;
   float temperatureC = 0.0f;
-  static float lastTempC = 0.0f;
-  if (thermalMgrQueueHandle == NULL) {
-    LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
-  }
   while (1) {
+    if (thermalMgrQueueHandle == NULL) {
+      LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
+    }
     if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdTRUE) {
       if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
         if (readTempLM75BD(config->devAddr, &temperatureC) == ERR_CODE_SUCCESS) {
           addTemperatureTelemetry(temperatureC);
-          if (temperatureC >= config->overTempThresholdCelsius && lastTempC < config->overTempThresholdCelsius) {
-            overTemperatureDetected();
-          } else if (temperatureC <= config->hysteresisThresholdCelsius  && lastTempC > config->hysteresisThresholdCelsius) {
-            safeOperatingConditions();
-          }
-          lastTempC = temperatureC;
         } else {
           LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
         }
-      } else {
-        LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
+      } else if (event.type == THERMAL_MGR_EVENT_ALERT_ACTIVE) {
+          if (readTempLM75BD(config->devAddr, &temperatureC) == ERR_CODE_SUCCESS) {
+            if (temperatureC >= config->hysteresisThresholdCelsius) {
+              overTemperatureDetected();
+            } else {
+              safeOperatingConditions();
+            }
+        }
       }
-    } else {
-      LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
-    }
+    } 
  }
 }
 
