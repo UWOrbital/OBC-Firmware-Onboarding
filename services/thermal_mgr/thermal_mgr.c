@@ -42,28 +42,38 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
-  xQueueSend(thermalMgrQueueHandle, (void *) event, (TickType_t) 1);
-
+  if (event == NULL) return ERR_CODE_INVALID_ARG;
+  if (thermalMgrQueueHandle == NULL) return ERR_CODE_INVALID_STATE;
+  if (xQueueSend(thermalMgrQueueHandle, (void *) event, (TickType_t) 1) == errQUEUE_FULL)
+    return ERR_CODE_QUEUE_FULL;
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
-  float temp = 0;
-  readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
-  addTemperatureTelemetry(temp);
-  if (temp > LM75BD_DEFAULT_HYST_THRESH) overTemperatureDetected();
-  else safeOperatingConditions();
+  thermal_mgr_event_t event = { .type = THERMAL_MGR_EVENT_OS_INT };
+  thermalMgrSendEvent(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
+  lm75bd_config_t* lm75bd_config = (lm75bd_config_t*) pvParameters;
   while (1) {
-    thermal_mgr_event_t xMessage;
-    if (xQueueReceive(thermalMgrQueueHandle, &xMessage, portMAX_DELAY) == pdPASS) {
-      if ((&xMessage)->type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
-        float temp = 0.0f;
-        readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
-        addTemperatureTelemetry(temp);
+    if (thermalMgrQueueHandle != NULL) {
+      thermal_mgr_event_t xMessage;
+      if (xQueueReceive(thermalMgrQueueHandle, &xMessage, portMAX_DELAY) == pdPASS) {
+        if ((&xMessage)->type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+          float temp = 0;
+          if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp) == ERR_CODE_SUCCESS) {
+            addTemperatureTelemetry(temp);
+          }
+        } else if ((&xMessage)->type == THERMAL_MGR_EVENT_OS_INT) {
+          float temp = 0;
+          if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp) == ERR_CODE_SUCCESS) {
+            addTemperatureTelemetry(temp);
+            if (temp > lm75bd_config->overTempThresholdCelsius) overTemperatureDetected();
+            else safeOperatingConditions();
+          }
         }
+      }
     }
   }
 }
