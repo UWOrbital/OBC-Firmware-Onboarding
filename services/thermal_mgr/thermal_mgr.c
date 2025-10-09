@@ -56,9 +56,9 @@ void osHandlerLM75BD(void) {
 }
 
 static void thermalMgr(void *pvParameters) {
-  lm75bd_config_t* lm75bd_config = (lm75bd_config_t*) pvParameters;
-  while (1) {
-    if (thermalMgrQueueHandle != NULL) {
+  if (thermalMgrQueueHandle != NULL) {
+    lm75bd_config_t* lm75bd_config = (lm75bd_config_t*) pvParameters;
+    while (1) {
       thermal_mgr_event_t xMessage;
       if (xQueueReceive(thermalMgrQueueHandle, &xMessage, portMAX_DELAY) == pdPASS) {
         if ((&xMessage)->type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
