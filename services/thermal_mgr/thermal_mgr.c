@@ -2,6 +2,7 @@
 #include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
+#include "logging.h"
 
 #include <FreeRTOS.h>
 #include <os_task.h>
@@ -62,16 +63,17 @@ static void thermalMgr(void *pvParameters) {
       if (xQueueReceive(thermalMgrQueueHandle, &xMessage, portMAX_DELAY) == pdPASS) {
         if ((&xMessage)->type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
           float temp = 0;
-          if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp) == ERR_CODE_SUCCESS) {
-            addTemperatureTelemetry(temp);
-          }
+          error_code_t res = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+          if (res == ERR_CODE_SUCCESS) addTemperatureTelemetry(temp);
+          else LOG_ERROR_CODE(res);
         } else if ((&xMessage)->type == THERMAL_MGR_EVENT_OS_INT) {
           float temp = 0;
-          if (readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp) == ERR_CODE_SUCCESS) {
+          error_code_t res = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temp);
+          if (res == ERR_CODE_SUCCESS) {
             addTemperatureTelemetry(temp);
             if (temp > lm75bd_config->overTempThresholdCelsius) overTemperatureDetected();
             else safeOperatingConditions();
-          }
+          } else LOG_ERROR_CODE(res);
         }
       }
     }
