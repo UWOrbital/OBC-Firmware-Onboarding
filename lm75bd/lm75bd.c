@@ -16,7 +16,7 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
   if (config == NULL) return ERR_CODE_INVALID_ARG;
 
   RETURN_IF_ERROR_CODE(writeConfigLM75BD(config->devAddr, config->osFaultQueueSize, config->osPolarity,
-                                         config->osOperationMode, config->devOperationMode));
+                                         config->osOperationMode, config->devOperationMode, config->hysteresis, config->overTemp));
 
   // Assume that the overtemperature and hysteresis thresholds are already set
   // Hysteresis: 75 degrees Celsius
@@ -26,7 +26,17 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
+  /* Implement this driver function 
+  
+  It should read the temperature register from the sensor over I2C and convert the raw data to a float value in Celsius.
+  1. Use i2cSendTo to send the temperature register address (0x00) to the device.
+  2. Use i2cReadFrom to read 2 bytes of data from the device.
+  3. Convert the raw data to a float temperature value in Celsius using the formula provided in the LM75BD datasheet.
+  4. Store the result in the variable pointed to by temp.
+  5. Return appropriate error codes for any failures.
+  6. On success, return ERR_CODE_SUCCESS.
+  
+  */
   
   return ERR_CODE_SUCCESS;
 }
