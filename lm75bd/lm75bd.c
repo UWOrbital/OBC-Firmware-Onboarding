@@ -27,7 +27,31 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+   // select the sensor's internal temperature register
+  uint8_t pointer = 0x00U;
+  uint8_t internalTemp[2] = { 0, 0 };
   
+  // select internal temp reg by setting pointer
+  i2cSendTo( devAddr, &pointer, 1 );
+
+  // read temp
+  i2cReceiveFrom( devAddr, internalTemp, 2 );
+
+  // MSB is internalTemp[0] and LSB is internalTemp[1]
+  int16_t rawTemp = (((int16_t)internalTemp[0] << 8) | internalTemp[1]);
+
+  // only 11 most significant bits are used.
+  rawTemp >>= 5;
+
+  if ((rawTemp >> 11) & 1)
+  {
+    rawTemp = (~rawTemp & 0x7FF) + 1; /* twos complement */
+    *temp = -((float)rawTemp * 0.125f);
+  } else
+  {
+    *temp = (float)rawTemp * 0.125f;
+  }
+
   return ERR_CODE_SUCCESS;
 }
 
@@ -66,7 +90,7 @@ error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_
   buff[1] |= (osOperationMode << 1);
   buff[1] |= devOperationMode;
 
-  errCode = i2cSendTo(LM75BD_OBC_I2C_ADDR, buff, CONF_WRITE_BUFF_SIZE);
+  errCode = i2cSendTo(devAddr, buff, CONF_WRITE_BUFF_SIZE);
   if (errCode != ERR_CODE_SUCCESS) return errCode;
 
   return ERR_CODE_SUCCESS;
