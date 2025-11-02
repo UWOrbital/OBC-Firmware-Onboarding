@@ -2,6 +2,7 @@
 #include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
+#include "logging.h"
 
 #include <FreeRTOS.h>
 #include <os_task.h>
@@ -42,7 +43,19 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
-  xQueueSend(thermalMgrQueueHandle, event, portMAX_DELAY);
+  /* Send an event to the thermal manager queue */
+  if (event == NULL) /* event pointer is null*/
+  {
+    return ERR_CODE_INVALID_ARG;
+  }
+  if (thermalMgrQueueHandle == NULL) /* queue handle is null */
+  {
+    return ERR_CODE_INVALID_STATE;
+  }
+  if (xQueueSend(thermalMgrQueueHandle, event, 0) == errQUEUE_FULL) /* queue handle is full */
+  {
+    return ERR_CODE_QUEUE_FULL;
+  };
 
   return ERR_CODE_SUCCESS;
 }
@@ -50,32 +63,57 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 void osHandlerLM75BD(void) {
   /* Implement this function */ 
   thermal_mgr_event_t event;
-  event.type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;
-
-  xQueueSendFromISR(thermalMgrQueueHandle, &event, NULL);
+  event.type = THERMAL_MGR_EVENT_OS;
+  error_code_t errCode;
+  LOG_IF_ERROR_CODE(thermalMgrSendEvent(&event));
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
-  lm75bd_config_t *config = (lm75bd_config_t *) pvParameters;
-  thermal_mgr_event_t event;
-  float tempC = 0.0f;
-  
-  while (1){
-     if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdPASS){
-      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
-        if (readTempLM75BD(config->devAddr, &tempC) == ERR_CODE_SUCCESS){
-          if (tempC >= config->overTempThresholdCelsius){
-            overTemperatureDetected();
-          }
-          else if (tempC <= config->hysteresisThresholdCelsius){
-            safeOperatingConditions();
-          }
+  if (pvParameters == NULL)
+  {
+    LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
+  }
+  else if (thermalMgrQueueHandle != NULL){
+    lm75bd_config_t* config = (lm75bd_config_t *) pvParameters;
 
-          addTemperatureTelemetry(tempC);
+    while (1){
+      thermal_mgr_event_t event;
+        if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdPASS)
+        {
+          if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD)
+          {
+            float tempC = 0.0f;
+            error_code_t err = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC);
+            if (err == ERR_CODE_SUCCESS)
+            {
+              addTemperatureTelemetry(tempC);
+            } else
+            {
+              LOG_ERROR_CODE(err);
+            }
+          }
+          else if (event.type == THERMAL_MGR_EVENT_OS)
+          {
+            float tempC = 0.0f;
+            error_code_t err = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &tempC);
+            if (err == ERR_CODE_SUCCESS)
+            {
+              if (tempC <= config->overTempThresholdCelsius)
+              {
+                safeOperatingConditions();
+              } else
+              {
+                overTemperatureDetected();
+              }
+              addTemperatureTelemetry(tempC);
+            } else 
+            {
+              LOG_ERROR_CODE(err);
+            };
+          }
         }
-      }
-    } 
+    }
   }
 }
 void addTemperatureTelemetry(float tempC) {

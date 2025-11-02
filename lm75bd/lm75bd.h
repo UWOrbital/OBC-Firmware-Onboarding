@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 /* LM75BD I2C Device Address */
-#define LM75BD_OBC_I2C_ADDR 0x04FU /* Define the address here */
+#define LM75BD_OBC_I2C_ADDR 0x4FU /* Define the address here */
 
 /* LM75BD Configuration Values */
 #define LM75BD_DEV_OP_MODE_NORMAL 0x00U
@@ -61,6 +61,7 @@ error_code_t lm75bdInit(lm75bd_config_t *config);
  * @return ERR_CODE_SUCCESS if successful, error code otherwise
  */
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp);
+
 /**
  * @brief Write to the configuration register from the LM75BD
  *
