@@ -64,17 +64,12 @@ void osHandlerLM75BD(void) {
   /* Implement this function */ 
   thermal_mgr_event_t event;
   event.type = THERMAL_MGR_EVENT_OS;
-  error_code_t errCode;
-  LOG_IF_ERROR_CODE(thermalMgrSendEvent(&event));
+  thermalMgrSendEvent(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
-  if (pvParameters == NULL)
-  {
-    LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
-  }
-  else if (thermalMgrQueueHandle != NULL){
+ if (thermalMgrQueueHandle != NULL){
     lm75bd_config_t* config = (lm75bd_config_t *) pvParameters;
 
     while (1){
@@ -106,7 +101,6 @@ static void thermalMgr(void *pvParameters) {
               {
                 overTemperatureDetected();
               }
-              addTemperatureTelemetry(tempC);
             } else 
             {
               LOG_ERROR_CODE(err);
