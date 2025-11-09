@@ -16,8 +16,8 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
   if (config == NULL) return ERR_CODE_INVALID_ARG;
 
   RETURN_IF_ERROR_CODE(writeConfigLM75BD(config->devAddr, config->osFaultQueueSize, config->osPolarity,
-                                         config->osOperationMode, config->devOperationMode, config->hysteresis, config->overTemp));
-
+                                         config->osOperationMode, config->devOperationMode));
+  
   // Assume that the overtemperature and hysteresis thresholds are already set
   // Hysteresis: 75 degrees Celsius
   // Overtemperature: 80 degrees Celsius
@@ -26,18 +26,29 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function 
-  
-  It should read the temperature register from the sensor over I2C and convert the raw data to a float value in Celsius.
-  1. Use i2cSendTo to send the temperature register address (0x00) to the device.
-  2. Use i2cReadFrom to read 2 bytes of data from the device.
-  3. Convert the raw data to a float temperature value in Celsius using the formula provided in the LM75BD datasheet.
-  4. Store the result in the variable pointed to by temp.
-  5. Return appropriate error codes for any failures.
-  6. On success, return ERR_CODE_SUCCESS.
-  
-  */
-  
+   /* Implement this driver function */
+
+  if (temp == NULL) return ERR_CODE_INVALID_ARG;
+
+  error_code_t errCode;
+  uint8_t tempRegAddr = 0x00U; // Temperature register address
+  uint8_t tempData[2];
+
+  // Step 1: Send the temperature register address to the device
+  errCode = i2cSendTo(devAddr, &tempRegAddr, 1);
+  if (errCode != ERR_CODE_SUCCESS) return errCode;
+
+  // Step 2: Read 2 bytes of data from the device
+  errCode = i2cReceiveFrom(devAddr, tempData, sizeof(tempData));
+  if (errCode != ERR_CODE_SUCCESS) return errCode;
+
+  // Step 3: Convert the raw data to a float temperature value in Celsius
+  int16_t rawTemp = (tempData[0] << 8) | tempData[1];
+  rawTemp >>= 5;  // keep only top 11 bits
+
+  // Step 4: Convert to Celsius (signed conversion)
+  *temp = rawTemp * 0.125f;  // 0.125°C per bit
+
   return ERR_CODE_SUCCESS;
 }
 
