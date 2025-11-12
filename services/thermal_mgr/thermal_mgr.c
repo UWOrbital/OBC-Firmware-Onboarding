@@ -42,20 +42,61 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
-  /* Send an event to the thermal manager queue */
+  if(event == NULL) return ERR_CODE_INVALID_STATE;
+
+  if(thermalMgrQueueHandle == NULL) return ERR_CODE_QUEUE_FULL;
+
+  if (xQueueSend(thermalMgrQueueHandle, event, 0) != pdPASS) return ERR_CODE_QUEUE_FULL;
 
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
-  /* Implement this function */
+    /* Implement this function */
+    thermal_mgr_event_t event;
+    event.type = THERMAL_MGR_EVENT_OS;
+    thermalMgrSendEvent(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
-  /* Implement this task */
-  while (1) {
-    
-  }
+    if(pvParameters == NULL){
+      //Unable to read temp data without access to the sensor
+      LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
+      return;
+    }
+    if(thermalMgrQueueHandle == NULL){
+      //Queue was not succesfully created
+      LOG_ERROR_CODE(ERR_CODE_INVALID_QUEUE_MSG);
+      return;
+    }
+
+    lm75bd_config_t config = *(lm75bd_config_t *) pvParameters;
+    while (1) {
+        thermal_mgr_event_t event;
+        if(xQueueReceive(thermalMgrQueueHandle, &event, 0) == pdPASS){
+            if(event.type == THERMAL_MGR_EVENT_OS){
+              float tempC = 0;
+              error_code_t errCode = readTempLM75BD(config.devAddr, &tempC);
+              if(errCode == ERR_CODE_SUCCESS){
+                  if(tempC > config.hysteresisThresholdCelsius){
+                    safeOperatingConditions();
+                  }
+              } else{
+                  LOG_ERROR_CODE(errCode);
+              }
+            }
+
+            if(event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
+              float tempC = 0;
+              error_code_t errCode = readTempLM75BD(config.devAddr, &tempC);
+              if(errCode == ERR_CODE_SUCCESS){
+                  addTemperatureTelemetry(tempC);
+              } else{
+                  LOG_ERROR_CODE(errCode);
+              }
+            }
+        }
+    }
 }
 
 void addTemperatureTelemetry(float tempC) {
