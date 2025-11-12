@@ -30,8 +30,8 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     if (temp == NULL) return ERR_CODE_INVALID_ARG;
 
     error_code_t errCode;
-    u_int8_t tempRegAddr = 0x00U;
-    u_int8_t buff[2];
+    uint8_t tempRegAddr = 0x00U;
+    uint8_t buff[2];
 
     //Send address of temperature register to sensor
     errCode = i2cSendTo(devAddr, &tempRegAddr, 1);
@@ -42,7 +42,7 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     errCode = i2cReceiveFrom(devAddr, buff, 2);
     if(errCode != ERR_CODE_SUCCESS) return errCode;
 
-    u_int16_t tempNum = (buff[0] << 8) + buff[1];
+    uint16_t tempNum = (buff[0] << 8) + buff[1];
     tempNum >>= 5;//Remove the 5 trailing zeros
 
     if(tempNum & 0x400){
