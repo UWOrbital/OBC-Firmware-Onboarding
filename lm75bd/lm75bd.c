@@ -36,11 +36,11 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     //Send address of temperature register to sensor
     errCode = i2cSendTo(devAddr, &tempRegAddr, 1);
 
-    if(errCode != ERR_CODE_SUCCESS) return errCode;
+    RETURN_IF_ERROR_CODE(errCode);
 
     //buff[0] receives the MSB, buff[1] receives the LSB
     errCode = i2cReceiveFrom(devAddr, buff, 2);
-    if(errCode != ERR_CODE_SUCCESS) return errCode;
+    RETURN_IF_ERROR_CODE(errCode);
 
     uint16_t tempNum = (buff[0] << 8) + buff[1];
     tempNum >>= 5;//Remove the 5 trailing zeros
