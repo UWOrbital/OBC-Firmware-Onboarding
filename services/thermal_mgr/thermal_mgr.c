@@ -94,6 +94,10 @@ static void thermalMgr(void *pvParameters) {
         }
       }
     }
+    else{
+      //thermalMgrQueueHandle is NULL or pvParameters is NULL, should not happen
+      vTaskDelay(portMAX_DELAY);
+    }
   }
 }
 
