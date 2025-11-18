@@ -60,48 +60,40 @@ void osHandlerLM75BD(void) {
 }
 
 static void thermalMgr(void *pvParameters) {
-  if(pvParameters && thermalMgrQueueHandle != NULL){
-    lm75bd_config_t config = *(lm75bd_config_t *) pvParameters;
-    
-    while (1) {
+  while (1) {
+    if(pvParameters && thermalMgrQueueHandle != NULL){
+      lm75bd_config_t config = *(lm75bd_config_t *) pvParameters;
       thermal_mgr_event_t event;
       if(xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdPASS){
-          if(event.type == THERMAL_MGR_EVENT_OS){
-            float tempC = 0;
-            error_code_t errCode = readTempLM75BD(config.devAddr, &tempC);
-            if(errCode == ERR_CODE_SUCCESS){
-                if(tempC > config.hysteresisThresholdCelsius){
-                  overTemperatureDetected();
-                }
-                else{
-                  safeOperatingConditions();
-                }
-            } else{
-                LOG_ERROR_CODE(errCode);
-            }
+        if(event.type == THERMAL_MGR_EVENT_OS){
+          float tempC = 0;
+          error_code_t errCode = readTempLM75BD(config.devAddr, &tempC);
+          if(errCode == ERR_CODE_SUCCESS){
+              if(tempC > config.hysteresisThresholdCelsius){
+                overTemperatureDetected();
+              }
+              else{
+                safeOperatingConditions();
+              }
+          } else{
+              LOG_ERROR_CODE(errCode);
           }
+        }
 
-          else if(event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
-            float tempC = 0;
-            error_code_t errCode = readTempLM75BD(config.devAddr, &tempC);
-            if(errCode == ERR_CODE_SUCCESS){
-                addTemperatureTelemetry(tempC);
-            } else{
-                LOG_ERROR_CODE(errCode);
-            }
+        else if(event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
+          float tempC = 0;
+          error_code_t errCode = readTempLM75BD(config.devAddr, &tempC);
+          if(errCode == ERR_CODE_SUCCESS){
+              addTemperatureTelemetry(tempC);
+          } else{
+              LOG_ERROR_CODE(errCode);
           }
-          else{
-            LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
-          }
+        }
+        else{
+          LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
+        }
       }
     }
-  }
-  else if(pvParameters == NULL){
-    //Unable to read temp data without access to the sensor
-    LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
-  }else{
-    //Queue was not succesfully created
-    LOG_ERROR_CODE(ERR_CODE_INVALID_QUEUE_MSG);
   }
 }
 
