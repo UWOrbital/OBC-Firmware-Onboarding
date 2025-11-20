@@ -17,7 +17,7 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
   RETURN_IF_ERROR_CODE(writeConfigLM75BD(config->devAddr, config->osFaultQueueSize, config->osPolarity,
                                          config->osOperationMode, config->devOperationMode));
-  
+
   // Assume that the overtemperature and hysteresis thresholds are already set
   // Hysteresis: 75 degrees Celsius
   // Overtemperature: 80 degrees Celsius
@@ -36,11 +36,19 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   // Step 1: Send the temperature register address to the device
   errCode = i2cSendTo(devAddr, &tempRegAddr, 1);
-  if (errCode != ERR_CODE_SUCCESS) return errCode;
+
+  // Log error code if i2cSendTo fails
+  if (errCode != ERR_CODE_SUCCESS) {
+    LOG_ERROR("LM75BD: Failed to send temperature register address, error code: %d", errCode);
+    return errCode;
+  }
 
   // Step 2: Read 2 bytes of data from the device
   errCode = i2cReceiveFrom(devAddr, tempData, sizeof(tempData));
-  if (errCode != ERR_CODE_SUCCESS) return errCode;
+  if (errCode != ERR_CODE_SUCCESS) {
+    LOG_ERROR("LM75BD: Failed to read temperature data, error code: %d", errCode);
+    return errCode;
+  }
 
   // Step 3: Convert the raw data to a float temperature value in Celsius
   int16_t rawTemp = (tempData[0] << 8) | tempData[1];

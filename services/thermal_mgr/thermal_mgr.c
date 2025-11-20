@@ -44,18 +44,15 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
   if (event == NULL) return ERR_CODE_INVALID_ARG;
-
-  BaseType_t result = xQueueSend(thermalMgrQueueHandle, event, portMAX_DELAY);
-  if (result != pdPASS) {
-    return ERR_CODE_QUEUE_FULL;
-  }
+  if (thermalMgrQueueHandle == NULL) return ERR_CODE_INVALID_STATE;
+  if (xQueueSend(thermalMgrQueueHandle, event, 0) != pdPASS) return ERR_CODE_QUEUE_FULL;
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
   /* Function Implemented */
   thermal_mgr_event_t event;
-  event.type = THERMAL_MGR_EVENT_MEASURE_TEMP_CMD;
+  event.type = THERMAL_MGR_EVENT_OS;
   thermalMgrSendEvent(&event);
 }
 
@@ -64,22 +61,43 @@ static void thermalMgr(void *pvParameters) {
   lm75bd_config_t config = *(lm75bd_config_t *)pvParameters; /* Cast the parameter to the correct type */
   thermal_mgr_event_t event;
 
+  /* Do nothing if queue is NULL*/
+  if (thermalMgrQueueHandle == NULL) {
+    LOG_ERROR("Thermal Manager: Queue handle is NULL!");
+    vTaskDelete(NULL);
+  }
+
   while (1) {
     if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY) == pdPASS) {
-      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
-        /* Measure temperature and handle accordingly */
-        float tempC;
-        readTempLM75BD(config.devAddr, &tempC);
-        addTemperatureTelemetry(tempC);
-        if (tempC >= config.overTempThresholdCelsius) {
-          overTemperatureDetected();
-        } else if (tempC <= config.hysteresisThresholdCelsius) {
-          safeOperatingConditions();
-        }
+        switch (event.type) {
+          /* Measure temperature and handle accordingly */
+          case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD: {
+            float tempC;
+            if (readTempLM75BD(config.devAddr, &tempC) != ERR_CODE_SUCCESS) {
+              LOG_ERROR("Thermal Manager: Failed to read temperature from LM75BD"); 
+            } else {
+              addTemperatureTelemetry(tempC);
+            }
+            break;
+          }
+          
+          case THERMAL_MGR_EVENT_OS: {
+            float tempC;
+            if (readTempLM75BD(config.devAddr, &tempC) == ERR_CODE_SUCCESS) {
+              if (tempC >= config.hysteresisThresholdCelsius) {
+                overTemperatureDetected();
+              } else {
+                safeOperatingConditions();
+              }
+            } else {
+              LOG_ERROR("Thermal Manager: Failed to read temperature from LM75BD after OS interrupt");
+              break;
+            }
+          }
+          break;
+        } 
       }
     }
-  }
-}
 
 void addTemperatureTelemetry(float tempC) {
   printConsole("Temperature telemetry: %f deg C\n", tempC);
@@ -92,3 +110,4 @@ void overTemperatureDetected(void) {
 void safeOperatingConditions(void) { 
   printConsole("Returned to safe operating conditions!\n");
 }
+
