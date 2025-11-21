@@ -36,19 +36,13 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
 
   // Step 1: Send the temperature register address to the device
   errCode = i2cSendTo(devAddr, &tempRegAddr, 1);
-
   // Log error code if i2cSendTo fails
-  if (errCode != ERR_CODE_SUCCESS) {
-    LOG_ERROR("LM75BD: Failed to send temperature register address, error code: %d", errCode);
-    return errCode;
-  }
+  RETURN_IF_ERROR_CODE(errCode);
+
 
   // Step 2: Read 2 bytes of data from the device
   errCode = i2cReceiveFrom(devAddr, tempData, sizeof(tempData));
-  if (errCode != ERR_CODE_SUCCESS) {
-    LOG_ERROR("LM75BD: Failed to read temperature data, error code: %d", errCode);
-    return errCode;
-  }
+  RETURN_IF_ERROR_CODE(errCode);
 
   // Step 3: Convert the raw data to a float temperature value in Celsius
   int16_t rawTemp = (tempData[0] << 8) | tempData[1];

@@ -65,7 +65,7 @@ static void thermalMgr(void *pvParameters) {
   /* Do nothing if queue is NULL*/
   if (thermalMgrQueueHandle == NULL) {
     LOG_ERROR_CODE(ERR_CODE_INVALID_STATE);
-    return;
+    vTaskDelete(NULL);
   }
 
   while (1) {
