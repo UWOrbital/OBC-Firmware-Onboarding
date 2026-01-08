@@ -26,7 +26,6 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
   error_code_t errCode;
 
   //checks to ensure temp is not NULL
@@ -34,24 +33,31 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
     return ERR_CODE_INVALID_ARG;
   }
 
-  //sets the pointer register
-  uint8_t ptrReg = 0x00;
+  //sets the pointer register to send data to
+  const uint8_t ptrReg = 0x00;
   uint8_t sendBuf[1] = {ptrReg};
   RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, sendBuf, 1));
 
-  //reads data
-  uint8_t buf[2] = {0};
-  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, buf, 2));
+  //reads data and stores in buffer
+  uint8_t receiveBuf[2] = {0};
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, receiveBuf, 2));
 
-  uint16_t tempData = ((buf[0] << 8) | buf[1]) >> 5;
-  uint16_t tempSign = 0x400;
+  //combines both bytes of data, and bitshift it to remove the irrelevant bits
+  const uint8_t numIgnoredBits = 5;
+  uint16_t tempData = ((receiveBuf[0] << 8) | receiveBuf[1]) >> numIgnoredBits;
+
+  //checks if temperature is +/- and calculates temperature
+  const uint16_t tempSign = 0x400;
+  const uint16_t maskTempSign = 0x7FF;
+  const float degCPerBit = 0.125f;
   if ((tempSign & tempData) == tempSign){
-      uint16_t mask = 0x7FF;
-      *temp = -(((~tempData) + 1) & mask) *0.125;
+    //take two's complement and mask sign before converting to temperature
+    *temp = -(((~tempData) + 1) & maskTempSign) * degCPerBit;
   } 
-  else
-    *temp = ((tempData) * 0.125);
-
+  else{
+    *temp = tempData * degCPerBit;
+  }
+    
   return ERR_CODE_SUCCESS;
 }
 

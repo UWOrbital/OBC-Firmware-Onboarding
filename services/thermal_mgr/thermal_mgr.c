@@ -2,6 +2,7 @@
 #include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
+#include "logging.h"
 
 #include <FreeRTOS.h>
 #include <os_task.h>
@@ -42,23 +43,54 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
-  /* Send an event to the thermal manager queue */
   xQueueSend(thermalMgrQueueHandle, event, 0);
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
-  /* Implement this function */
+  //sends event to thermal manager that there was an interrupt
+  thermal_mgr_event_t osEvent = {.type = OS_HANDLER_INTERRUPT};
+  xQueueSendFromISR(thermalMgrQueueHandle, &osEvent, 0);
 }
+
+/**
+ * @brief Thermal manager RTOS task
+ *
+ * @param pvParameters - Task argument expected to point to an lm75bd_config_t
+ * @return void
+ */
 static void thermalMgr(void *pvParameters) {
-  /* Implement this task */
+  error_code_t errCode;
+
+  //checks to ensure pvParameters is not NULL
+  if (pvParameters == NULL){
+    return;
+  }
+
   thermal_mgr_event_t event;
+  //copies the configuration
   lm75bd_config_t config = *(lm75bd_config_t *) pvParameters;
+
+  //while loop that runs indefintely checking for events
   while (1) {
+    //checks to see if an event was received
     if (xQueueReceive(thermalMgrQueueHandle, &event ,portMAX_DELAY) == pdPASS){
+      //reads temperature
       if(event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
         float temp = 0.0f;
-        readTempLM75BD(config.devAddr, &temp);
+        LOG_IF_ERROR_CODE(readTempLM75BD(config.devAddr, &temp));
+        addTemperatureTelemetry(temp);
+      }
+      //reads temperature and checks if overtemperature or safe
+      else if(event.type == OS_HANDLER_INTERRUPT){
+        float temp = 0.0f;
+        LOG_IF_ERROR_CODE(readTempLM75BD(config.devAddr, &temp));
+        if(temp >= config.overTempThresholdCelsius){
+          overTemperatureDetected();
+        } 
+        else if (temp <= config.hysteresisThresholdCelsius){
+          safeOperatingConditions();
+        }
       }
     }
   }
