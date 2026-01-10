@@ -43,14 +43,26 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
-  xQueueSend(thermalMgrQueueHandle, event, 0);
-  return ERR_CODE_SUCCESS;
+  //checks to ensure event is not NULL
+  if (event == NULL){
+    return ERR_CODE_INVALID_ARG;
+  }
+
+  if(xQueueSend(thermalMgrQueueHandle, event, 0) == errQUEUE_FULL){
+    return errQUEUE_FULL;
+  } else{
+    return ERR_CODE_SUCCESS;
+  }
 }
 
 void osHandlerLM75BD(void) {
   //sends event to thermal manager that there was an interrupt
   thermal_mgr_event_t osEvent = {.type = OS_HANDLER_INTERRUPT};
-  xQueueSendFromISR(thermalMgrQueueHandle, &osEvent, 0);
+
+  BaseType_t xHigherPriorityTaskWoken;
+  xHigherPriorityTaskWoken = pdFALSE;
+  xQueueSendFromISR(thermalMgrQueueHandle, &osEvent, &xHigherPriorityTaskWoken);
+  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 /**
@@ -79,17 +91,21 @@ static void thermalMgr(void *pvParameters) {
       if(event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD){
         float temp = 0.0f;
         LOG_IF_ERROR_CODE(readTempLM75BD(config.devAddr, &temp));
-        addTemperatureTelemetry(temp);
+        if (errCode == ERR_CODE_SUCCESS){
+          addTemperatureTelemetry(temp);
+        }
       }
       //reads temperature and checks if overtemperature or safe
       else if(event.type == OS_HANDLER_INTERRUPT){
-        float temp = 0.0f;
-        LOG_IF_ERROR_CODE(readTempLM75BD(config.devAddr, &temp));
-        if(temp >= config.overTempThresholdCelsius){
-          overTemperatureDetected();
-        } 
-        else if (temp <= config.hysteresisThresholdCelsius){
-          safeOperatingConditions();
+          float temp = 0.0f;
+          LOG_IF_ERROR_CODE(readTempLM75BD(config.devAddr, &temp));
+          if (errCode == ERR_CODE_SUCCESS){
+          if(temp >= config.overTempThresholdCelsius){
+            overTemperatureDetected();
+          } 
+          else if (temp <= config.hysteresisThresholdCelsius){
+            safeOperatingConditions();
+          }
         }
       }
     }
