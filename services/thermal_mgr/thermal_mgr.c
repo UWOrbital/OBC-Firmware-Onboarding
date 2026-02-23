@@ -93,31 +93,42 @@ static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   error_code_t errCode;
 
-  lm75bd_config_t *config = (lm75bd_config_t *)pvParameters;
+  if( pvParameters == NULL) { // not sure exactly what to do in this case
+    LOG_ERROR_CODE(ERR_CODE_INVALID_ARG); // or if i am supposed to check this
+    vTaskDelete(NULL);
+  }
+
+  lm75bd_config_t config = *(lm75bd_config_t *) pvParameters;
 
   thermal_mgr_event_t thermalEvent;
   
   while (1) {
     if(xQueueReceive(thermalMgrQueueHandle, &thermalEvent, portMAX_DELAY) == pdPASS)  {
 
+      float currentTemp;
+
       if(thermalEvent.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
-
-        float currentTemp;
-        LOG_IF_ERROR_CODE(readTempLM75BD(config->devAddr, &currentTemp));
-
-        addTemperatureTelemetry(currentTemp);
-
+        errCode = readTempLM75BD(config.devAddr, &currentTemp);
+        
+        if(errCode != ERR_CODE_SUCCESS) {
+          LOG_ERROR_CODE(errCode);
+        } else {
+          addTemperatureTelemetry(currentTemp);
+        }
       }
 
       else if(thermalEvent.type == THERMAL_MGR_EVENT_OS_INTERRUPT) {
+        errCode = readTempLM75BD(config.devAddr, &currentTemp);
 
-        float currentTemp;
-        LOG_IF_ERROR_CODE(readTempLM75BD(config->devAddr, &currentTemp));
+        if(errCode != ERR_CODE_SUCCESS) {
+          LOG_ERROR_CODE(errCode);
 
-        if(currentTemp > config->hysteresisThresholdCelsius) {
-          overTemperatureDetected();
         } else {
-          safeOperatingConditions();
+          if(currentTemp > config.hysteresisThresholdCelsius) {
+            overTemperatureDetected();
+          } else {
+            safeOperatingConditions();
+          }
         }
       }
 
