@@ -6,6 +6,7 @@
 #include <FreeRTOS.h>
 #include <os_task.h>
 #include <os_queue.h>
+#include <stdbool.h>
 
 #include <string.h>
 
@@ -43,18 +44,41 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
-
+  xQueueSend(thermalMgrQueueHandle, event, 10);
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
+  const uint8_t addr = LM75BD_OBC_I2C_ADDR;
+  float t;
+  readTempLM75BD(addr, &t);
+  if (t <= 75) {
+    overTemperatureDetected();
+  } 
+  else if (t >= 80) {
+    safeOperatingConditions();
+  }
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
   while (1) {
-    
+#ifndef PORTMACRO_H
+#error BaseType_t not defined
+#endif
+    thermal_mgr_event_t event;
+
+    const BaseType_t xReturned = xQueueReceive( thermalMgrQueueHandle, &event, 0);
+    const lm75bd_config_t config = *(lm75bd_config_t *)pvParameters;
+
+    if (xReturned == pdPASS) {
+      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+        float t;
+        readTempLM75BD(config.devAddr, &t);
+        addTemperatureTelemetry(t);
+      }
+    }
   }
 }
 

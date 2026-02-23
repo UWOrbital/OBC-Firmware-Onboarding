@@ -3,12 +3,15 @@
 #include "errors.h"
 #include "logging.h"
 
+#include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
+#include <stdlib.h>
 
 /* LM75BD Registers (p.8) */
-#define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
+#define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */                                      
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
@@ -27,7 +30,28 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  error_code_t errCode;
+
+  uint8_t ptrVal = 0;
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &ptrVal, 1));
   
+  uint8_t buf[2];
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, &buf, 2));  
+  
+  uint16_t t = (buf[0] << 8 | buf[1]) >> 5;
+  
+  switch(t & (1<<10)) {
+    case 0:
+      *temp = t * 0.125;
+      break;
+    default: {
+      uint16_t t_s2c = ~(t|0xF800) + 1;
+      *temp = (-1) * t_s2c * 0.125;
+      break;
+    }
+  };
+
+
   return ERR_CODE_SUCCESS;
 }
 
