@@ -1,15 +1,15 @@
 #include "thermal_mgr.h"
-
-#include <FreeRTOS.h>
-#include <os_queue.h>
-#include <os_task.h>
-#include <stdbool.h>
-#include <string.h>
-
-#include "console.h"
 #include "errors.h"
 #include "lm75bd.h"
+#include "console.h"
 #include "logging.h"
+
+#include <FreeRTOS.h>
+#include <os_task.h>
+#include <os_queue.h>
+#include <stdbool.h>
+
+#include <string.h>
 
 #define THERMAL_MGR_STACK_SIZE 256U
 
@@ -24,9 +24,9 @@ static QueueHandle_t thermalMgrQueueHandle;
 static StaticQueue_t thermalMgrQueueBuffer;
 static uint8_t thermalMgrQueueStorageArea[THERMAL_MGR_QUEUE_LENGTH * THERMAL_MGR_QUEUE_ITEM_SIZE];
 
-static void thermalMgr(void* pvParameters);
+static void thermalMgr(void *pvParameters);
 
-void initThermalSystemManager(lm75bd_config_t* config) {
+void initThermalSystemManager(lm75bd_config_t *config) {
     memset(&thermalMgrTaskBuffer, 0, sizeof(thermalMgrTaskBuffer));
     memset(thermalMgrTaskStack, 0, sizeof(thermalMgrTaskStack));
 
@@ -40,17 +40,22 @@ void initThermalSystemManager(lm75bd_config_t* config) {
     thermalMgrQueueHandle = xQueueCreateStatic(
         THERMAL_MGR_QUEUE_LENGTH, THERMAL_MGR_QUEUE_ITEM_SIZE,
         thermalMgrQueueStorageArea, &thermalMgrQueueBuffer);
+
 }
 
-error_code_t thermalMgrSendEvent(thermal_mgr_event_t* event) {
-    if (!event)
+error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
+  /* Send an event to the thermal manager queue */
+    if (!event) {
         return ERR_CODE_INVALID_ARG;
+    }
 
-    if (!thermalMgrQueueHandle)
+    if (!thermalMgrQueueHandle) {
         return ERR_CODE_INVALID_QUEUE_MSG;
+    }
 
-    if (xQueueSend(thermalMgrQueueHandle, event, 10) != pdPASS)
+    if (xQueueSend(thermalMgrQueueHandle, event, 10) != pdPASS) {
         return ERR_CODE_QUEUE_FULL;
+    }
 
     return ERR_CODE_SUCCESS;
 }
@@ -63,7 +68,7 @@ void osHandlerLM75BD(void) {
     LOG_IF_ERROR_CODE(thermalMgrSendEvent(&e));
 }
 
-static void thermalMgr(void* pvParameters) {
+static void thermalMgr(void *pvParameters) {
     /* Implement this task */
     const lm75bd_config_t config = *(lm75bd_config_t*)pvParameters;
 
@@ -96,11 +101,13 @@ static void thermalMgr(void* pvParameters) {
                 error_code_t errCode;
                 LOG_IF_ERROR_CODE(readTempLM75BD(config.devAddr, &t));
 
-                if (t >= config.overTempThresholdCelsius) {
-                    overTemperatureDetected();
-                }
-                else if (t <= config.hysteresisThresholdCelsius) {
-                    safeOperatingConditions;
+                if (errCode == ERR_CODE_SUCCESS) {
+                    if (t >= config.overTempThresholdCelsius) {
+                        overTemperatureDetected();
+                    }
+                    else if (t <= config.hysteresisThresholdCelsius) {
+                        safeOperatingConditions();
+                    }
                 }
                 break;
             }
@@ -112,8 +119,8 @@ static void thermalMgr(void* pvParameters) {
 
 void addTemperatureTelemetry(float tempC) {
     printConsole("Temperature telemetry: %f deg C\n", tempC);
-
 }
+
 void overTemperatureDetected(void) {
     printConsole("Over temperature detected!\n");
 }
