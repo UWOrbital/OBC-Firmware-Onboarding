@@ -26,8 +26,36 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
+
+  if (devAddr!=LM75BD_OBC_I2C_ADDR||temp==NULL){
+    //printConsole("invalid arg!");
+    return ERR_CODE_INVALID_ARG;
+  }
+
+
   /* Implement this driver function */
-  
+  uint8_t buffer_send[1] = {0};
+  uint8_t buffer_receive[2] = {0,0};
+
+  i2cSendTo(devAddr, buffer_send, 1);
+  i2cReceiveFrom(devAddr, buffer_receive, 2);
+
+  uint16_t raw_temp_binary=buffer_receive[0];
+  raw_temp_binary<<=3;
+  raw_temp_binary+=buffer_receive[1];
+  uint16_t MSbit = 1;
+  MSbit <<=10;
+  uint16_t mask= 2047;
+  if ((raw_temp_binary&MSbit)==MSbit){
+    raw_temp_binary^=mask;
+    raw_temp_binary+=1;
+    *temp = -(.125)*(raw_temp_binary);
+  } else{
+    *temp = (.125)*(raw_temp_binary);
+  }
+
+  //printConsole("Success!");
+
   return ERR_CODE_SUCCESS;
 }
 
