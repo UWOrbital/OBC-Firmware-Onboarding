@@ -40,12 +40,13 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   i2cSendTo(devAddr, buffer_send, 1);
   i2cReceiveFrom(devAddr, buffer_receive, 2);
 
-  uint16_t raw_temp_binary=buffer_receive[0];
+  uint16_t raw_temp_binary=((buffer_receive[0]<<3)+buffer_receive[1]);
+  /*
   raw_temp_binary<<=3;
   raw_temp_binary+=buffer_receive[1];
-  uint16_t MSbit = 1;
-  MSbit <<=10;
-  uint16_t mask= 2047;
+  */
+  uint16_t MSbit = (1<<10);
+  uint16_t mask= 0b0000011111111111;
   if ((raw_temp_binary&MSbit)==MSbit){
     raw_temp_binary^=mask;
     raw_temp_binary+=1;

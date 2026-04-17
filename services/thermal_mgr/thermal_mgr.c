@@ -48,7 +48,14 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
     return ERR_CODE_INVALID_ARG;
   }
 
-  xQueueSend(thermalMgrQueueHandle, &event, portMAX_DELAY);
+  if (thermalMgrQueueHandle==NULL){
+    return ERR_CODE_INVALID_QUEUE_MSG;  
+  }
+
+  
+  if ((xQueueSend(thermalMgrQueueHandle, &event, 1))==errQUEUE_FULL){
+    return ERR_CODE_QUEUE_FULL;
+  }
 
 
   return ERR_CODE_SUCCESS;
@@ -74,7 +81,11 @@ static void thermalMgr(void *pvParameters) {
 
     if (event_result.type==THERMAL_MGR_EVENT_MEASURE_TEMP_CMD||event_result.type==THERMAL_MGR_EVENT_MEASURE_EVAL_TEMP_CMD){
       float temperature;
-      readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temperature);
+      error_code_t read_Temp_Result = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temperature);
+      if (read_Temp_Result!=ERR_CODE_SUCCESS){
+        printConsole(read_Temp_Result);
+        return;
+      }
       addTemperatureTelemetry(temperature);
       if (event_result.type==THERMAL_MGR_EVENT_MEASURE_EVAL_TEMP_CMD){
         if (temperature>75.0){
