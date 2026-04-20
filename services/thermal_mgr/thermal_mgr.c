@@ -83,7 +83,10 @@ static void thermalMgr(void *pvParameters) {
       float temperature;
       error_code_t read_Temp_Result = readTempLM75BD(LM75BD_OBC_I2C_ADDR, &temperature);
       if (read_Temp_Result!=ERR_CODE_SUCCESS){
-        printConsole(read_Temp_Result);
+        char char_Temp_Result[1];
+
+        sprintf(char_Temp_Result, "%c", read_Temp_Result);
+        printConsole(char_Temp_Result);
         continue;
       }
       addTemperatureTelemetry(temperature);
