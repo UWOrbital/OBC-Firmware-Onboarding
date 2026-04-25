@@ -56,6 +56,10 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
+  thermal_mgr_event_t event = {.type = THERMAL_MGR_EVENT_OS_INTERRUPT};
+
+  // ISR-safe: enqueue event and defer any I2C work to the thermal manager task.
+  (void)xQueueSendFromISR(thermalMgrQueueHandle, &event, NULL);
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -71,6 +75,17 @@ static void thermalMgr(void *pvParameters) {
         float temp;
         if (readTempLM75BD(config.devAddr, &temp) == ERR_CODE_SUCCESS) {
           addTemperatureTelemetry(temp);
+        }
+      } else if (event.type == THERMAL_MGR_EVENT_OS_INTERRUPT) {
+        float temp;
+
+        // Reading temperature also resets the LM75BD OS output in interrupt mode.
+        if (readTempLM75BD(config.devAddr, &temp) == ERR_CODE_SUCCESS) {
+          if (temp > config.hysteresisThresholdCelsius) {
+            overTemperatureDetected();
+          } else {
+            safeOperatingConditions();
+          }
         }
       }
     }
