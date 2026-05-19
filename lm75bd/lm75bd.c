@@ -1,22 +1,24 @@
 #include "lm75bd.h"
-#include "i2c_io.h"
-#include "errors.h"
-#include "logging.h"
 
+#include <math.h>
 #include <stdint.h>
 #include <string.h>
-#include <math.h>
+
+#include "errors.h"
+#include "i2c_io.h"
+#include "logging.h"
 
 /* LM75BD Registers (p.8) */
-#define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
+#define LM75BD_REG_CONF 0x01U /* Configuration Register (R/W) */
 
-error_code_t lm75bdInit(lm75bd_config_t *config) {
+error_code_t lm75bdInit(lm75bd_config_t* config) {
   error_code_t errCode;
 
   if (config == NULL) return ERR_CODE_INVALID_ARG;
 
-  RETURN_IF_ERROR_CODE(writeConfigLM75BD(config->devAddr, config->osFaultQueueSize, config->osPolarity,
-                                         config->osOperationMode, config->devOperationMode));
+  RETURN_IF_ERROR_CODE(writeConfigLM75BD(
+      config->devAddr, config->osFaultQueueSize, config->osPolarity,
+      config->osOperationMode, config->devOperationMode));
 
   // Assume that the overtemperature and hysteresis thresholds are already set
   // Hysteresis: 75 degrees Celsius
@@ -25,15 +27,36 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
   return ERR_CODE_SUCCESS;
 }
 
-error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
+error_code_t readTempLM75BD(uint8_t devAddr, float* temp) {
   /* Implement this driver function */
-  
+
+  // select pointer register  (temperature)
+  uint8_t select_temp_reg = 0b00000000;
+  i2cSendTo(devAddr, &select_temp_reg, 1);
+  uint8_t temperature_data[2] = {0, 0};
+  i2cReceiveFrom(devAddr, temperature_data, 2);
+
+  if (temperature_data[0] >> 7 == 0) {  // positive case
+    *temp = temperature_data[0] * (1 << 3);
+    temperature_data[1] = temperature_data[1] >> 5;
+    *temp += temperature_data[1];
+  } else {  // negative case
+    temperature_data[0] = ~temperature_data[0];
+    temperature_data[1] = ~temperature_data[1];
+    temperature_data[1] = temperature_data[1] >> 5;
+    temperature_data[1]++;
+    *temp = -(temperature_data[0] * (1 << 3) + temperature_data[1]);
+  }
+
+  *temp *= LM75BD_TEMP_RESOLUTION;
+
   return ERR_CODE_SUCCESS;
 }
 
 #define CONF_WRITE_BUFF_SIZE 2U
-error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_t osPolarity,
-                                   uint8_t osOperationMode, uint8_t devOperationMode) {
+error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize,
+                               uint8_t osPolarity, uint8_t osOperationMode,
+                               uint8_t devOperationMode) {
   error_code_t errCode;
 
   // Stores the register address and data to be written
