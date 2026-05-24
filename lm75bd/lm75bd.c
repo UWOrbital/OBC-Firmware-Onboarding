@@ -30,27 +30,38 @@ error_code_t lm75bdInit(lm75bd_config_t* config) {
 error_code_t readTempLM75BD(uint8_t devAddr, float* temp) {
   /* Implement this driver function */
 
-  // select pointer register  (temperature)
-  uint8_t select_temp_reg = 0b00000000;
-  i2cSendTo(devAddr, &select_temp_reg, 1);
-  uint8_t temperature_data[2] = {0, 0};
-  i2cReceiveFrom(devAddr, temperature_data, 2);
-
-  if (temperature_data[0] >> 7 == 0) {  // positive case
-    *temp = temperature_data[0] * (1 << 3);
-    temperature_data[1] = temperature_data[1] >> 5;
-    *temp += temperature_data[1];
-  } else {  // negative case
-    temperature_data[0] = ~temperature_data[0];
-    temperature_data[1] = ~temperature_data[1];
-    temperature_data[1] = temperature_data[1] >> 5;
-    temperature_data[1]++;
-    *temp = -(temperature_data[0] * (1 << 3) + temperature_data[1]);
+  if (temp == NULL) { // check if temp is NULL
+    return ERR_CODE_INVALID_ARG;
   }
 
-  *temp *= LM75BD_TEMP_RESOLUTION;
+  // select pointer register  (temperature)
+  uint8_t select_temp_reg = 0b00000000;
+  error_code_t send_outcome = i2cSendTo(devAddr, &select_temp_reg, 1);
+  if ( send_outcome == ERR_CODE_SUCCESS) {
+    uint8_t temperature_data[2] = {0, 0};
+    error_code_t receive_outcome = i2cReceiveFrom(devAddr, temperature_data, 2);
+    if (receive_outcome == ERR_CODE_SUCCESS) {
+      if (temperature_data[0] >> 7 == 0) {  // positive case
+        *temp = temperature_data[0] * (1 << 3);
+        temperature_data[1] = temperature_data[1] >> 5;
+        *temp += temperature_data[1];
+      } else {  // negative case
+        temperature_data[0] = ~temperature_data[0];
+        temperature_data[1] = ~temperature_data[1];
+        temperature_data[1] = temperature_data[1] >> 5;
+        temperature_data[1]++;
+        *temp = -(temperature_data[0] * (1 << 3) + temperature_data[1]);
+      }
 
-  return ERR_CODE_SUCCESS;
+      *temp *= LM75BD_TEMP_RESOLUTION;
+
+      return ERR_CODE_SUCCESS;
+    } else { // first call suceeded but second failed, probably invalid state
+      return ERR_CODE_INVALID_STATE;
+    }
+  } else { // relay error
+    return send_outcome;
+  }
 }
 
 #define CONF_WRITE_BUFF_SIZE 2U
