@@ -5,7 +5,8 @@
 #include <stdint.h>
 
 /* LM75BD I2C Device Address */
-#define LM75BD_OBC_I2C_ADDR /* Define the address here */
+// 1001111 in hex is 4F (b/c first 4 are 1001 and rest are vcc, which is 1)
+#define LM75BD_OBC_I2C_ADDR 0x4F/* Define the address here */
 
 /* LM75BD Configuration Values */
 #define LM75BD_DEV_OP_MODE_NORMAL 0x00U
