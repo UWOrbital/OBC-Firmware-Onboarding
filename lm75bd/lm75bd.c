@@ -27,16 +27,18 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
+  error_code_t errCode;
+  if (temp == NULL) return ERR_CODE_INVALID_ARG;
   // need to access pointer register 000000 (00h)(temp register)
   // 4 bytes = 16 bits
   //uint8_t used b/c I2C works in 8 bit sequences
-  uint8_t i2cBuffer[2];
+  uint8_t i2cBuffer[2] = {0};
   uint8_t pointerBuf = 0; // this should tell the pointer register to send from temperature register
   // tell the slave sensor via i2c you want to get data (idk how many bytes are needed for i2c handshake)
-  i2cSendTo(devAddr, &pointerBuf, 1);
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &pointerBuf, 1));
 
   //should read the 2 bytes (16 bits) form the temperature register, and ignore the last 5 (this function handles stop condition)
-  i2cReceiveFrom(devAddr, i2cBuffer, 2);
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, i2cBuffer, 2));
   // now i2cBuffer[0] has first 8 bits, and [1] has last 8 bits
   // in a uint16_t, shift the high byte up by 8 bits since its the first 8 bits and attach the last 8 with bitwise "or"
   uint16_t temperature_binary = i2cBuffer[0] << 8 | i2cBuffer[1];
