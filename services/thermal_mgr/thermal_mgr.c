@@ -51,9 +51,10 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 void osHandlerLM75BD(void) {
   /* Implement this function */
   thermal_mgr_event_t OSEvent;
-  OSEvent.type = THERMAL_MGR_EVENT_OS_INTERRUPT;
-  BaseType_t higherPriorityTaskWoken = pdFALSE;
+  OSEvent.type = THERMAL_MGR_EVENT_OS_INTERRUPT; // set event type to the new one created for the interrupt
+  BaseType_t higherPriorityTaskWoken = pdFALSE; // nothing more important was woken by default
 
+  // send this interrupt to the front of the queue since it's high-priority
   BaseType_t interruptSent = xQueueSendToFrontFromISR(thermalMgrQueueHandle, &OSEvent, &higherPriorityTaskWoken);
 }
 
@@ -74,11 +75,12 @@ static void thermalMgr(void *pvParameters) {
           addTemperatureTelemetry(temp);
         }
       } else if (receivedFromQueue.type == THERMAL_MGR_EVENT_OS_INTERRUPT) {
+        // similar flow to the regular measurement, but checks for overtemperature instead of just printing telemetry data
         float temp = 0.0f;
         error_code_t err = readTempLM75BD(config.devAddr, &temp);
         
         if (err == ERR_CODE_SUCCESS) {
-          if (temp > config.hysteresisThresholdCelsius) {
+          if (temp > config.hysteresisThresholdCelsius) { 
             overTemperatureDetected();
           } else {
             safeOperatingConditions();
