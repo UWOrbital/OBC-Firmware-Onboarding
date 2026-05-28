@@ -43,6 +43,7 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
+  BaseType_t sent = xQueueSend(thermalMgrQueueHandle, event, 10);
 
   return ERR_CODE_SUCCESS;
 }
@@ -52,9 +53,22 @@ void osHandlerLM75BD(void) {
 }
 
 static void thermalMgr(void *pvParameters) {
-  /* Implement this task */
+  lm75bd_config_t config = *(lm75bd_config_t *) pvParameters; // create a copy of incoming parameters
+
   while (1) {
-    
+    thermal_mgr_event_t receivedFromQueue;
+    BaseType_t received = xQueueReceive(thermalMgrQueueHandle, &receivedFromQueue, 10); // receieve from queue
+    // NOTE: WHAT SHOULD THE # OF TICKS BE? double check w admin before submit
+
+    if (received == pdPASS) {
+      if (receivedFromQueue.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+        float temp = 0.0f;
+        readTempLM75BD(config.devAddr, &temp);
+        addTemperatureTelemetry(temp);
+      }
+
+
+    }
   }
 }
 
