@@ -89,9 +89,11 @@ static void thermalMgr(void *pvParameters) {
   if (pvParameters == NULL) {
     LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
     vTaskDelete(NULL); // end the task entirely if the parameters don't come in correctly
+    return;
   }
   
   lm75bd_config_t config = *(lm75bd_config_t *) pvParameters; // create a copy of incoming parameters
+  error_code_t errCode;
 
   while (1) {
     thermal_mgr_event_t receivedFromQueue;
@@ -101,26 +103,22 @@ static void thermalMgr(void *pvParameters) {
     if (received == pdPASS) {
       if (receivedFromQueue.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
         float temp = 0.0f;
-        error_code_t err = readTempLM75BD(config.devAddr, &temp);
-        if (err == ERR_CODE_SUCCESS) {
+        LOG_IF_ERROR_CODE(readTempLM75BD(config.devAddr, &temp));
+        if (errCode == ERR_CODE_SUCCESS) {
           addTemperatureTelemetry(temp);
-        } else {
-          LOG_ERROR_CODE(err);
         }
       } else if (receivedFromQueue.type == THERMAL_MGR_EVENT_OS_INTERRUPT) {
         // similar flow to the regular measurement, but checks for overtemperature instead of just printing telemetry data
         float temp = 0.0f;
-        error_code_t err = readTempLM75BD(config.devAddr, &temp);
-        
-        if (err == ERR_CODE_SUCCESS) {
+        LOG_IF_ERROR_CODE(readTempLM75BD(config.devAddr, &temp));  
+        if (errCode == ERR_CODE_SUCCESS) {      
           if (temp > config.hysteresisThresholdCelsius) { 
             overTemperatureDetected();
           } else {
             safeOperatingConditions();
           }
-        } else {
-          LOG_ERROR_CODE(err);
         }
+        
       } else {
         LOG_ERROR_CODE(ERR_CODE_INVALID_STATE);
       }

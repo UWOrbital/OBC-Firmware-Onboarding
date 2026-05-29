@@ -36,15 +36,9 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   uint8_t reg = LM75BD_REG_TEMP;
   uint8_t buf[2U] = {0};
 
-  errCode = i2cSendTo(LM75BD_OBC_I2C_ADDR, &reg, 1U); // specify reading from temperature register 
-  if (errCode != ERR_CODE_SUCCESS) {
-    return errCode;
-  }
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &reg, 1U)); // specify reading from temperature register 
 
-  errCode = i2cReceiveFrom(LM75BD_OBC_I2C_ADDR, buf, 2U); // recieve bytes from temperature register and store in buf
-  if (errCode != ERR_CODE_SUCCESS) {
-    return errCode;
-  }
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, buf, 2U)); // recieve bytes from temperature register and store in buf
 
   int16_t tempConv = (int16_t)((buf[0] << 8) | buf[1]); // 'glue' raw bytes together from buffer
   tempConv = tempConv >> 5; // remove 5 useless bits at the end of incoming bytes
