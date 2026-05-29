@@ -46,7 +46,9 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
   if (event == NULL) {
     return ERR_CODE_INVALID_ARG;
-  } else if (thermalMgrQueueHandle == NULL) { // if queue handler does not exist, exit immediately
+  }
+  
+  if (thermalMgrQueueHandle == NULL) { // if queue handler does not exist, exit immediately
     return ERR_CODE_INVALID_STATE;
   }
 
