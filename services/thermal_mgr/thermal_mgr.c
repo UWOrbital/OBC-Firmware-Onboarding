@@ -2,6 +2,7 @@
 #include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
+#include "logging.h"
 
 #include <FreeRTOS.h>
 #include <os_task.h>
@@ -43,7 +44,35 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
+  if (event == NULL) {
+    return ERR_CODE_INVALID_ARG;
+  } else if (thermalMgrQueueHandle == NULL) { // if queue handler does not exist, exit immediately
+    return ERR_CODE_INVALID_STATE;
+  }
+
   BaseType_t sent = xQueueSend(thermalMgrQueueHandle, event, 10);
+
+  if (sent != pdPASS) {
+    return ERR_CODE_QUEUE_FULL;
+  }
+
+  return ERR_CODE_SUCCESS;
+}
+
+error_code_t thermalMgrSendEventFromISR(thermal_mgr_event_t *event) {
+  if (event == NULL) {
+    return ERR_CODE_INVALID_ARG;
+  } else if (thermalMgrQueueHandle == NULL) { // if queue handler does not exist, exit immediately
+    return ERR_CODE_INVALID_STATE;
+  }
+
+  BaseType_t higherPriorityTaskWoken = pdFALSE;
+
+  BaseType_t sent = xQueueSendToFrontFromISR(thermalMgrQueueHandle, event, &higherPriorityTaskWoken);
+
+  if (sent != pdPASS) {
+    return ERR_CODE_QUEUE_FULL;
+  }
 
   return ERR_CODE_SUCCESS;
 }
@@ -52,13 +81,16 @@ void osHandlerLM75BD(void) {
   /* Implement this function */
   thermal_mgr_event_t OSEvent;
   OSEvent.type = THERMAL_MGR_EVENT_OS_INTERRUPT; // set event type to the new one created for the interrupt
-  BaseType_t higherPriorityTaskWoken = pdFALSE; // nothing more important was woken by default
-
-  // send this interrupt to the front of the queue since it's high-priority
-  BaseType_t interruptSent = xQueueSendToFrontFromISR(thermalMgrQueueHandle, &OSEvent, &higherPriorityTaskWoken);
+  
+  (void)thermalMgrSendEventFromISR(&OSEvent);
 }
 
 static void thermalMgr(void *pvParameters) {
+  if (pvParameters == NULL) {
+    LOG_ERROR_CODE(ERR_CODE_INVALID_ARG);
+    vTaskDelete(NULL); // end the task entirely if the parameters don't come in correctly
+  }
+  
   lm75bd_config_t config = *(lm75bd_config_t *) pvParameters; // create a copy of incoming parameters
 
   while (1) {
@@ -70,9 +102,10 @@ static void thermalMgr(void *pvParameters) {
       if (receivedFromQueue.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
         float temp = 0.0f;
         error_code_t err = readTempLM75BD(config.devAddr, &temp);
-
         if (err == ERR_CODE_SUCCESS) {
           addTemperatureTelemetry(temp);
+        } else {
+          LOG_ERROR_CODE(err);
         }
       } else if (receivedFromQueue.type == THERMAL_MGR_EVENT_OS_INTERRUPT) {
         // similar flow to the regular measurement, but checks for overtemperature instead of just printing telemetry data
@@ -85,7 +118,11 @@ static void thermalMgr(void *pvParameters) {
           } else {
             safeOperatingConditions();
           }
+        } else {
+          LOG_ERROR_CODE(err);
         }
+      } else {
+        LOG_ERROR_CODE(ERR_CODE_INVALID_STATE);
       }
     }
   }
