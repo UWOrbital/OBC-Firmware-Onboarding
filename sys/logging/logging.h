@@ -1,5 +1,6 @@
 #pragma once
 
+// why errs all macros
 #include "errors.h"
 
 #include <stdint.h>
