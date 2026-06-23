@@ -43,18 +43,38 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   /* Send an event to the thermal manager queue */
+  xQueueSend(thermalMgrQueueHandle, event, 10);
 
   return ERR_CODE_SUCCESS;
 }
 
 void osHandlerLM75BD(void) {
   /* Implement this function */
+  thermal_mgr_event_t *event;
+  *event.type = THERMAL_MGR_EVENT_OVER_TEMP_INTERRUPT;
+  xQueueSend(thermalMgrQueueHandle, event, 10);
 }
 
 static void thermalMgr(void *pvParameters) {
   /* Implement this task */
+  lm75bd_config_t data = *(lm75bd_config_t *) pvParameters;
+  float *temp;
+
   while (1) {
-    
+    thermal_mgr_event_t *recvEvent;
+    if(xQueueReceive(thermalMgrQueueHandle, recvEvent, 10)) {
+      if(*recvEvent.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+        readTempLM75BD(data.devAddr, temp);
+        addTemperatureTelemetry(*temp);
+      } else if(*recvEvent.type == THERMAL_MGR_EVENT_OVER_TEMP_INTERRUPT) {
+        readTempLM75BD(data.devAddr, temp);
+        if(temp > hysteresisThresholdCelsius) {
+          overTemperatureDetected();
+        } else {
+          safeOperatingConditions();
+        }
+      } 
+    }
   }
 }
 

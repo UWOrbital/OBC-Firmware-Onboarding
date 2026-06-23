@@ -2,6 +2,7 @@
 #include "i2c_io.h"
 #include "errors.h"
 #include "logging.h"
+#include "console.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -9,6 +10,7 @@
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
+#define LM7
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
@@ -26,8 +28,24 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
+  uint8_t * sendBuffer = 0x00;
+  uint8_t tempBuffer[2];
+  uint16_t tempBits;
+  uint16_t d10Mask = 0x400;
+
   /* Implement this driver function */
-  
+  // Send request for temp
+  i2cSendTo(devAddr, sendBuffer, 1);
+  // Receive temp data
+  i2cReceiveFrom(devAddr, tempBuffer, 2);
+  // Convert to celsius
+  tempBits = (tempBuffer[1] >> 5) | (tempBuffer[0] << 3); // Combine 2 bytes from buffer
+  if(d10Mask & tempBits) { // temp is neg
+    *temp = -((~tempBits + 1) & 0x7FF) * 0.125;
+  } else { // temp is pos
+    *temp = tempBits * 0.125;
+  }
+
   return ERR_CODE_SUCCESS;
 }
 
