@@ -28,14 +28,14 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  uint8_t * sendBuffer = 0x00;
-  uint8_t tempBuffer[2];
-  uint16_t tempBits;
+  uint8_t sendBuffer = 0x00;
+  uint8_t tempBuffer[2] = {0,0};
+  uint16_t tempBits = 0;
   uint16_t d10Mask = 0x400;
 
   /* Implement this driver function */
   // Send request for temp
-  i2cSendTo(devAddr, sendBuffer, 1);
+  i2cSendTo(devAddr, &sendBuffer, 1);
   // Receive temp data
   i2cReceiveFrom(devAddr, tempBuffer, 2);
   // Convert to celsius
