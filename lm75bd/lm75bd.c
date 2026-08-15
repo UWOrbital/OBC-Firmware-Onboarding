@@ -26,7 +26,16 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
+  error_code_t errCode;
+
+  uint8_t ptrByte = 0b00000000;
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &ptrByte, 1)); // ? should i be using the macro here
+
+  uint8_t tempBuf[2];
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, tempBuf, 2));
+
+  int16_t tempIntermediate = tempBuf[0] << 3 && tempBuf[1] >> 5;
+  *temp = (float)tempIntermediate / 8.0;
   
   return ERR_CODE_SUCCESS;
 }

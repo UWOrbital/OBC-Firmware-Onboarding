@@ -1,0 +1,2 @@
+i2c addr = '1001[A2][A1][A0]' (1 if VCC, 0 if GND)
+A0-A2 are all connected to vcc therefore addr = '1001111'

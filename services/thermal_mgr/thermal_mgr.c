@@ -42,19 +42,37 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
-  /* Send an event to the thermal manager queue */
+  xQueueSend(thermalMgrQueueHandle, event, 1000); // ? ticks to wait
 
   return ERR_CODE_SUCCESS;
 }
 
+// this has to be non blocking i think so im not running the reading thing within this?
+// not sure if this actually makes sense
 void osHandlerLM75BD(void) {
-  /* Implement this function */
+  thermalMgrSendEvent(THERMAL_MGR_EVENT_OS);
 }
 
 static void thermalMgr(void *pvParameters) {
-  /* Implement this task */
+  lm75bd_config_t data = *(lm75bd_config_t *) pvParameters;
+  thermal_mgr_event_t event;
+  float temp;
+
   while (1) {
-    
+    if (xQueueReceive(thermalMgrQueueHandle, &event, 10)) { // ? how many ticks should i wait? idk
+      readTempLM75BD(data.devAddr, &temp); // ? error handling?
+      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
+        addTemperatureTelemetry(temp);
+      }
+      else if (event.type == THERMAL_MGR_EVENT_OS) {
+        if (temp > data.hysteresisThresholdCelsius) {
+          overTemperatureDetected();
+        }
+        else {
+          safeOperatingConditions();
+        }
+      }
+    }
   }
 }
 
