@@ -34,7 +34,11 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   uint8_t tempBuf[2];
   RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, tempBuf, 2));
 
-  int16_t tempIntermediate = tempBuf[0] << 3 && tempBuf[1] >> 5;
+  // convert from 11 bit fixed point to float
+  int16_t tempIntermediate = ((int16_t)tempBuf[0] & 0b01111111) << 3 | tempBuf[1] >> 5;
+  if (tempBuf[0] & 0b10000000) {
+    tempIntermediate = tempIntermediate - 0b0000010000000000;
+  }
   *temp = (float)tempIntermediate / 8.0;
   
   return ERR_CODE_SUCCESS;
