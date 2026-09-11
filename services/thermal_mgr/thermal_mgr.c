@@ -42,35 +42,48 @@ void initThermalSystemManager(lm75bd_config_t *config) {
 }
 
 error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
-  xQueueSend(thermalMgrQueueHandle, event, 1000); // ? ticks to wait
-
+  if (event == NULL) {
+    return ERR_CODE_INVALID_ARG;
+  }
+  if (xQueueSend(thermalMgrQueueHandle, event, 0) == errQUEUE_FULL) {
+    return ERR_CODE_QUEUE_FULL;
+  }
   return ERR_CODE_SUCCESS;
 }
 
 // this has to be non blocking i think so im not running the reading thing within this?
 // not sure if this actually makes sense
 void osHandlerLM75BD(void) {
-  thermalMgrSendEvent(THERMAL_MGR_EVENT_OS);
+  thermal_mgr_event_t thermalMgrEvent = {THERMAL_MGR_EVENT_OS};
+  thermalMgrSendEvent(&thermalMgrEvent);
 }
 
 static void thermalMgr(void *pvParameters) {
   lm75bd_config_t data = *(lm75bd_config_t *) pvParameters;
   thermal_mgr_event_t event;
-  float temp;
+  float temp = 0;
 
   while (1) {
-    if (xQueueReceive(thermalMgrQueueHandle, &event, 10)) { // ? how many ticks should i wait? idk
-      readTempLM75BD(data.devAddr, &temp); // ? error handling?
-      if (event.type == THERMAL_MGR_EVENT_MEASURE_TEMP_CMD) {
-        addTemperatureTelemetry(temp);
+    if (xQueueReceive(thermalMgrQueueHandle, &event, portMAX_DELAY)) {
+      error_code_t errCode = readTempLM75BD(data.devAddr, &temp);
+      if (errCode != ERR_CODE_SUCCESS) {
+        LOG_ERROR("LM75BD temperature read failed! Code: %lu", (uint32_t)errCode); // ! is this adequate error logging
+        continue; // skip logic if driver function fails
       }
-      else if (event.type == THERMAL_MGR_EVENT_OS) {
-        if (temp > data.hysteresisThresholdCelsius) {
-          overTemperatureDetected();
-        }
-        else {
-          safeOperatingConditions();
-        }
+      switch (event.type) {
+        case THERMAL_MGR_EVENT_MEASURE_TEMP_CMD:
+          addTemperatureTelemetry(temp);
+        case THERMAL_MGR_EVENT_OS:
+          if (temp > data.hysteresisThresholdCelsius) {
+            overTemperatureDetected();
+          }
+          else {
+            safeOperatingConditions();
+          }
+        default:
+          // ! what behavior is expected if its not one of those events?
+          // i guess a warn makes sense
+          LOG_WARN("Unexpected thermal manager event recieved! Code: %lu", (uint32_t)event.type);
       }
     }
   }

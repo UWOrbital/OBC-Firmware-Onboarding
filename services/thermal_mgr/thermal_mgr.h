@@ -2,6 +2,7 @@
 
 #include "lm75bd.h"
 #include "errors.h"
+#include "logging.h"
 
 typedef enum {
   THERMAL_MGR_EVENT_MEASURE_TEMP_CMD,

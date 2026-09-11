@@ -26,18 +26,21 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
+  if (temp == NULL) {
+    return ERR_CODE_INVALID_ARG;
+  }
   error_code_t errCode;
 
-  uint8_t ptrByte = 0b00000000;
+  uint8_t ptrByte = 0;
   RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &ptrByte, 1)); // ? should i be using the macro here
 
-  uint8_t tempBuf[2];
+  uint8_t tempBuf[2] = {0};
   RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, tempBuf, 2));
 
   // convert from 11 bit fixed point to float
-  int16_t tempIntermediate = ((int16_t)tempBuf[0] & 0b01111111) << 3 | tempBuf[1] >> 5;
-  if (tempBuf[0] & 0b10000000) {
-    tempIntermediate = tempIntermediate - 0b0000010000000000;
+  int16_t tempIntermediate = ((int16_t)tempBuf[0] & 0x7F) << 3 | tempBuf[1] >> 5;
+  if (tempBuf[0] & 0x80) {
+    tempIntermediate = tempIntermediate - 0x0400;
   }
   *temp = (float)tempIntermediate / 8.0;
   
