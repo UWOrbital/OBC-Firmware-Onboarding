@@ -127,3 +127,56 @@ TEST(TestLm75bdDriver, TestReadTempLm75bdCallSequence) {
   EXPECT_EQ(i2cReceiveFrom_fake.arg0_val, addr); // Check device address
   EXPECT_EQ(i2cReceiveFrom_fake.arg2_val, 2U); // Check numBytes
 }
+
+TEST(TestLm75bdDriver, FractionalTemperaturesAndUnusedBits) {
+  const struct {
+    uint16_t raw;
+    float celsius;
+  } samples[] = {
+    {0x0000U, 0.0f},
+    {0x001FU, 0.0f},
+    {0x0020U, 0.125f},
+    {0xFFE0U, -0.125f},
+    {0xFFFFU, -0.125f},
+    {0xC920U, -54.875f},
+    {0x7EE0U, 126.875f},
+    {0x8000U, -128.0f},
+    {0x7FFFU, 127.875f},
+  };
+
+  for (const auto &sample : samples) {
+    resetFakes();
+    customTempBuff[0] = sample.raw >> 8;
+    customTempBuff[1] = sample.raw & 0xFFU;
+    i2cReceiveFrom_fake.custom_fake = getTemp_custom_fake;
+    float temp = 0.0f;
+    ASSERT_EQ(readTempLM75BD(0x4FU, &temp), ERR_CODE_SUCCESS);
+    EXPECT_FLOAT_EQ(temp, sample.celsius);
+  }
+}
+
+TEST(TestLm75bdDriver, NullOutputDoesNotAccessBus) {
+  resetFakes();
+  EXPECT_EQ(readTempLM75BD(0x4FU, nullptr), ERR_CODE_INVALID_ARG);
+  EXPECT_EQ(i2cSendTo_fake.call_count, 0U);
+  EXPECT_EQ(i2cReceiveFrom_fake.call_count, 0U);
+}
+
+TEST(TestLm75bdDriver, FailedRegisterSelectDoesNotReadOrChangeOutput) {
+  resetFakes();
+  i2cSendTo_fake.return_val = ERR_CODE_I2C_TRANSFER_TIMEOUT;
+  float temp = 25.0f;
+  EXPECT_EQ(readTempLM75BD(0x4FU, &temp), ERR_CODE_I2C_TRANSFER_TIMEOUT);
+  EXPECT_EQ(i2cReceiveFrom_fake.call_count, 0U);
+  EXPECT_FLOAT_EQ(temp, 25.0f);
+}
+
+TEST(TestLm75bdDriver, FailedReadDoesNotChangeOutput) {
+  resetFakes();
+  i2cReceiveFrom_fake.return_val = ERR_CODE_MUTEX_TIMEOUT;
+  float temp = 25.0f;
+  EXPECT_EQ(readTempLM75BD(0x4FU, &temp), ERR_CODE_MUTEX_TIMEOUT);
+  EXPECT_EQ(i2cSendTo_fake.call_count, 1U);
+  EXPECT_EQ(i2cReceiveFrom_fake.call_count, 1U);
+  EXPECT_FLOAT_EQ(temp, 25.0f);
+}

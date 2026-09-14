@@ -8,6 +8,7 @@
 #include <math.h>
 
 /* LM75BD Registers (p.8) */
+#define LM75BD_REG_TEMP 0x00U
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
@@ -26,8 +27,21 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
-  
+  error_code_t errCode;
+  uint8_t reg = LM75BD_REG_TEMP;
+  uint8_t data[2] = {0};
+
+  if (temp == NULL) return ERR_CODE_INVALID_ARG;
+
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &reg, sizeof(reg)));
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, data, sizeof(data)));
+
+  // Only the upper eleven bits contain temperature data
+  uint16_t raw = ((uint16_t)data[0] << 8) | data[1];
+  int16_t sample = (int16_t)(raw >> 5);
+  if ((sample & 0x400) != 0) sample -= 0x800;
+  *temp = sample * 0.125f;
+
   return ERR_CODE_SUCCESS;
 }
 
@@ -66,7 +80,7 @@ error_code_t writeConfigLM75BD(uint8_t devAddr, uint8_t osFaultQueueSize, uint8_
   buff[1] |= (osOperationMode << 1);
   buff[1] |= devOperationMode;
 
-  errCode = i2cSendTo(LM75BD_OBC_I2C_ADDR, buff, CONF_WRITE_BUFF_SIZE);
+  errCode = i2cSendTo(devAddr, buff, CONF_WRITE_BUFF_SIZE);
   if (errCode != ERR_CODE_SUCCESS) return errCode;
 
   return ERR_CODE_SUCCESS;
