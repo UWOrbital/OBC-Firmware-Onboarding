@@ -3,10 +3,11 @@
 /* DO NOT MODIFY ANYTHING IN THIS FILE */
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-void initController(void);
+  void initController(void);
 
 #ifdef __cplusplus
 }
