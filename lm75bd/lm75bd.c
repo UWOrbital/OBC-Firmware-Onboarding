@@ -9,6 +9,7 @@
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
+#define LM75BD_REG_TEMP 0x00U
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
@@ -18,16 +19,26 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
   RETURN_IF_ERROR_CODE(writeConfigLM75BD(config->devAddr, config->osFaultQueueSize, config->osPolarity,
                                          config->osOperationMode, config->devOperationMode));
 
-  // Assume that the overtemperature and hysteresis thresholds are already set
-  // Hysteresis: 75 degrees Celsius
-  // Overtemperature: 80 degrees Celsius
-
   return ERR_CODE_SUCCESS;
 }
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
-  
+
+  error_code_t errCode;
+
+  if (temp == NULL) return ERR_CODE_INVALID_ARG;
+  uint8_t ptr = LM75BD_REG_TEMP;
+
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &ptr, 1));
+
+  uint8_t dataBuf[2] = {0};
+
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, dataBuf, 2));
+
+  /* The LM75BD temperature: 11-bit value in bits 15:5,
+     with a resolution of 0.125 degrees Celsius. */
+  int16_t valueTemp = (int16_t)(((uint16_t)dataBuf[0] << 8) | dataBuf[1]);
+  *temp = (float)(valueTemp >> 5) * 0.125f;
   return ERR_CODE_SUCCESS;
 }
 
