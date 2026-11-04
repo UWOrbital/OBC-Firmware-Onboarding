@@ -9,6 +9,7 @@
 
 /* LM75BD Registers (p.8) */
 #define LM75BD_REG_CONF 0x01U  /* Configuration Register (R/W) */
+#define LM75BD_REG_TEMP 0x00U
 
 error_code_t lm75bdInit(lm75bd_config_t *config) {
   error_code_t errCode;
@@ -27,7 +28,21 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
   /* Implement this driver function */
-  
+  error_code_t errCode;
+  uint8_t pointerByte = LM75BD_REG_TEMP;
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &pointerByte, 1));
+
+  uint8_t buf[2] = {0};
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, buf, 2));
+
+  uint16_t raw = ((uint16_t)buf[0] << 8) | buf[1];
+  raw = raw >> 5;
+  int16_t steps = raw;                              
+  if (raw & 0x400) {                           
+    steps = raw - 2048;
+  }
+  *temp = steps * 0.125f;
+
   return ERR_CODE_SUCCESS;
 }
 
