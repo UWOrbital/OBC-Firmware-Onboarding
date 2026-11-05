@@ -2,6 +2,7 @@
 #include "errors.h"
 #include "lm75bd.h"
 #include "console.h"
+#include "logging.h"
 
 #include <FreeRTOS.h>
 #include <os_task.h>
@@ -46,7 +47,22 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
     return ERR_CODE_INVALID_ARG;
   }
 
-  if (xQueueSend(thermalMgrQueueHandle, (void *) event, portMAX_DELAY) != pdPASS) {
+  BaseType_t status;
+
+  if (event -> type == THERMAL_MGR_EVENT_OS_INTERRUPT) {
+    // if we are in an interrupt call - logic that was previously in osHandler
+    BaseType_t higherPriority = pdFALSE;
+    status = xQueueSendToFrontFromISR(thermalMgrQueueHandle, event, &higherPriority);
+
+    if (status == pdPASS) {
+      portYIELD_FROM_ISR(higherPriority);
+    }
+  } else {
+    // sending regular task, with no blocking
+    status = xQueueSend(thermalMgrQueueHandle, event, 0); 
+  }
+
+  if (status != pdPASS) {
     return ERR_CODE_QUEUE_FULL;
   }
 
@@ -54,17 +70,8 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
 }
 
 void osHandlerLM75BD(void) {
-  if (thermalMgrQueueHandle == NULL) {
-    return;
-  }
-
-  // have an interupt signal, send to front of queue (from ISR for saftey)
   thermal_mgr_event_t event = { .type = THERMAL_MGR_EVENT_OS_INTERRUPT};
-  BaseType_t higherPriority = pdFALSE;
-
-  xQueueSendToFrontFromISR(thermalMgrQueueHandle, &event, &higherPriority);
-  // portYILED_FROM_ISR, forces this os interputt to run before next tick since highest priority
-  portYIELD_FROM_ISR(higherPriority);
+  thermalMgrSendEvent(&event);
 }
 
 static void thermalMgr(void *pvParameters) {
@@ -84,7 +91,7 @@ static void thermalMgr(void *pvParameters) {
       error_code_t err = readTempLM75BD(data.devAddr, &temp);
 
       if (err != ERR_CODE_SUCCESS) {
-        printConsole("Failed to read temp from LM75BD : error code %d\n", (int) err);
+        LOG_ERROR_CODE(err);
         if (recv_buff.type == THERMAL_MGR_EVENT_OS_INTERRUPT) {
           overTemperatureDetected();
         }
