@@ -47,9 +47,7 @@ error_code_t thermalMgrSendEvent(thermal_mgr_event_t *event) {
   if (event==NULL) {
     return ERR_CODE_INVALID_ARG;
   }
-  if (xQueueSend(thermalMgrQueueHandle, event, 0) == 1) {
-    return ERR_CODE_SUCCESS;
-  } else {
+  if (xQueueSend(thermalMgrQueueHandle, event, 0) != 1) {
     return ERR_CODE_QUEUE_FULL;
   }
   return ERR_CODE_SUCCESS;
