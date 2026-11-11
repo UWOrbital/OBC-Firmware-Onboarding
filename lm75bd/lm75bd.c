@@ -25,9 +25,35 @@ error_code_t lm75bdInit(lm75bd_config_t *config) {
   return ERR_CODE_SUCCESS;
 }
 
+#define POINTER_BYTE_REG 0x00U
+#define CELSIUS_CONVERSION 0.125f
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp) {
-  /* Implement this driver function */
-  
+  error_code_t errCode;
+
+  if (temp == NULL) {
+    return ERR_CODE_INVALID_ARG;
+  }
+
+  uint8_t tx_buff[1U] = { POINTER_BYTE_REG };
+  // writing one byte to i2c reg, will recieve 2 bytes of temp val
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, tx_buff, sizeof(tx_buff)));
+
+  uint8_t rx_buff[2U];
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, rx_buff, sizeof(rx_buff)));
+
+  uint16_t bits = (rx_buff[0] << 8) | rx_buff[1];
+  // shifts temp to an 11 bit num: D10 at bit 10, and D0 at bit 0
+  uint16_t temp_bits = bits >> 5;
+
+  if ((temp_bits & (1 << 10)) == 0) {
+    // postitive temp reading
+    *temp = (float)temp_bits * CELSIUS_CONVERSION;
+  } else {
+    // twos compliment if negative num
+    int16_t compliment = -((temp_bits ^ 0x07FF) + 1);
+    *temp = (float)compliment * CELSIUS_CONVERSION;
+  }
+
   return ERR_CODE_SUCCESS;
 }
 
