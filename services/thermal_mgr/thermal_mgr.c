@@ -92,9 +92,6 @@ static void thermalMgr(void *pvParameters) {
 
       if (err != ERR_CODE_SUCCESS) {
         LOG_ERROR_CODE(err);
-        if (recv_buff.type == THERMAL_MGR_EVENT_OS_INTERRUPT) {
-          overTemperatureDetected();
-        }
         continue; // dont want to use the garbage in temp
       }
 
